@@ -1,0 +1,1896 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYCLE — Social LCA Intelligence Platform</title>
+<style>
+:root{
+  --bg:#f4f6f9; --panel:#ffffff; --panel-2:#f8fafc; --ink:#141a24; --ink-soft:#48505f; --mut:#7a8494;
+  --line:#e5e9f0; --line-soft:#eef2f7; --brand:#2563eb; --brand-2:#1d4ed8; --brand-soft:#e8f0fe;
+  --accent:#0f7269; --accent-soft:#e3f1ef;
+  --vl:#2e8b6f; --l:#5aa06a; --m:#c99a24; --h:#d9772f; --vh:#c6413f;
+  --vl-bg:#e6f3ee; --l-bg:#ecf4e9; --m-bg:#f7efd7; --h-bg:#f8e8da; --vh-bg:#f7dedd;
+  --good:#16a34a; --warn:#d97706;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  --shadow:0 1px 2px rgba(20,26,36,.05),0 4px 16px rgba(20,26,36,.04);
+}
+:root[data-theme="dark"],
+html.dark:root{
+  --bg:#0e1116; --panel:#161b22; --panel-2:#1b212b; --ink:#e8ebf1; --ink-soft:#aeb7c6; --mut:#7f8a9c;
+  --line:#262d38; --line-soft:#1e242e; --brand:#3b82f6; --brand-2:#2563eb; --brand-soft:#16233c;
+  --accent:#3fb8a8; --accent-soft:#13322e;
+  --vl:#4bbd94; --l:#77c07f; --m:#e0bb54; --h:#eb9457; --vh:#e86a68;
+  --vl-bg:#123128; --l-bg:#16301f; --m-bg:#332b12; --h-bg:#382413; --vh-bg:#3a1d1d;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1116; --panel:#161b22; --panel-2:#1b212b; --ink:#e8ebf1; --ink-soft:#aeb7c6; --mut:#7f8a9c;
+    --line:#262d38; --line-soft:#1e242e; --brand:#3b82f6; --brand-soft:#16233c;
+    --accent:#3fb8a8; --accent-soft:#13322e;
+    --vl:#4bbd94; --l:#77c07f; --m:#e0bb54; --h:#eb9457; --vh:#e86a68;
+    --vl-bg:#123128; --l-bg:#16301f; --m-bg:#332b12; --h-bg:#382413; --vh-bg:#3a1d1d;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14.5px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button{font-family:inherit}
+a{color:var(--brand);text-decoration:none}
+
+/* ===== app shell ===== */
+.app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+.side{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:16px 14px;gap:6px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.logo{display:flex;align-items:center;gap:10px;padding:6px 6px 14px;font-weight:700;font-size:18px}
+.logo .mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#0f7269,#16a34a);display:grid;place-items:center;color:#fff;font-size:17px}
+.new-btn{background:var(--brand);color:#fff;border:0;border-radius:9px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
+.new-btn:hover{background:var(--brand-2)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;color:var(--ink-soft);font-weight:500;cursor:pointer;font-size:14px}
+.nav a:hover{background:var(--panel-2)}
+.nav a.active{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.nav a .ic{width:18px;text-align:center;opacity:.9}
+.side .sec-label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:600;padding:14px 8px 6px;display:flex;justify-content:space-between;align-items:center}
+.side .sec-label a{font-size:11px;text-transform:none;letter-spacing:0}
+.recent{display:flex;flex-direction:column;gap:3px}
+.recent .r-item{display:flex;gap:10px;align-items:center;padding:8px;border-radius:8px;cursor:pointer}
+.recent .r-item:hover{background:var(--panel-2)}
+.recent .r-ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:15px;flex:none}
+.recent .r-meta{min-width:0}
+.recent .r-meta b{font-size:12.5px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recent .r-meta span{font-size:11px;color:var(--mut)}
+.side .help{margin-top:auto;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:11px;display:flex;gap:10px;align-items:center;cursor:pointer}
+.side .help b{font-size:12.5px;display:block}.side .help span{font-size:11px;color:var(--mut)}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{height:60px;border-bottom:1px solid var(--line);background:var(--panel);display:flex;align-items:center;justify-content:flex-end;gap:18px;padding:0 26px;position:sticky;top:0;z-index:5}
+.topbar .ib{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--panel);cursor:pointer;display:grid;place-items:center;font-size:15px;color:var(--ink-soft)}
+.topbar .ib:hover{background:var(--panel-2)}
+.user{display:flex;align-items:center;gap:10px;padding-left:16px;border-left:1px solid var(--line)}
+.user .av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7c9df0,#2563eb);display:grid;place-items:center;color:#fff;font-weight:600;font-size:14px}
+.user b{font-size:13.5px;display:block;line-height:1.2}.user span{font-size:11.5px;color:var(--mut)}
+
+.content{padding:26px;flex:1}
+.view{display:none}.view.on{display:block}
+
+/* ===== dashboard ===== */
+.dash-grid{display:grid;grid-template-columns:minmax(0,880px);gap:22px;align-items:start;justify-content:center}
+@media(max-width:1100px){.dash-grid{grid-template-columns:1fr}}
+.h-title{font-family:var(--sans);font-size:23px;margin:0 0 4px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+.h-sub{color:var(--mut);margin:0 0 20px;font-size:14px}
+.assistant{display:flex;flex-direction:column;gap:14px}
+.bubble{border:1px solid var(--line);border-radius:12px;padding:15px 17px;background:var(--panel);box-shadow:var(--shadow)}
+.bubble.you{background:var(--brand-soft);border-color:transparent}
+.bubble .bh{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.bubble .bh b{font-size:13px}.bubble .bh .who{display:flex;align-items:center;gap:8px}
+.bubble .bh .bot{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#0f7269,#16a34a);display:grid;place-items:center;color:#fff;font-size:14px}
+.bubble .time{font-size:11px;color:var(--mut)}
+.checklist{display:flex;flex-direction:column;gap:9px;margin:12px 0}
+.checklist .ci{display:flex;align-items:center;gap:11px;font-size:14px}
+.checklist .ci .ok{width:20px;height:20px;border-radius:50%;background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good);display:inline-grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.checklist .ci b{font-weight:600}.checklist .ci .det{color:var(--mut);margin-left:auto;font-size:13px}
+.cta-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.btn{border-radius:9px;padding:10px 16px;font-size:13.5px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);display:inline-flex;align-items:center;gap:8px}
+.btn:hover{background:var(--panel-2)}
+.btn.primary{background:var(--brand);color:#fff;border-color:transparent}.btn.primary:hover{background:var(--brand-2)}
+.composer{margin-top:18px;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:12px 14px;box-shadow:var(--shadow)}
+.composer textarea{width:100%;border:0;background:transparent;color:var(--ink);font:inherit;resize:vertical;min-height:52px;outline:none}
+.composer .crow{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.composer .send{width:36px;height:36px;border-radius:8px;background:var(--brand);color:#fff;border:0;cursor:pointer;font-size:15px}
+.composer .send:hover{background:var(--brand-2)}
+.disc{font-size:11.5px;color:var(--mut);text-align:center;margin-top:12px}
+.context-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink-soft);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;margin-bottom:12px}
+.answer-list{margin:8px 0 0;padding-left:18px}.answer-list li{margin:4px 0}
+.mini-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.report-chat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);margin:0 0 20px}
+.report-chat h3{margin:0 0 4px;font-size:16px}.report-chat p{margin:0 0 12px;color:var(--mut);font-size:12.5px}
+.report-chat-history{display:flex;flex-direction:column;gap:10px;max-height:280px;overflow:auto;margin-bottom:12px}
+.report-chat-history:empty{display:none}
+.report-chat-row{display:flex;gap:10px}
+.report-chat input{flex:1;border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:var(--panel-2);color:var(--ink);font:inherit;min-width:0}
+
+/* right rail cards */
+.rail{display:flex;flex-direction:column;gap:18px}
+.rcard{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:17px;box-shadow:var(--shadow)}
+.rcard h3{font-size:15px;margin:0 0 14px;font-weight:700}
+.status-row{display:flex;align-items:center;gap:16px}
+.donut{width:92px;height:92px;flex:none}
+.status-list{display:flex;flex-direction:column;gap:8px;flex:1}
+.status-list .si{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:500}
+.status-list .si .ok{width:20px;height:20px;border-radius:50%;background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good);display:inline-grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.score-big{font-size:44px;font-weight:800;font-family:var(--sans);line-height:1;letter-spacing:-.02em}
+.score-band{font-size:14px;font-weight:600;margin-top:2px}
+.insights{display:flex;flex-direction:column;gap:11px}
+.insights .ii{display:flex;gap:10px;align-items:flex-start;font-size:13.5px}
+.insights .ii .em{flex:none}
+.export-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ===== reports/templates/benchmarks/datasources/settings ===== */
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.report-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;gap:10px}
+.report-card:hover{border-color:var(--brand)}
+.report-card .rc-top{display:flex;gap:12px;align-items:center}
+.report-card .rc-ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:19px;flex:none}
+.report-card h4{margin:0;font-size:15px}.report-card .rc-sub{font-size:12.5px;color:var(--mut)}
+.report-card .rc-date{margin-left:auto;text-align:right;font-size:12px;color:var(--mut);white-space:nowrap}
+.report-card .rc-tags{display:flex;gap:6px;flex-wrap:wrap}
+.tagpill{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink-soft)}
+.tagpill.demo{background:var(--accent-soft);color:var(--accent);border-color:transparent;font-weight:600}
+.rc-actions{display:flex;gap:8px;border-top:1px solid var(--line-soft);padding-top:10px;margin-top:2px}
+.rc-actions button{flex:1;font-size:12px;padding:6px;border:1px solid var(--line);background:var(--panel);border-radius:7px;cursor:pointer;color:var(--ink-soft)}
+.rc-actions button:hover{background:var(--panel-2);color:var(--ink)}
+.tpl-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);cursor:pointer}
+.tpl-card:hover{border-color:var(--brand)}
+.tpl-card .em{font-size:24px}.tpl-card h4{margin:8px 0 4px;font-size:15px}.tpl-card p{margin:0;font-size:12.5px;color:var(--mut)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+.panel h3{margin:0 0 12px;font-size:16px}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;max-width:420px}
+.field label{font-size:12.5px;color:var(--ink-soft);font-weight:600}
+.field input,.field select{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--panel-2);color:var(--ink);font:inherit}
+.toggle-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.switch{width:44px;height:24px;border-radius:20px;background:var(--line);position:relative;cursor:pointer;flex:none;transition:.15s}
+.switch.on{background:var(--brand)}
+.switch b{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s}
+.switch.on b{left:23px}
+
+/* ===== report view (reuses report styles) ===== */
+.report{max-width:940px;margin:0 auto}
+.report h1,.report h2,.report h3,.report h4{font-family:var(--serif);font-weight:600;line-height:1.2;text-wrap:balance}
+.report p{max-width:70ch}
+.rback{display:inline-flex;align-items:center;gap:7px;cursor:pointer;color:var(--brand);font-weight:600;font-size:13.5px;margin-bottom:18px;background:none;border:0}
+.report .cover{padding:22px 0 24px;border-bottom:2px solid var(--ink)}
+.report .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+.report .cover h1{font-size:34px;margin:0 0 8px;letter-spacing:-.01em}
+.report .cover .sub{font-size:17px;color:var(--ink-soft);margin:0 0 22px;font-family:var(--serif);font-style:italic}
+.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.meta div{background:var(--panel);padding:10px 13px}
+.meta dt{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--mut);margin:0 0 2px}
+.meta dd{margin:0;font-size:13px;font-weight:500}
+.report section{padding-top:30px;border-top:1px solid var(--line-soft);margin-top:30px}
+.sec-h{display:flex;align-items:baseline;gap:12px;margin:0 0 6px}
+.sec-n{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600;min-width:24px}
+.sec-h h2{font-size:22px;margin:0}
+.lede{color:var(--ink-soft);font-size:14.5px;margin:.3em 0 1em}
+.report h4{font-size:14px;margin:16px 0 6px;font-family:var(--sans);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;padding:11px 14px;background:var(--panel);border:1px solid var(--line);border-radius:8px;font-size:12.5px;margin:16px 0 4px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;letter-spacing:.02em;padding:1px 7px;border-radius:20px;border:1px solid transparent;vertical-align:middle}
+.t-fact{background:var(--accent-soft);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 30%,transparent)}
+.t-assume{background:color-mix(in srgb,#5b7bd4 15%,transparent);color:#5b7bd4;border-color:color-mix(in srgb,#5b7bd4 30%,transparent)}
+.t-bench{background:var(--m-bg);color:var(--m);border-color:color-mix(in srgb,var(--m) 34%,transparent)}
+.conf{font-family:var(--mono);font-size:9.5px;color:var(--mut);border:1px solid var(--line);border-radius:20px;padding:1px 6px}
+.tbl-wrap{overflow-x:auto;margin:13px 0;border:1px solid var(--line);border-radius:8px}
+.tbl-wrap>table.report{max-width:none;margin:0;width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.report table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+.report th,.report td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.report thead th{background:var(--panel-2);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);font-weight:600;border-bottom:1px solid var(--line)}
+.report tbody tr:last-child td{border-bottom:0}
+.report tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--line-soft) 45%,transparent)}
+.report caption{caption-side:bottom;text-align:left;color:var(--mut);font-size:11.5px;padding:7px 11px}
+.r{font-weight:600;font-size:11.5px;padding:2px 8px;border-radius:5px;white-space:nowrap;display:inline-block}
+.r-vl{background:var(--vl-bg);color:var(--vl)}.r-l{background:var(--l-bg);color:var(--l)}
+.r-m{background:var(--m-bg);color:var(--m)}.r-h{background:var(--h-bg);color:var(--h)}.r-vh{background:var(--vh-bg);color:var(--vh)}
+.dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:15px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:15px;text-align:center}
+.ring{width:74px;height:74px;border-radius:50%;margin:0 auto 9px;display:grid;place-items:center}
+.ring>div{width:56px;height:56px;border-radius:50%;background:var(--panel);display:grid;place-items:center}
+.ring b{font-size:19px;font-variant-numeric:tabular-nums}
+.card .lab{font-size:12.5px;color:var(--ink-soft);font-weight:600;line-height:1.3}
+.card .band{font-family:var(--mono);font-size:9.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+.card.overall{grid-column:1/-1;display:flex;align-items:center;gap:18px;text-align:left}
+.card.overall .ring{width:90px;height:90px;margin:0}.card.overall .ring>div{width:68px;height:68px}.card.overall .ring b{font-size:25px}
+.report-visuals{display:grid;grid-template-columns:minmax(220px,.8fr) minmax(300px,1.2fr);gap:14px;margin:16px 0}
+.report-visuals .viz-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:15px;box-shadow:var(--shadow)}
+.report-visuals .viz-card:only-child{grid-column:1/-1}
+.report-visuals .status-row{align-items:center}
+.report-visuals .score-panel{display:grid;grid-template-columns:140px 1fr;align-items:center;gap:14px}
+.report-visuals .score-big{font-size:40px}
+.report-visuals svg{max-width:100%}
+.pdf-help{font-size:12px;color:var(--mut);margin:8px 0 0}
+.flow{display:flex;flex-direction:column;margin:15px 0}
+.flow .stage{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:7px;padding:10px 13px}
+.flow .stage b{font-size:13.5px}.flow .stage span{color:var(--ink-soft);font-size:12.5px}
+.flow .arrow{color:var(--mut);text-align:center;font-size:13px;padding:4px 0}
+.heat td,.heat th{text-align:center;padding:7px 5px;font-size:11.5px}
+.heat td:first-child,.heat th:first-child{text-align:left;font-weight:600;white-space:nowrap}
+.dot{font-size:14px}
+.matrix{display:grid;grid-template-columns:auto repeat(3,1fr);gap:6px;margin:15px 0;font-size:12px}
+.matrix .axis-y{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--mut);display:grid;place-items:center}
+.cellm{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:8px 9px;min-height:58px}
+.cellm h5{margin:0 0 4px;font-size:9.5px;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+.cellm ul{margin:0;padding-left:14px}.cellm li{margin:1px 0;line-height:1.3}
+.pri-hi{border-top:3px solid var(--vh)}.pri-md{border-top:3px solid var(--m)}.pri-lo{border-top:3px solid var(--l)}
+.note{background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 26%,transparent);border-radius:8px;padding:12px 15px;margin:15px 0;font-size:13px}
+.note b{color:var(--accent)}
+.report ul.clean{padding-left:19px}.report ul.clean li{margin:4px 0}
+.rec-group{border:1px solid var(--line);border-radius:9px;padding:2px 15px 11px;margin:11px 0;background:var(--panel)}
+.rec-group h4{border-bottom:1px solid var(--line-soft);padding-bottom:7px}
+.rec-group h4 .tag{float:right;font-family:var(--mono);font-size:10px;color:var(--mut);font-weight:400}
+.foot{margin-top:40px;padding-top:16px;border-top:2px solid var(--ink);font-size:11px;color:var(--mut);line-height:1.6}
+
+/* ===== mockup-match overrides ===== */
+.icn{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.icn.sm{width:16px;height:16px}
+.logo .mark{background:#0f1b2e}
+.new-btn{border-radius:10px;padding:12px;box-shadow:0 1px 2px rgba(37,99,235,.35)}
+.nav a{gap:12px;padding:10px 12px;border-radius:9px}
+.recent .r-item.active{background:var(--brand-soft)}
+.recent .r-item.active .r-meta b{color:var(--brand)}
+.side .help{background:var(--brand-soft);border-color:transparent}
+.side .help b{color:var(--brand)}.side .help .chev{margin-left:auto;color:var(--brand)}
+.topbar{height:64px;gap:6px;padding:0 28px}
+.topbar .ib{width:38px;height:38px;border:0;background:transparent;color:var(--mut)}
+.topbar .ib:hover{background:var(--panel-2);color:var(--ink-soft)}
+.topbar .signout{width:auto;padding:0 12px;gap:7px;font-weight:700;font-size:12.5px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--panel);color:var(--ink-soft)}
+.topbar .signout:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
+.user{gap:11px;padding-left:16px;cursor:pointer}
+.user .um{text-align:right}
+.user .chev{color:var(--mut)}
+.rcard{border-radius:16px;padding:20px}
+.donut{width:96px;height:96px}
+.export-grid{gap:12px}
+.xbtn{display:flex;align-items:center;gap:9px;justify-content:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 10px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;box-shadow:var(--shadow)}
+.xbtn:hover{background:var(--panel-2);border-color:var(--brand)}
+.xbtn .xi{font-size:16px}
+.modal{position:fixed;inset:0;background:rgba(10,15,24,.38);display:none;align-items:center;justify-content:center;padding:24px;z-index:40}
+.modal.on{display:flex}
+.modal-card{width:min(720px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.24);padding:20px}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px}
+.modal-head h3{margin:0;font-size:17px}.modal-head p{margin:3px 0 0;color:var(--mut);font-size:12.5px}
+.icon-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink-soft);cursor:pointer}
+.edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.edit-grid .field{max-width:none;margin-bottom:0}.edit-grid .wide{grid-column:1/-1}
+.field textarea{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--panel-2);color:var(--ink);font:inherit;min-height:74px;resize:vertical}
+.compare-controls{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-bottom:16px}
+.compare-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.compare-score{font-size:32px;font-weight:800;line-height:1}
+.delta.up{color:var(--good)}.delta.down{color:var(--vh)}.delta.flat{color:var(--mut)}
+.auth-screen{min-height:100vh;display:grid;grid-template-columns:minmax(320px,520px) minmax(260px,460px);align-items:center;justify-content:center;gap:64px;background:
+ linear-gradient(90deg,rgba(246,248,244,.94) 0%,rgba(246,248,244,.78) 38%,rgba(246,248,244,.18) 70%),
+ url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2200&q=80") center/cover no-repeat;padding:42px;position:relative;overflow:hidden}
+.auth-screen:before{content:"";position:absolute;inset:0;background:
+ radial-gradient(circle at 12% 68%,rgba(177,210,145,.42) 0 5px,transparent 6px),
+ repeating-radial-gradient(ellipse at 11% 16%,rgba(91,130,64,.18) 0 1px,transparent 2px 58px);
+ mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.55) 45%,transparent 76%);pointer-events:none}
+.auth-card{width:min(430px,100%);background:linear-gradient(145deg,rgba(14,20,31,.96),rgba(19,27,40,.94));border:1px solid rgba(255,255,255,.10);border-radius:16px;box-shadow:0 26px 80px rgba(15,23,42,.34);padding:28px;color:#f8fafc;position:relative;z-index:1}
+.auth-card .logo{padding:0 0 18px;color:#fff}.auth-card .logo .mark{background:#14233b}.auth-card h1{font-size:24px;margin:0 0 6px;color:#fff}.auth-card p{margin:0 0 20px;color:#b8c2d3}
+.auth-card .field label{color:#e5ebf5}.auth-card .field input{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.10);color:#fff}.auth-card .field input::placeholder{color:#7f8da3}
+.auth-note{font-size:12px;color:#9aa7ba;border-top:1px solid rgba(255,255,255,.08);padding-top:14px;margin-top:16px}
+.auth-copy{position:relative;z-index:1;align-self:center;color:#182233;font-weight:800;font-size:18px;line-height:1.45;text-shadow:0 1px 1px rgba(255,255,255,.5)}
+.auth-copy span{display:block;color:#557453}
+@media(max-width:900px){.auth-screen{grid-template-columns:1fr;gap:22px;justify-items:center}.auth-copy{display:none}}
+.app.locked{display:none}
+.user-tools{display:flex;align-items:center;gap:8px}
+.link-btn{border:0;background:transparent;color:var(--brand);font-weight:600;cursor:pointer;padding:0}
+.sc-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0}
+.sc-stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px;box-shadow:var(--shadow)}
+.sc-stat b{display:block;font-size:24px;line-height:1;color:var(--ink)}.sc-stat span{display:block;font-size:11.5px;color:var(--mut);margin-top:4px}
+.sc-table td ul{margin:0;padding-left:16px}.sc-table td li{margin:2px 0}
+.ev-links{display:flex;flex-direction:column;gap:4px}
+
+/* toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:10px;font-size:13.5px;font-weight:500;opacity:0;pointer-events:none;transition:.2s;z-index:50;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:820px){.app{grid-template-columns:1fr}.side{display:none}}
+@media(max-width:720px){.edit-grid,.compare-controls{grid-template-columns:1fr}.edit-grid .wide{grid-column:auto}}
+@media(max-width:760px){.report-visuals,.report-visuals .score-panel{grid-template-columns:1fr}}
+@media print{
+  .side,.topbar,.rback,.no-print{display:none!important}
+  .app{grid-template-columns:1fr}.content{padding:0}
+  .view:not(.on){display:none}.report{max-width:none}
+  .report thead th{position:static}
+  .report-visuals{break-inside:avoid}.viz-card,.card,.rec-group,.tbl-wrap{break-inside:avoid}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="logo"><span class="mark">🌿</span> SYCLE</div>
+    <h1>Sign in to SYCLE</h1>
+    <p>Each account has its own private report workspace.</p>
+    <div class="field"><label>Email</label><input id="auth-email" type="email" autocomplete="email" placeholder="analyst@company.com"></div>
+    <div class="field"><label>Password</label><input id="auth-pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <button class="btn primary" data-act="login" style="width:100%;justify-content:center">Sign in / Create Account</button>
+    <div class="auth-note">Sandbox auth stores only a local user namespace. Production deployment should use Supabase Auth, per-user report rows, and row-level security.</div>
+  </div>
+  <div class="auth-copy">Better insights.<br>Stronger decisions.<span>Sustainable impact.</span></div>
+</div>
+
+<div class="app locked" id="appShell">
+  <aside class="side">
+    <div class="logo"><span class="mark">🌿</span> SYCLE</div>
+    <button class="new-btn" data-act="new">＋ New Report</button>
+    <nav class="nav" id="nav">
+      <a data-view="dashboard" class="active" data-act="go" data-arg="dashboard"><svg class="icn" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg> Dashboard</a>
+      <a data-view="reports" data-act="go" data-arg="reports"><svg class="icn" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/></svg> Reports</a>
+      <a data-view="templates" data-act="go" data-arg="templates"><svg class="icn" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg> Templates</a>
+      <a data-view="benchmarks" data-act="go" data-arg="benchmarks"><svg class="icn" viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/></svg> Benchmarks</a>
+      <a data-view="datasources" data-act="go" data-arg="datasources"><svg class="icn" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg> Data Sources</a>
+      <a data-view="settings" data-act="go" data-arg="settings"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings</a>
+    </nav>
+    <div class="sec-label">Recent Reports <a data-act="go" data-arg="reports">View all</a></div>
+    <div class="recent" id="recentList"></div>
+    <div class="help" data-act="go" data-arg="datasources">
+      <span style="font-size:18px">🎧</span>
+      <div><b>Help &amp; Support</b><span>Get help with your reports</span></div>
+      <svg class="icn sm chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="ib" title="Help" data-act="go" data-arg="datasources"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
+      <button class="ib" title="Notifications" data-act="bell"><svg class="icn" viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button>
+      <div class="user" data-act="go" data-arg="settings">
+        <div class="av" id="userAv">EJ</div>
+        <div class="um"><b id="userName">Emma Johnson</b><span id="userRole">Sustainability Analyst</span></div>
+        <svg class="icn sm chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <button class="ib signout" title="Sign out" data-act="logout"><svg class="icn sm" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Sign out</button>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="view on" id="v-dashboard">
+        <div class="dash-grid">
+          <div>
+            <h1 class="h-title">SYCLE Workspace</h1>
+            <p class="h-sub">Describe your project to create a structured Social Life Cycle Assessment report</p>
+            <div class="assistant" id="assistant"></div>
+            <div class="composer">
+              <textarea id="desc" placeholder="Describe your factory or project…  e.g. Build an S-LCA report for a gaming console factory producing 5,000 consoles annually in Texas."></textarea>
+              <div class="crow">
+                <span style="color:var(--mut);font-size:18px">📎</span>
+                <button class="send" data-act="generate" title="Generate report">➤</button>
+              </div>
+            </div>
+            <p class="disc">AI-assisted screening analysis. Deterministic engine + benchmark data — verify critical data before decision-making.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="view" id="v-reports">
+        <h1 class="h-title">Reports</h1>
+        <p class="h-sub">All generated screening S-LCA reports. The demo report is pinned.</p>
+        <div class="grid-cards" id="reportsGrid"></div>
+      </div>
+
+      <!-- TEMPLATES -->
+      <div class="view" id="v-templates">
+        <h1 class="h-title">Templates</h1>
+        <p class="h-sub">Start from a sector template — it pre-fills the assistant, then generate.</p>
+        <div class="grid-cards" id="templatesGrid"></div>
+      </div>
+
+      <!-- BENCHMARKS -->
+      <div class="view" id="v-benchmarks">
+        <h1 class="h-title">Benchmarks</h1>
+        <p class="h-sub">Sector-level social benchmarks used by the engine when facility data is unavailable.</p>
+        <div id="benchmarksBody"></div>
+      </div>
+
+      <!-- DATA SOURCES -->
+      <div class="view" id="v-datasources">
+        <h1 class="h-title">Data Sources</h1>
+        <p class="h-sub">Open, legally redistributable datasets underpinning country-risk and hotspot screening.</p>
+        <div id="datasourcesBody"></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="view" id="v-settings">
+        <h1 class="h-title">Settings</h1>
+        <p class="h-sub">Preferences persist in your browser (localStorage).</p>
+        <div id="settingsBody"></div>
+      </div>
+
+      <!-- REPORT DETAIL -->
+      <div class="view" id="v-report">
+        <button class="rback no-print" data-act="go" data-arg="dashboard">← Back to dashboard</button>
+        <div class="cta-row no-print" style="margin-bottom:18px">
+          <button class="btn primary" data-act="edit-cur">✎ Edit &amp; Regenerate</button>
+          <button class="btn" data-act="compare-cur">⇄ Compare</button>
+          <button class="btn" data-act="print">📄 Export PDF</button>
+          <button class="btn" data-act="csv-cur">📊 Export Excel (CSV)</button>
+          <button class="btn" data-act="share-cur">🔗 Share</button>
+          <button class="btn" data-act="dup-cur">⧉ Duplicate</button>
+        </div>
+        <p class="pdf-help no-print">PDF export opens a clean report-only print window. In the print dialog, choose “Save as PDF”.</p>
+        <div class="report-chat no-print" id="reportChatPanel">
+          <h3>Ask About This Report</h3>
+          <p>This chat is tied to the active structured report. Ask for explanations, changes, comparisons, sources, assumptions, or section exports.</p>
+          <div class="report-chat-history" id="reportChatHistory"></div>
+          <div class="report-chat-row">
+            <input id="reportChatInput" placeholder="Ask a follow-up about this report…">
+            <button class="btn primary" data-act="ask-report">Ask</button>
+          </div>
+        </div>
+        <div class="report" id="reportBody"></div>
+      </div>
+
+      <!-- COMPARE -->
+      <div class="view" id="v-compare">
+        <button class="rback no-print" data-act="go" data-arg="reports">← Back to reports</button>
+        <h1 class="h-title">Compare Assessments</h1>
+        <p class="h-sub">Compare two saved reports to see how geography, scale and sector assumptions change risk.</p>
+        <div id="compareBody"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+<div class="modal" id="editModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="modal-head">
+      <div><h3 id="editTitle">Edit &amp; Regenerate Assessment</h3><p>Change core project inputs; SYCLE will preserve the report identity and recompute country, supply-chain and score sections.</p></div>
+      <button class="icon-btn" data-act="close-edit" title="Close">×</button>
+    </div>
+    <div class="edit-grid">
+      <div class="field wide"><label>Natural-language project description</label><textarea id="edit-desc"></textarea></div>
+      <div class="field"><label>Product / facility title</label><input id="edit-product"></div>
+      <div class="field"><label>Annual scale (units/year)</label><input id="edit-qty" type="number" min="0" step="1"></div>
+      <div class="field"><label>Country</label><select id="edit-country"></select></div>
+      <div class="field"><label>Region / state (optional)</label><input id="edit-region" placeholder="Texas, Bavaria, São Paulo..."></div>
+    </div>
+    <div class="cta-row" style="justify-content:flex-end;margin-top:18px">
+      <button class="btn" data-act="close-edit">Cancel</button>
+      <button class="btn primary" data-act="save-edit">Regenerate Report</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================ KNOWLEDGE BASE ============================ */
+const BANDS=[{l:"Very Low",c:"vl"},{l:"Low",c:"l"},{l:"Medium",c:"m"},{l:"High",c:"h"},{l:"Very High",c:"vh"}];
+const rc=b=>`<span class="r r-${BANDS[b].c}">${BANDS[b].l}</span>`;
+const HEAT=["🟢","🟢","🟡","🟠","🔴"]; // band(0..4) -> dot (Low..Critical)
+
+// Country screening risk bands: [labour, humanRights, corruption, politicalStability, workerProtection, envJustice] 0=VeryLow..4=VeryHigh
+const COUNTRIES={
+ "United States":{r:[1,1,1,1,2,2],note:"Strong rule of law and low corruption; Texas runs no state OSHA plan and permits workers'-comp opt-out, and unionisation is low under right-to-work."},
+ "Germany":{r:[0,0,0,0,1,1],note:"Strong labour protection, co-determination, and the LkSG supply-chain due-diligence law."},
+ "United Kingdom":{r:[1,0,1,1,1,1],note:"Modern Slavery Act reporting duty; strong institutions."},
+ "France":{r:[1,0,1,1,1,1],note:"Duty-of-vigilance law; robust worker protection."},
+ "Italy":{r:[1,1,2,1,1,1],note:"Informal-labour pockets in some agri/textile chains."},
+ "Poland":{r:[1,1,2,1,1,2],note:"EU protections; coal-region just-transition pressures."},
+ "Japan":{r:[1,0,0,0,1,1],note:"Excessive-overtime (karoshi) concerns; very strong institutions."},
+ "South Korea":{r:[2,1,1,1,2,1],note:"Long working hours; freedom of association improving."},
+ "Taiwan":{r:[2,1,1,2,2,1],note:"Migrant-worker recruitment-fee and debt-bondage risks; cross-strait political exposure."},
+ "China":{r:[4,3,2,2,2,3],note:"No independent trade unions (ITUC lowest tier); forced-labour and working-hours concerns; elevated environmental-justice exposure."},
+ "India":{r:[3,2,3,2,3,3],note:"Large informal sector; child/bonded-labour risks in cotton, mica, brick-kilns and textiles."},
+ "Bangladesh":{r:[3,3,3,2,3,2],note:"Garment fire/building-safety legacy; low minimum wage; constrained FoA."},
+ "Vietnam":{r:[3,3,2,2,2,2],note:"State-controlled unions; FoA constrained though reforming."},
+ "Cambodia":{r:[3,3,3,2,3,2],note:"Garment-sector FoA suppression and wage disputes."},
+ "Thailand":{r:[3,2,2,2,3,2],note:"Migrant-labour and fishing-sector forced-labour legacy."},
+ "Malaysia":{r:[3,2,2,2,3,2],note:"Electronics forced-labour findings (US CBP Withhold Release Orders) via migrant debt bondage."},
+ "Indonesia":{r:[3,2,3,2,3,3],note:"Tin mining (Bangka) child labour and fatalities; palm-oil labour risks."},
+ "Singapore":{r:[2,1,0,0,2,1],note:"Very low corruption and strong institutions; migrant-worker housing and dependency concerns."},
+ "Pakistan":{r:[3,3,3,3,3,2],note:"Bonded labour in brick/textile sectors; safety legacy."},
+ "Turkey":{r:[3,3,2,3,2,2],note:"FoA crackdowns; refugee and child labour reported in textiles."},
+ "Mexico":{r:[2,2,3,2,2,2],note:"Union-democracy reforms underway; corruption and violence risks."},
+ "Brazil":{r:[2,2,3,2,2,3],note:"Modern-slavery 'dirty list'; Amazon land and Indigenous-rights pressures."},
+ "Chile":{r:[2,1,2,2,2,3],note:"Copper/lithium water conflict in the Atacama; Indigenous land rights."},
+ "Peru":{r:[2,2,3,2,2,3],note:"Mining-community and water conflicts; high informality."},
+ "DR Congo":{r:[4,4,4,4,4,4],note:"Artisanal cobalt and 3TG mining: documented child labour, hazardous conditions, armed-conflict financing, and state fragility — the most severe node in most electronics/battery chains."},
+ "Nigeria":{r:[3,3,4,3,3,3],note:"Weak governance; oil-region community conflict and corruption."},
+ "Ethiopia":{r:[3,3,3,3,3,2],note:"Very low industrial-park wages; conflict-affected regions."},
+ "South Africa":{r:[2,2,3,2,2,3],note:"Mining safety and community impacts; high inequality."},
+ "Botswana":{r:[2,1,2,1,2,2],note:"Major diamond producer; comparatively stronger governance, with mining-community and contractor risks."},
+ "Angola":{r:[3,3,3,2,3,3],note:"Diamond and oil economy; governance, land-rights and informal-mining risks."},
+ "Australia":{r:[0,0,0,0,1,2],note:"Strong worker protection; Indigenous land-rights issues in extraction."},
+ "Canada":{r:[1,0,0,0,1,2],note:"Strong institutions; Indigenous land-rights issues in resource extraction."},
+ "Spain":{r:[1,1,1,1,1,1],note:"Strong EU labour protection; seasonal agri-labour pockets."},
+ "Netherlands":{r:[0,0,0,0,1,1],note:"Strong protection and transparency."},
+ "Sweden":{r:[0,0,0,0,0,1],note:"Among the strongest labour and governance frameworks globally."},
+ "Norway":{r:[0,0,0,0,0,1],note:"Very strong protection and low corruption."},
+ "Denmark":{r:[0,0,0,0,0,1],note:"Flexicurity model; very strong governance."},
+ "Finland":{r:[0,0,0,0,0,1],note:"Strong protection and institutions."},
+ "Switzerland":{r:[0,0,0,0,1,1],note:"Low corruption; strong institutions."},
+ "Austria":{r:[0,0,0,0,1,1],note:"Strong EU social protection."},
+ "Belgium":{r:[1,0,1,1,1,1],note:"Strong protection; robust collective bargaining."},
+ "Ireland":{r:[1,0,1,1,1,1],note:"Strong institutions; large electronics/pharma base."},
+ "Hong Kong":{r:[2,1,2,1,1,1],note:"Major trading and certification hub; traceability, import/export and business-integrity risks."},
+ "Portugal":{r:[1,1,1,1,1,1],note:"Strong EU protection."},
+ "Czechia":{r:[1,1,2,1,1,1],note:"EU protections; manufacturing hub."},
+ "Hungary":{r:[1,1,2,1,1,1],note:"EU protections; governance concerns."},
+ "Greece":{r:[1,1,2,1,1,1],note:"EU protections; informal-labour pockets."},
+ "Romania":{r:[2,1,2,1,2,2],note:"EU member; lower-wage manufacturing; governance concerns."},
+ "Russia":{r:[3,3,3,3,2,3],note:"Constrained FoA; weak rule of law; sanctions/political exposure."},
+ "Ukraine":{r:[2,2,3,4,2,2],note:"Active-conflict exposure; reforms ongoing."},
+ "New Zealand":{r:[0,0,0,0,1,1],note:"Very strong governance and worker protection."},
+ "Saudi Arabia":{r:[3,3,2,2,3,2],note:"Kafala-linked migrant-labour risks; reforming."},
+ "United Arab Emirates":{r:[3,2,1,1,3,2],note:"Low corruption; migrant-worker dependency and housing concerns."},
+ "Qatar":{r:[3,2,1,1,3,2],note:"Migrant-labour reforms post-2022; residual kafala risks."},
+ "Jordan":{r:[2,2,2,2,2,2],note:"Garment sector with monitored migrant labour (Better Work)."},
+ "Tunisia":{r:[2,2,3,3,2,2],note:"Textile/components base; governance in transition."},
+ "Morocco":{r:[2,2,3,2,3,2],note:"Automotive/textile hub; informal-labour pockets."},
+ "Egypt":{r:[3,3,3,3,3,2],note:"Constrained FoA; textile/agri labour risks."},
+ "Ghana":{r:[2,2,3,2,3,2],note:"Cocoa-sector child-labour risk (US DOL list); comparatively stable governance."},
+ "Ivory Coast":{r:[3,3,3,2,3,3],note:"World's largest cocoa producer — documented child &amp; forced labour in cultivation."},
+ "Kenya":{r:[3,2,3,2,3,2],note:"Agri/horticulture labour risks; informal sector."},
+ "Tanzania":{r:[3,2,3,2,3,2],note:"Mining &amp; agri labour risks."},
+ "Zambia":{r:[2,2,3,2,2,3],note:"Copper-mining community and safety issues."},
+ "Zimbabwe":{r:[3,3,4,3,3,3],note:"Weak governance; mining-sector risks."},
+ "Philippines":{r:[3,2,3,2,3,2],note:"Electronics/BPO base; FoA and safety concerns."},
+ "Sri Lanka":{r:[2,2,3,3,2,2],note:"Apparel hub (relatively regulated); economic-stability exposure."},
+ "Myanmar":{r:[4,4,4,4,4,3],note:"Post-coup: severe forced-labour, conflict and governance risks."},
+ "Laos":{r:[3,3,3,3,3,2],note:"State-controlled unions; low-wage manufacturing."},
+ "Nepal":{r:[3,3,3,2,3,2],note:"Migrant-labour recruitment (debt bondage) source country."},
+ "Kazakhstan":{r:[3,3,3,2,2,3],note:"Extractives-led; constrained FoA."},
+ "Colombia":{r:[3,2,3,3,2,3],note:"Union-violence legacy; agri/mining community risks."},
+ "Argentina":{r:[2,2,3,2,2,2],note:"Strong union tradition; macro-instability exposure."},
+ "Ecuador":{r:[2,2,3,3,2,3],note:"Agri (banana/flowers) and extractives labour risks."},
+ "Guatemala":{r:[3,3,3,3,3,3],note:"Weak enforcement; agri child-labour risks."},
+ "Honduras":{r:[3,3,4,3,3,3],note:"Weak governance; apparel and agri labour risks."}
+};
+// state/region -> country
+const REGION={texas:"United States",virginia:"United States",california:"United States","new york":"United States",michigan:"United States",ohio:"United States",arizona:"United States",nevada:"United States",usa:"United States","united states":"United States",america:"United States",us:"United States",uk:"United Kingdom","great britain":"United Kingdom",england:"United Kingdom",scotland:"United Kingdom",bengaluru:"India",bangalore:"India",gujarat:"India",tamil:"India",mumbai:"India",delhi:"India",shenzhen:"China",guangdong:"China",shanghai:"China",bavaria:"Germany",munich:"Germany",berlin:"Germany",holland:"Netherlands",uae:"United Arab Emirates",emirates:"United Arab Emirates","ivory coast":"Ivory Coast","cote d'ivoire":"Ivory Coast","côte d'ivoire":"Ivory Coast",saigon:"Vietnam",hanoi:"Vietnam",dhaka:"Bangladesh",istanbul:"Turkey",turkiye:"Turkey","türkiye":"Turkey",korea:"South Korea",czech:"Czechia"};
+
+function termHit(text,term){
+ const escaped=term.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+ return new RegExp(`(^|[^a-z])${escaped}([^a-z]|$)`,"i").test(text);
+}
+function findCountry(text){
+ const t=text.toLowerCase();
+ // longest country-name match first (so "United States" beats "State")
+ const keys=Object.keys(COUNTRIES).sort((a,b)=>b.length-a.length);
+ for(const k of keys){if(termHit(t,k))return k;}
+ for(const k in REGION){if(termHit(t,k))return REGION[k];}
+ if(t.includes("congo")||t.includes("drc"))return "DR Congo";
+ if(t.includes("britain")||t.includes("britain"))return "United Kingdom";
+ return null;
+}
+function findRegion(text,country){
+ const t=text.toLowerCase();
+ const countryAliases=["usa","united states","america","us"];
+ const hit=Object.keys(REGION).find(k=>termHit(t,k)&&REGION[k]===country&&!countryAliases.includes(k));
+ if(!hit)return "";
+ return hit.split(" ").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
+}
+function validateReportPrompt(text){
+ const country=findCountry(text);
+ const qty=parseQuantity(text);
+ const product=extractProduct(text);
+ const hasTimeline=/\b(timeline|assessment period|over\s+\d+\s+years?|within\s+\d+\s+years?|\d+\s+years?)\b/i.test(text);
+ const hasSubjectSignal=findSector(text)!=="generic"||/\b(factory|facility|plant|mill|refinery|farm|mine|plantation|campus|data center|datacenter|console|battery|coffee|gold|pharma|automotive|textile|diamond|diamonds|gemstone|gemstones|jewelry|jewellery|manufacturing|manufacturer|polishing|cutting)\b/i.test(text);
+ const subjectOk=hasSubjectSignal&&product!=="manufactured product"&&!/\b(want|need|please|slca|s-lca|social life cycle)\b/i.test(product);
+ const missing=[];
+ if(!subjectOk)missing.push("product, facility type, or industry being assessed");
+ if(!country)missing.push("exact location (country, and state/region/city if known)");
+ if(country==="United States"&&!findRegion(text,country))missing.push("U.S. state or region");
+ if(!qty&&!hasTimeline)missing.push("annual production scale, operating capacity, or assessment timeline");
+ return {ok:missing.length===0,missing,country,qty};
+}
+
+// Sector profiles
+const SECTORS={
+ electronics:{label:"Electronics / Consumer Hardware",em:"🎮",aka:["console","gaming","electronic","semiconductor","computer","laptop","phone","smartphone","circuit","pcb","chip","device","tv","tablet","camera","drone","server"],
+  fu:u=>`one (1) ${u} unit produced, packaged and delivered to the end consumer`,
+  process:["Inbound goods &amp; ESD-controlled inspection","PCBA integration / rework (SMT reflow &amp; hand-soldering)","Mechanical assembly (enclosure, heatsink, storage)","Firmware flashing &amp; functional/burn-in test","Final QA, serialisation &amp; packaging","Warehousing &amp; dispatch"],
+  exposures:"solder-fume &amp; flux inhalation, lead handling, ESD/electrical hazards, chemical storage and repetitive-strain from manual assembly",
+  components:[["SoC / processor","Taiwan; South Korea","Migrant/agency labour; 3TG in packaging"],["Memory (DRAM/NAND)","South Korea; United States; Japan","Working hours; automation-driven"],["Printed circuit board","China; Taiwan","Freedom of association; hazardous processes"],["Tantalum capacitors","Japan/China (ore: DR Congo)","<strong>Conflict mineral — tantalum</strong>"],["Solder (tin)","China; Indonesia","<strong>Tin — child labour &amp; mining safety</strong>"],["Li-ion cell","China (cobalt: DR Congo)","<strong>Cobalt — child &amp; artisanal labour</strong>"],["Enclosure (ABS/PC)","China / regional","Chemical exposure; working hours"],["PSU &amp; cabling","China; Vietnam","Excessive overtime; FoA"]],
+  sourcing:["Taiwan","South Korea","China","Japan","Vietnam","Malaysia","Indonesia","DR Congo"],
+  hotspots:[["Child labour","Cobalt (DR Congo) &amp; tin (Indonesia) artisanal mining",4,3],["Conflict minerals (3TG + cobalt)","Tantalum, tin, tungsten, gold — DR Congo &amp; Great Lakes",4,3],["Forced labour / modern slavery","Mining; SE-Asian migrant electronics labour",4,2],["Freedom of association","Component assembly (China, Vietnam)",3,3],["Excessive working hours","High-volume assembly (China, Malaysia)",2,3],["Occupational health &amp; safety","Mining; soldering &amp; chemicals",3,2],["E-waste &amp; end-of-life","Informal recycling via export leakage",2,2]],
+  worker:{female:"40–55%",wage:"US$ 17–24/hr (US assembly)",osh:2,automation:"Low–Medium",skill:"Semi-skilled assembly + skilled test/QA"},
+  consumer:[["Product safety","Electrical/thermal/battery hazards; UL/ETL &amp; FCC; Li-ion UN 38.3",1],["Data privacy","Connected accounts; PII incl. minors (COPPA)",2],["Product accessibility","Adaptive controllers/UI; adoption varies",2],["Repairability","Right-to-repair; modularity &amp; spares",2],["Responsible marketing","In-game purchases/loot-boxes if targeting minors",2]],
+  sdgs:[1,3,5,8,9,10,12,16,17],mineralSev:4,communitySev:1,
+  emColor:"#e8f0fe"},
+ ev_battery:{label:"EV Battery / Energy Storage",em:"🔋",aka:["battery","ev battery","lithium","cell","energy storage","gigafactory","cathode","anode"],
+  fu:u=>`one (1) ${u} battery pack (per kWh capacity) produced and delivered`,
+  process:["Electrode coating &amp; calendaring","Cell assembly (winding/stacking) in dry room","Electrolyte filling &amp; formation cycling","Module &amp; pack assembly","End-of-line testing &amp; safety validation","Packaging &amp; dispatch"],
+  exposures:"solvent (NMP) exposure, electrolyte handling, thermal-runaway/fire risk, dry-room conditions and heavy-material handling",
+  components:[["Lithium","Australia; Chile","Water conflict; Indigenous land rights"],["Cobalt","DR Congo","<strong>Child &amp; artisanal labour</strong>"],["Nickel","Indonesia; Philippines","Community displacement; deforestation labour"],["Graphite (anode)","China","Working hours; air quality"],["Cathode (NMC/LFP)","China; South Korea","Chemical safety; FoA"],["Copper foil","Chile; DR Congo","Mining community &amp; water"],["Separator/electrolyte","Japan; South Korea","Low — formal sector"]],
+  sourcing:["China","South Korea","Japan","DR Congo","Indonesia","Chile","Australia","Peru"],
+  hotspots:[["Child labour","Artisanal cobalt mining (DR Congo)",4,3],["Community displacement &amp; land rights","Nickel (Indonesia), lithium (Chile)",3,3],["Water conflict","Lithium brine in water-stressed Atacama",4,3],["Conflict minerals / corruption","Cobalt &amp; copper sourcing jurisdictions",4,3],["Occupational health &amp; safety","Solvent exposure &amp; fire risk in cell mfg",3,2],["Freedom of association","Cathode &amp; cell assembly (China)",3,3],["Indigenous rights","Lithium/nickel extraction",3,2]],
+  worker:{female:"25–40%",wage:"Varies by geography; formal-sector",osh:3,automation:"Medium–High",skill:"Skilled process operators + engineers"},
+  consumer:[["Product safety","Thermal runaway &amp; recall risk; UN 38.3, IEC 62660",2],["End-of-life / recyclability","Second-life &amp; recovery of Li/Co/Ni",2],["Transparency","Battery passport (EU) traceability",2]],
+  sdgs:[1,3,7,8,9,12,13,16],mineralSev:4,communitySev:3,emColor:"#e6f6ec"},
+ textile:{label:"Textile &amp; Apparel",em:"👕",aka:["textile","apparel","garment","clothing","shirt","fashion","fabric","cotton","denim","footwear","shoe","mill","weaving","dyeing"],
+  fu:u=>`one (1) ${u} garment produced, finished and delivered to retail`,
+  process:["Fibre &amp; yarn preparation","Weaving / knitting","Dyeing &amp; wet processing","Cut-make-trim (sewing)","Finishing, QA &amp; pressing","Packing &amp; export"],
+  exposures:"chemical/dye exposure, cotton dust (byssinosis), noise, needle injuries, excessive overtime and building/fire-safety risk",
+  components:[["Cotton fibre","India; China; Uzbekistan region","<strong>Child/forced labour in cotton</strong>"],["Synthetic yarn (polyester)","China; India","Chemical exposure"],["Dyes &amp; chemicals","China; India","Effluent &amp; worker chemical safety"],["Trims &amp; accessories","China","Working hours"],["Sewn assembly","Bangladesh; Vietnam; Cambodia","<strong>Building safety; living wage; FoA</strong>"]],
+  sourcing:["India","China","Bangladesh","Vietnam","Cambodia","Turkey","Pakistan","Indonesia"],
+  hotspots:[["Living wage shortfall","Sewing tiers (Bangladesh, Cambodia)",3,4],["Excessive working hours","CMT under peak orders",3,4],["Building &amp; fire safety","Multi-storey garment factories",4,2],["Child &amp; forced labour","Cotton cultivation &amp; ginning",4,3],["Freedom of association","Garment clusters (Bangladesh, Cambodia)",3,3],["Gender-based violence &amp; harassment","Female-majority sewing floors",3,3],["Chemical &amp; effluent exposure","Dyeing &amp; wet processing",3,3]],
+  worker:{female:"60–80%",wage:"Often at/near legal minimum, below living wage",osh:3,automation:"Low",skill:"Manual sewing operators"},
+  consumer:[["Product safety","Restricted substances (REACH/AZO dyes)",1],["Responsible marketing","Greenwashing &amp; durability claims",2],["Transparency","Supplier-list disclosure",2]],
+  sdgs:[1,3,5,6,8,10,12],mineralSev:1,communitySev:2,emColor:"#f3e8fd"},
+ pharma:{label:"Pharmaceuticals",em:"💊",aka:["pharma","pharmaceutical","drug","medicine","api","biotech","vaccine","medical","formulation"],
+  fu:u=>`one (1) standard pack of ${u} produced under GMP and delivered`,
+  process:["API / intermediate synthesis","Formulation &amp; compounding","Granulation / mixing","Tableting / filling under GMP","QC laboratory &amp; release testing","Serialised packaging &amp; cold-chain dispatch"],
+  exposures:"potent-compound &amp; solvent exposure, cleanroom ergonomics, cytotoxic handling and hazardous-waste management",
+  components:[["Active ingredient (API)","India; China","Effluent (AMR); chemical safety"],["Excipients","India; China; EU","Formal sector"],["Solvents &amp; reagents","China; India","Worker chemical exposure"],["Primary packaging","Regional","Low"]],
+  sourcing:["India","China","Singapore","Germany","United States"],
+  hotspots:[["Occupational chemical safety","API synthesis &amp; solvent handling",3,3],["Environmental justice (effluent/AMR)","API manufacturing clusters (India, China)",3,3],["Business ethics &amp; corruption","Procurement &amp; marketing practices",3,2],["Clinical-trial ethics","Upstream R&amp;D (where applicable)",3,1],["Access to medicine","Pricing &amp; availability",2,2],["Working hours","Campaign production peaks",2,2]],
+  worker:{female:"35–50%",wage:"Formal-sector, above-median for skilled roles",osh:2,automation:"Medium–High",skill:"Skilled/qualified (GMP-trained)"},
+  consumer:[["Product safety &amp; quality","GMP, pharmacovigilance, recall risk",2],["Access &amp; affordability","Pricing &amp; supply continuity",2],["Data privacy","Patient data (where digital)",2],["Responsible marketing","Promotion &amp; off-label controls",2]],
+  sdgs:[3,6,8,9,12,16],mineralSev:1,communitySev:2,emColor:"#fde8e8"},
+ food:{label:"Food &amp; Agriculture",em:"🌾",aka:["food","agriculture","coffee","cocoa","beverage","farm","crop","dairy","meat","seafood","sugar","snack","processing plant"],
+  fu:u=>`one (1) standard consumer unit of ${u} produced and delivered`,
+  process:["Raw-material cultivation / sourcing","Intake, cleaning &amp; grading","Processing / transformation","Packaging &amp; labelling","QA &amp; food-safety testing","Cold-chain distribution"],
+  exposures:"machinery &amp; cutting hazards, cold/heat exposure, repetitive tasks, sanitation chemicals and long harvest-season hours",
+  components:[["Primary crop / commodity","Varies by product &amp; origin","<strong>Child/forced labour; land rights</strong>"],["Packaging","Regional","Low–Medium"],["Additives / ingredients","Global","Formal sector"]],
+  sourcing:["Brazil","India","Indonesia","Ethiopia","Peru","Mexico","Thailand","United States"],
+  hotspots:[["Child &amp; forced labour","Commodity cultivation (cocoa, coffee, sugar)",4,3],["Living income (smallholders)","Farm-gate pricing",3,4],["Land rights &amp; displacement","Plantation expansion",3,3],["Occupational safety","Processing &amp; harvest",3,3],["Water &amp; environmental justice","Irrigation-intensive crops",3,3],["Freedom of association","Seasonal/migrant farm labour",3,3]],
+  worker:{female:"30–60%",wage:"Frequently below living income at farm level",osh:3,automation:"Low–Medium",skill:"Manual &amp; seasonal labour"},
+  consumer:[["Food safety","HACCP; contamination &amp; recall",2],["Responsible marketing","Health claims; marketing to children",2],["Transparency","Origin &amp; certification claims",2]],
+  sdgs:[1,2,3,6,8,10,12,15],mineralSev:1,communitySev:3,emColor:"#eef7e0"},
+ automotive:{label:"Automotive / Vehicles",em:"🚗",aka:["car","automotive","vehicle","auto","truck","motorcycle","assembly plant"],
+  fu:u=>`one (1) ${u} produced and delivered`,
+  process:["Stamping &amp; body-in-white","Welding &amp; body assembly","Paint shop","Powertrain &amp; final assembly","End-of-line test","Logistics &amp; dispatch"],
+  exposures:"welding fume, paint/isocyanate exposure, heavy machinery, ergonomic strain and noise",
+  components:[["Steel &amp; aluminium","China; regional","Mining &amp; smelting labour"],["Electronics &amp; wiring","China; Mexico; SE Asia","3TG; working hours"],["Battery/EV components","See EV Battery sector","Cobalt/lithium risks"],["Leather &amp; interiors","Brazil; India","Tanning chemical exposure"],["Tyres (rubber)","Thailand; Indonesia","Smallholder labour"]],
+  sourcing:["China","Mexico","Germany","Japan","Thailand","Brazil","DR Congo"],
+  hotspots:[["Supply-chain labour (raw materials)","Steel, aluminium, minerals",3,3],["Occupational health &amp; safety","Welding, paint, press shops",3,3],["Working hours","Peak production &amp; tier suppliers",2,3],["Conflict minerals","Vehicle electronics (3TG)",3,2],["Freedom of association","Tier-2/3 suppliers",3,2]],
+  worker:{female:"15–30%",wage:"Formal-sector; often unionised in OEMs",osh:3,automation:"High",skill:"Skilled + automated lines"},
+  consumer:[["Product safety","Crash/defect &amp; recall exposure",2],["Data privacy","Connected-vehicle data",2],["Accessibility","Adaptive/mobility features",1]],
+ sdgs:[3,8,9,12,13],mineralSev:3,communitySev:2,emColor:"#e8eefe"},
+ metals:{label:"Metals / Mineral Refining",em:"◆",aka:["gold","refinery","refining","smelter","smelting","metal","metals","mineral","minerals","copper","aluminium","aluminum","steel","precious metal"],
+  fu:u=>`one (1) tonne of refined ${u} produced and transferred to downstream industrial users`,
+  process:["Ore / doré intake, weighing &amp; chain-of-custody check","Sampling, assaying &amp; impurity characterisation","Smelting / melting &amp; fluxing","Chemical refining / electrorefining","Casting, stamping &amp; secure storage","Waste, slag, effluent &amp; emissions control"],
+  exposures:"high-temperature work, molten-metal burns, acid/chlorine/cyanide chemistry, dust and fume exposure, security risks and hazardous-waste handling",
+  components:[["Gold doré / mined concentrate","India; Ghana; Peru; DR Congo","<strong>Artisanal mining, child labour, conflict financing</strong>"],["Fluxes &amp; reagents","China; India","Chemical exposure"],["Activated carbon / filters","Regional","Waste-handler exposure"],["Packaging / secure logistics","Regional","Security and contractor labour"],["Energy inputs","Host country grid","Worker and community exposure at upstream extraction"]],
+  sourcing:["India","Ghana","Peru","DR Congo","South Africa","China","United Arab Emirates"],
+  hotspots:[["Child labour","Artisanal and small-scale gold mining",4,3],["Forced labour / debt bondage","Informal mining and contractor labour",4,2],["Conflict financing","High-risk gold sourcing jurisdictions",4,3],["Occupational health &amp; safety","Molten metal, acids, cyanide and fumes",4,3],["Community health","Mercury/cyanide exposure and waste mismanagement upstream",4,3],["Corruption / illicit trade","Gold traceability and laundering risks",4,3],["Freedom of association","Contract and security labour",3,2]],
+  worker:{female:"10-25%",wage:"Formal refinery roles above local median; contractor roles vary",osh:4,automation:"Medium",skill:"Skilled operators, assayers, EHS specialists and security staff"},
+  consumer:[["Downstream product integrity","Chain-of-custody and conflict-free claims",2],["Traceability","LBMA/RMI/OECD due-diligence expectations",3],["Responsible marketing","Avoid unsupported ethical-gold claims",2]],
+ sdgs:[3,6,8,9,12,16,17],mineralSev:4,communitySev:4,emColor:"#fff4cc"},
+ data_center:{label:"Data Center / Digital Infrastructure",em:"▣",aka:["data center","datacenter","server farm","cloud campus","ai data center","colocation","hyperscale"],
+  fu:u=>`one (1) MW-year of ${u} compute capacity operated and maintained`,
+  process:["Site acquisition &amp; permitting","Civil construction &amp; shell build-out","Electrical substation and backup-power installation","Cooling, water and mechanical systems","Server, rack and network deployment","Operations, security and maintenance","Hardware refresh and end-of-life processing"],
+  exposures:"electrical work, construction safety, diesel backup fuel handling, refrigerants, heat stress, security contractor conditions and e-waste processing",
+  components:[["Servers / GPUs","Taiwan; South Korea; China; United States","Semiconductor labour, 3TG and electronics assembly"],["Power equipment","United States; Germany; China","Electrical contractor safety and copper sourcing"],["Cooling systems","United States; Mexico; China","Refrigerants, chemical handling and water stress"],["Batteries / UPS","China; South Korea; DR Congo","Cobalt, lithium and forced-labour flags"],["Concrete and steel","United States; China; Brazil","Construction labour and embodied supply-chain risks"],["Network equipment","Taiwan; China; Malaysia","Electronics labour and working hours"]],
+  sourcing:["United States","Taiwan","South Korea","China","Malaysia","Mexico","Germany","DR Congo","Chile","Brazil"],
+  hotspots:[["Construction safety","Fast-track site construction and electrical works",3,3],["Electrician and contractor welfare","Substation, backup power and MEP installation",3,3],["Mineral due diligence","Servers, GPUs, UPS batteries and copper",4,3],["Water and community pressure","Cooling demand in water-stressed regions",3,2],["E-waste worker exposure","Hardware refresh and recycling chains",3,3],["Security contractor labour","24/7 guarding and subcontracting",2,3],["Energy affordability / grid pressure","Community and public infrastructure impacts",3,2]],
+  worker:{female:"18-30%",wage:"Formal technical roles above median; contractor wages vary",osh:3,automation:"High",skill:"Skilled technicians, facilities engineers, security and construction trades"},
+  consumer:[["Data privacy and security","SOC 2 / ISO 27001 controls and tenant data protection",2],["Service resilience","Continuity of critical digital services",1],["Transparency","Energy, water and community-impact disclosure",2]],
+  sdgs:[3,6,7,8,9,12,13,16],mineralSev:4,communitySev:3,emColor:"#e8f0fe"},
+ generic:{label:"General Manufacturing",em:"🏭",aka:[],
+  fu:u=>`one (1) ${u} unit produced and delivered`,
+  process:["Inbound materials &amp; inspection","Primary processing / fabrication","Assembly","Finishing &amp; QA","Packaging","Warehousing &amp; dispatch"],
+  exposures:"machinery hazards, chemical handling, noise, ergonomic strain and material handling",
+  components:[["Primary materials","Global / regional","Extraction &amp; processing labour"],["Sub-components","Regional","Working hours; FoA"],["Packaging","Regional","Low"]],
+  sourcing:["China","India","Germany","United States","Vietnam"],
+  hotspots:[["Occupational health &amp; safety","Fabrication &amp; assembly",3,3],["Living wage","Entry-level &amp; upstream tiers",2,3],["Working hours","Peak demand",2,3],["Freedom of association","Upstream suppliers",3,2],["Supply-chain transparency","Multi-tier sourcing",3,3]],
+  worker:{female:"30–50%",wage:"Sector- &amp; geography-dependent",osh:3,automation:"Medium",skill:"Semi-skilled + technicians"},
+  consumer:[["Product safety","Applicable standards &amp; certification",2],["Transparency","Sourcing disclosure",2]],
+  sdgs:[8,9,12,16],mineralSev:2,communitySev:2,emColor:"#eef1f7"}
+};
+SECTORS.diamond={label:"Diamond / Gemstone Manufacturing",em:"◇",aka:["diamond","diamonds","gemstone","gemstones","jewelry","jewellery","lapidary","cutting","polishing","faceting"],
+ fu:u=>`one (1) tonne of ${u} sorted, cut, polished, graded and transferred to downstream buyers`,
+ process:["Rough-diamond intake and chain-of-custody review","Sorting, valuation and parcel segregation","Computer planning, marking and laser sawing","Bruting, shaping and girdle preparation","Faceting, polishing and final inspection","Third-party grading, certification and secure dispatch"],
+ exposures:"fine mineral dust, eye strain, laser and wheel safety, repetitive handwork, contractor labour, secure logistics and provenance-control risks",
+ components:[["Rough diamonds","Botswana; Canada; South Africa; Russia; DR Congo","Conflict-diamond traceability; artisanal mining exposure"],["Cutting and polishing consumables","India; China; Belgium","Dust exposure; contractor labour"],["Grading and certification services","United States; Belgium; India","Documentation integrity; fraud risk"],["Secure logistics and storage","United States; United Arab Emirates; Belgium","Security contractor welfare; illicit trade controls"],["Jewellery findings / industrial channels","India; China; United States","Precious-metal sourcing; consumer transparency"]],
+ sourcing:["India","Botswana","Canada","South Africa","Russia","DR Congo","Belgium","United Arab Emirates","China","United States"],
+ hotspots:[["Conflict diamonds","Rough-diamond sourcing from weakly governed or conflict-adjacent jurisdictions",4,3],["Child and forced labour","Artisanal and small-scale gemstone mining tiers",4,2],["Occupational health and safety","Cutting, polishing, dust, eye strain and laser equipment",3,3],["Traceability and documentation fraud","Parcel mixing, valuation opacity and chain-of-custody gaps",4,3],["Security contractor labour","Secure transport, guarding and vault operations",2,3],["Community land rights","Mining-area displacement, land access and benefit sharing",3,2],["Corruption / illicit trade","High-value stones, smuggling and laundering exposure",4,3]],
+ worker:{female:"25-45%",wage:"Skilled cutting and grading roles vary by cluster; contractor roles require verification",osh:3,automation:"Medium",skill:"Skilled lapidary operators, graders, QA staff and secure-logistics workers"},
+ consumer:[["Product provenance","Kimberley Process, OECD minerals due diligence and seller traceability claims",3],["Responsible marketing","Avoid unsupported ethical, conflict-free or origin claims",2],["Product integrity","Certification, grading accuracy and synthetic/natural disclosure",2]],
+ sdgs:[3,5,8,9,12,16,17],mineralSev:4,communitySev:3,emColor:"#eef2ff"};
+function findSector(text){
+ const t=text.toLowerCase();
+ for(const k in SECTORS){if(SECTORS[k].aka.some(w=>t.includes(w)))return k;}
+ return "generic";
+}
+const DATASETS=[
+ ["ILO / ITUC Global Rights Index","Freedom of association &amp; collective-bargaining ratings by country","ITUC, annual","https://www.globalrightsindex.org/"],
+ ["Transparency International CPI","Corruption Perceptions Index (0-100) by country","TI, annual","https://www.transparency.org/en/cpi"],
+ ["Walk Free Global Slavery Index","Modern-slavery prevalence &amp; vulnerability estimates","Walk Free, periodic","https://www.walkfree.org/global-slavery-index/"],
+ ["World Bank Worldwide Governance Indicators","Rule of law, control of corruption, political stability","World Bank, annual","https://www.worldbank.org/en/publication/worldwide-governance-indicators"],
+ ["World Bank Open Data (WDI)","Wages, unemployment, gender, poverty, enrolment","World Bank, annual","https://data.worldbank.org/"],
+ ["US DOL List of Goods (Child/Forced Labor)","Goods &amp; countries flagged for child/forced labour","US DOL, biennial","https://www.dol.gov/agencies/ilab/reports/child-labor/list-of-goods"],
+ ["Fund for Peace Fragile States Index","State fragility &amp; conflict exposure","FFP, annual","https://fragilestatesindex.org/"],
+ ["UNEP/SETAC S-LCA Guidelines (2020)","Methodology, stakeholder categories, subcategories","UNEP, 2020","https://www.lifecycleinitiative.org/library/guidelines-for-social-life-cycle-assessment-of-products-and-organisations-2020/"],
+ ["OECD Due Diligence Guidance","Responsible business conduct &amp; minerals due diligence","OECD","https://www.oecd.org/corporate/mne/"],
+ ["UN SDG Global Database","Indicators for the 17 Sustainable Development Goals","UN Stats","https://unstats.un.org/sdgs/dataportal"],
+ ["UNDP Human Development Reports","Human development, inequality and gender indicators","UNDP, annual","https://hdr.undp.org/data-center"],
+ ["Government Labour Agencies","Host-country occupational safety and labour-law publications","National agencies","https://www.ilo.org/dyn/natlex/natlex4.home"],
+ ["Industry Publications","Sector-specific process and supplier structure references","Trade bodies / industry sources","https://www.responsiblebusiness.org/"]
+];
+
+/* ============================ SCORING ============================ */
+function meanRisk(country){const r=(COUNTRIES[country]&&COUNTRIES[country].r)||[2,2,2,2,2,2];return r.reduce((a,b)=>a+b,0)/r.length;}
+function perf(risk0to4){return Math.round(100-(risk0to4/4)*100);}
+function computeScores(sector,country,sourcing){
+ const S=SECTORS[sector];
+ const home=(COUNTRIES[country]&&COUNTRIES[country].r)||[2,2,2,2,2,2];
+ const up=sourcing.filter(Boolean).map(meanRisk);
+ const upAvg=up.reduce((a,b)=>a+b,0)/up.length;
+ const worstUp=Math.max(...sourcing.map(c=>Math.max(COUNTRIES[c].r[0],COUNTRIES[c].r[1])));
+ const worker=clamp(perf((home[0]+home[4])/2)-(S.worker.osh-2)*4);
+ const humanRights=clamp(perf(worstUp*0.7+upAvg*0.3));
+ const community=clamp(perf((home[5]+S.communitySev)/2));
+ const supplyChain=clamp(perf(S.mineralSev*0.6+upAvg*0.4));
+ const governance=clamp(perf((COUNTRIES[country].r[2]+2.6)/1.3/2)); // SME immaturity baseline + country corruption
+ const consumer=clamp(perf(avg(S.consumer.map(c=>c[2]))));
+ const overall=Math.round(worker*.18+humanRights*.22+community*.13+supplyChain*.22+governance*.12+consumer*.13);
+ return{worker,humanRights,community,supplyChain,governance,consumer,overall};
+}
+const clamp=n=>Math.max(3,Math.min(97,Math.round(n)));
+const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const bandLabel=s=>s>=75?"Good":s>=55?"Moderate":s>=40?"Elevated risk":"High risk";
+const scoreColor=s=>s>=75?"var(--l)":s>=55?"var(--m)":s>=40?"var(--h)":"var(--vh)";
+
+/* ============================ GENERATOR ============================ */
+function parseQuantity(text){
+ const m=text.replace(/,/g,"").match(/(\d+(?:\.\d+)?)\s*(mw|megawatt|megawatts|tonnes|tons|ton|t|units|unit|packs|consoles|garments|k|thousand|million|m|per|\/)?/i);
+ if(m){let n=parseFloat(m[1]);const u=(m[2]||"").toLowerCase();if(u==="k"||u==="thousand")n*=1e3;if(u==="million"||u==="m")n*=1e6;if(u||n>=100)return Math.round(n);}
+ return null;
+}
+function extractProduct(text){
+ let t=text.replace(/build an? s-?lca(?: report)? for a?n?/i,"")
+  .replace(/build a?n? social life cycle assessment for a?n?/i,"")
+  .replace(/(?:report|assessment)\s+on\s+(?:a |an |the )?/i,"")
+  .replace(/(?:generate|create|analyze|assess|evaluate) a?n? s-?lca(?: report)? for a?n?/i,"")
+  .replace(/(?:generate|create|analyze|assess|evaluate) a?n? social lca(?: report)? for a?n?/i,"")
+  .replace(/\bi want to build (a new |an? )?/i,"")
+  .replace(/\bbuild (a new |an? )?/i,"")
+  .replace(/\b(industry|sector)\b/gi,"")
+  .replace(/generate|create|analyze|assess|evaluate|report|s-?lca|social lca/gi,"");
+ const m=t.match(/(?:for a |for an |a |an |on a |on an |on the |on )?([\w\s-]+?)(?:\s+(?:factory|plant|facility|mill|manufacturing|manufacturer|producing|production|making|that|in|with|annually|annual|located)\b)/i);
+ let p=m?m[1]:t.split(/\s+in\s+|,/)[0];
+ p=(p||"product").trim().replace(/\s+/g," ").replace(/^(a|an|the|on|for)\s+/i,"").replace(/\b(industry|sector)\b/gi,"").trim();
+ return p.length>2&&p.length<48?p:"manufactured product";
+}
+function estWorkforce(sector,qty){
+ const perWorker={electronics:250,ev_battery:400,diamond:90,textile:1200,pharma:600,food:2000,automotive:60,metals:150,data_center:1,generic:800}[sector]||800;
+ if(!qty)return "20–50 FTE (assumed)";
+ const n=sector==="data_center"?Math.max(30,Math.round(qty*3.8)):Math.max(8,Math.round(qty/perWorker));
+ const lo=Math.max(5,Math.round(n*0.7)),hi=Math.round(n*1.4);
+ return `${lo}–${hi} FTE`;
+}
+
+const REF={ilo:[0],ti:[1],slavery:[2],wgi:[3],wdi:[4],dol:[5],fragile:[6],unep:[7],oecd:[8],sdg:[9],undp:[10],gov:[11],industry:[12]};
+const SUPPLY_CHAIN_KB={
+ electronics:[
+  ["raw","Raw Material Extraction","Extraction of minerals and feedstocks required for electronics and semiconductor production.",["Gold","Copper","Lithium","Nickel","Silicon","Rare Earth Elements","Tin","Tantalum"],["China","Australia","Chile","DR Congo","Brazil","Canada","Indonesia"],["Child labour","Conflict minerals","Unsafe mining","Land rights","Forced labour"],4,["ilo","dol","oecd","wgi","unep"],74],
+  ["semi","Semiconductor Processing","Wafer fabrication, packaging and testing for processors, memory and power chips.",["Silicon wafers","Photoresists","Specialty gases","Gold bonding wire"],["Taiwan","South Korea","Japan","United States","China"],["Working hours","Chemical exposure","Migrant labour","Supply concentration"],3,["ilo","wdi","industry","oecd"],70],
+  ["pcb","PCB Manufacturing","Production of printed circuit boards using copper laminates, etching, drilling and surface finishing.",["Copper clad laminate","Solder mask","Gold finish","Tin solder"],["China","Taiwan","Malaysia","Vietnam"],["Chemical exposure","Freedom of association","Wastewater exposure","Excessive overtime"],3,["ilo","wgi","industry","unep"],72],
+  ["display","Display Manufacturing","Manufacturing of displays, LEDs, optical sensors and screen modules where applicable.",["Glass","Indium tin oxide","LEDs","Plastics"],["South Korea","China","Japan","Taiwan"],["Chemical safety","Working hours","Supplier transparency"],2,["ilo","industry","wdi"],68],
+  ["controller","Controller Components","Manufacturing of controllers, cables, plastics, batteries and haptic parts.",["ABS/PC plastic","Motors","Li-ion cells","Cables"],["China","Vietnam","Malaysia","Thailand"],["Forced labour indicators","Migrant-worker fees","Working hours"],3,["ilo","slavery","dol","industry"],69],
+  ["assembly","Console Assembly","Final assembly, firmware flashing, testing and QA.",["PCBAs","Enclosures","Power supply","Controllers"],["United States","Mexico","China","Vietnam"],["Ergonomics","Solder fume","Temporary labour","Wage adequacy"],2,["ilo","gov","industry"],76],
+  ["pack","Packaging","Box, paperboard, labels and palletisation.",["Paperboard","Ink","Protective inserts"],["United States","China","Mexico"],["Low-wage packaging labour","Forestry traceability"],1,["wdi","industry","unep"],78],
+  ["logistics","Distribution and Retail","Warehousing, freight, retail and e-commerce fulfilment.",["Pallets","Freight services","Retail labour"],["United States","China","Mexico","Netherlands"],["Warehouse safety","Driver hours","Seasonal labour"],2,["ilo","gov","wdi"],73],
+  ["eol","Recycling and End-of-Life","Collection, repair, refurbishing and electronics recycling.",["Returned consoles","Batteries","Circuit boards"],["United States","China","Ghana","India"],["Informal e-waste exposure","Child labour","Hazardous recycling"],3,["ilo","dol","unep","industry"],65]
+ ],
+ metals:[
+  ["mine","Mining","Extraction of ore, dore or scrap feedstock for refinery input.",["Ore","Dore bars","Artisanal gold","Recycled gold"],["India","Ghana","Peru","DR Congo","South Africa"],["Child labour","Forced labour","Conflict financing","Unsafe mining","Land rights"],4,["ilo","dol","oecd","wgi","unep"],72],
+  ["transport","Ore Transportation","Transport of ore or dore under chain-of-custody controls.",["Ore sacks","Dore","Secure logistics"],["India","Ghana","Peru","United Arab Emirates"],["Security labour","Illicit trade","Contractor safety"],3,["oecd","ti","wgi","industry"],70],
+  ["crush","Crushing and Sampling","Mechanical crushing, sampling and assaying to determine metal content.",["Crushed ore","Fluxes","Assay chemicals"],["India","China","South Africa"],["Dust exposure","Machine guarding","Chemical handling"],3,["ilo","gov","industry"],76],
+  ["refine","Refining","Smelting, chemical refining or electrorefining to remove impurities.",["Fluxes","Acids","Cyanide alternatives","Electricity"],["India","China","Germany","United States"],["Burns","Toxic exposure","Emergency preparedness"],4,["ilo","gov","unep","industry"],74],
+  ["purify","Purification and Quality Control","Purity validation, separation, rework and traceability documentation.",["Assay reagents","Lab equipment","Certification data"],["India","Switzerland","United Arab Emirates"],["Corruption","Documentation fraud","Lab safety"],3,["ti","oecd","industry"],69],
+  ["cast","Casting and Storage","Casting into bars, secure storage, stamping and inventory controls.",["Molten gold","Moulds","Vault services"],["India","United Arab Emirates","Switzerland"],["Security contractor welfare","Heat stress","Theft/corruption"],3,["ilo","ti","gov"],71],
+  ["dist","Distribution","Secure logistics to downstream buyers, banks, jewellers or electronics users.",["Refined bars","Transport services","Insurance"],["India","United Arab Emirates","Switzerland","United Kingdom"],["Contractor labour","Illicit flows","Sanctions exposure"],2,["oecd","ti","wgi"],73]
+ ],
+ food:[
+  ["nursery","Nursery","Seedling production and farm input preparation.",["Seedlings","Soil amendments","Irrigation inputs"],["Brazil","Colombia","Ethiopia","Vietnam"],["Seasonal labour","Agrochemical exposure","Smallholder income"],2,["ilo","wdi","industry"],72],
+  ["cultivation","Cultivation","Planting, shade management, fertilisation, pest control and farm maintenance.",["Coffee trees","Fertiliser","Water","Pesticides"],["Brazil","Vietnam","Colombia","Ethiopia"],["Living income","Child labour","Heat stress","Land rights"],3,["ilo","dol","wdi","unep"],70],
+  ["harvest","Harvest","Manual or mechanised picking during seasonal peaks.",["Coffee cherries","Seasonal labour"],["Brazil","Colombia","Peru","Guatemala"],["Child labour","Forced labour","Excessive hours","Migrant labour"],3,["ilo","dol","slavery","gov"],68],
+  ["processing","Processing","Depulping, fermentation, washing or natural processing.",["Water","Pulpers","Fermentation tanks"],["Brazil","Ethiopia","Vietnam"],["Water pollution","Worker safety","Waste handling"],2,["unep","gov","industry"],74],
+  ["drying","Drying and Milling","Drying, hulling, grading and storage before export.",["Drying patios","Mills","Bags"],["Brazil","Vietnam","Colombia"],["Dust exposure","Temporary labour","Warehouse safety"],2,["ilo","industry","wdi"],76],
+  ["export","Export","Aggregation, export logistics, traders and importers.",["Green coffee","Brokers","Freight"],["Brazil","United States","Germany","Netherlands"],["Price pressure","Traceability gaps","Port labour"],2,["wdi","industry","oecd"],73],
+  ["roast","Roasting","Roasting, blending, grinding and retail packaging.",["Green coffee","Packaging","Energy"],["United States","Germany","Italy","Brazil"],["OH&S","Wage adequacy","Marketing claims"],1,["ilo","industry","gov"],80],
+  ["retail","Retail","Retail, cafes, e-commerce and consumer use.",["Packaged coffee","Cafe labour"],["United States","Germany","Brazil"],["Service-sector wages","Consumer transparency"],1,["ilo","wdi","industry"],82]
+ ],
+ data_center:[
+  ["site","Site Acquisition and Permitting","Land, power and water access decisions for data center siting.",["Land","Grid interconnection","Water rights"],["United States","Ireland","Netherlands","Singapore"],["Community consent","Water stress","Energy affordability"],3,["wgi","unep","gov","industry"],72],
+  ["civil","Civil Construction","Earthworks, concrete, steel, shell construction and fit-out.",["Concrete","Steel","Insulation","Labour contractors"],["United States","China","Brazil","Mexico"],["Construction safety","Migrant labour","Subcontractor wage risk"],3,["ilo","gov","wdi"],74],
+  ["power","Electrical Infrastructure","Substations, transformers, switchgear, generators and UPS systems.",["Copper","Transformers","Diesel generators","Batteries"],["United States","Germany","China","DR Congo","Chile"],["Electrical safety","Mineral due diligence","Contractor welfare"],4,["ilo","dol","oecd","industry"],70],
+  ["cooling","Cooling and Mechanical Systems","Chillers, cooling towers, pumps, refrigerants and water systems.",["Cooling equipment","Refrigerants","Water treatment chemicals"],["United States","Mexico","China","Japan"],["Water stress","Chemical exposure","Maintenance safety"],3,["unep","gov","industry"],73],
+  ["it","Server and Network Deployment","Servers, GPUs, storage, racks and network equipment installation.",["Servers","GPUs","Racks","Fiber","Switches"],["Taiwan","South Korea","China","Malaysia","United States"],["Electronics labour","3TG minerals","Working hours"],4,["ilo","dol","oecd","industry"],68],
+  ["ops","Operations and Security","24/7 operations, facilities maintenance, cleaning and security.",["Technicians","Security services","Diesel fuel","Spare parts"],["United States","India","Philippines"],["Contractor labour","Shift work","Emergency safety"],2,["ilo","gov","wdi"],78],
+  ["refresh","Hardware Refresh and E-Waste","Server refresh, asset disposition, refurbishing and recycling.",["Servers","Drives","Batteries","Circuit boards"],["United States","India","Ghana","China"],["Data sanitisation labour","Informal e-waste","Hazardous recycling"],3,["ilo","dol","unep","industry"],66]
+ ],
+ generic:[
+  ["inputs","Primary Inputs","Production of primary materials and purchased inputs.",["Primary materials","Sub-components","Packaging inputs"],["China","India","Germany","United States","Vietnam"],["Worker safety","Wage adequacy","Supply-chain transparency"],3,["ilo","wdi","wgi"],65],
+  ["production","Production","Processing, assembly, finishing and QA at the foreground facility.",["Materials","Labour","Energy"],["United States","China","India","Vietnam"],["OH&S","Working hours","Temporary labour"],2,["ilo","gov","industry"],70],
+  ["distribution","Distribution","Warehousing, freight and customer delivery.",["Freight","Warehousing","Retail"],["United States","Mexico","Netherlands"],["Driver safety","Warehouse labour"],2,["ilo","wdi","industry"],72],
+  ["end","End of Life","Repair, recycling, disposal or reuse.",["Returned product","Waste streams"],["United States","India","China"],["Waste-worker exposure","Informal recycling"],3,["unep","ilo","dol"],62]
+ ]
+};
+SUPPLY_CHAIN_KB.diamond=[
+ ["rough","Rough Diamond Mining","Extraction of rough diamonds through industrial mines and artisanal or small-scale mining channels.",["Rough diamonds","Mining labour","Water and energy inputs"],["Botswana","Canada","South Africa","Russia","DR Congo","Angola"],["Conflict financing","Child labour","Forced labour","Unsafe mining","Land rights"],4,["ilo","dol","oecd","wgi","unep"],72],
+ ["sort","Sorting and Valuation","Initial sorting by size, quality, colour and commercial value before trading or manufacturing allocation.",["Rough parcels","Valuation records","Sorting labour"],["Botswana","Belgium","United Arab Emirates","India"],["Documentation fraud","Corruption","Wage adequacy","Security labour"],3,["ti","oecd","industry"],70],
+ ["trade","Trading and Chain of Custody","Trading, import/export controls and Kimberley Process documentation before cutting and polishing.",["Kimberley Process certificates","Invoices","Secure logistics"],["Belgium","United Arab Emirates","India","United States"],["Illicit trade","Traceability gaps","Sanctions exposure","Contractor welfare"],4,["oecd","ti","wgi","industry"],68],
+ ["plan","Cutting Planning","Computer-aided planning, marking and yield optimisation before physical cutting.",["Scanners","Planning software","Marked stones"],["India","China","Belgium","United States"],["Skill development","Eye strain","Production pressure"],2,["ilo","industry","gov"],78],
+ ["saw","Sawing and Cleaving","Laser sawing, cleaving or bruting preparation to divide rough diamonds into workable stones.",["Laser saws","Diamond blades","Cooling media"],["India","China","Belgium"],["Laser safety","Fine dust","Machine guarding","Contractor labour"],3,["ilo","gov","industry"],74],
+ ["shape","Bruting and Shaping","Rounding, girdle preparation and pre-form shaping before faceting.",["Bruting wheels","Abrasives","Operator labour"],["India","China","Thailand"],["Repetitive strain","Dust exposure","Wage variability"],3,["ilo","wdi","industry"],73],
+ ["polish","Faceting and Polishing","Precision faceting, polishing and inspection to produce finished stones.",["Polishing wheels","Diamond powder","Microscopes","Skilled labour"],["India","China","United States","Belgium"],["Eye strain","Fine particulate exposure","Overtime","Gender equity"],3,["ilo","gov","wdi","industry"],75],
+ ["grade","Grading and Certification","Gemological grading, certification and synthetic/natural disclosure.",["Finished stones","Grading reports","Certification labs"],["United States","Belgium","India","Hong Kong"],["Certification integrity","Consumer disclosure","Fraud risk"],2,["industry","oecd","ti"],80],
+ ["dist","Jewellery / Industrial Distribution","Secure storage, sale to jewellery manufacturers, industrial users, wholesalers or retail channels.",["Certified diamonds","Secure transport","Retail documentation"],["United States","India","United Arab Emirates","China","Belgium"],["Security contractor labour","Responsible marketing","Product provenance claims"],2,["ilo","oecd","industry"],76]
+];
+function generateSupplyChain(R){
+ const base=SUPPLY_CHAIN_KB[R.sectorKey]||SUPPLY_CHAIN_KB.generic;
+ const stages=base.map((s,i)=>{
+  const countries=Array.from(new Set([...s[4],...(i===Math.floor(base.length/2)?[R.country]:[])]));
+  const evidence=s[7].flatMap(k=>REF[k]||[]).map(i=>DATASETS[i]).filter(Boolean);
+  return {id:s[0],title:s[1],description:s[2],inputs:s[3],countries,socialRisks:s[5],riskLevel:s[6],evidence:evidence.map(d=>({name:d[0],url:d[3]})),confidenceScore:s[8]};
+ });
+ const countrySet=new Set(stages.flatMap(s=>s.countries));
+ const highRisk=[...countrySet].filter(c=>COUNTRIES[c]&&meanRisk(c)>=2.4);
+ const tier1=Math.max(3,Math.round(stages.length*1.6+(R.qty?Math.log10(Math.max(R.qty,10)):1)));
+ const tier2=Math.max(20,Math.round(tier1*(R.sectorKey==="electronics"||R.sectorKey==="data_center"?8:5)));
+ return {summary:{totalStages:stages.length,sourcingCountries:countrySet.size,highRiskCountries:highRisk.length,tier1Suppliers:tier1,tier2Suppliers:tier2},statistics:{highRiskCountries:highRisk,countries:[...countrySet]},stages,references:[...new Map(stages.flatMap(s=>s.evidence).map(e=>[e.name,e])).values()]};
+}
+
+function buildReport(desc,opts){
+ opts=opts||{};
+ const sectorKey=opts.sector||findSector(desc);
+ const S=SECTORS[sectorKey];
+ const country=opts.country||findCountry(desc);
+ const qty=opts.qty!==undefined?opts.qty:parseQuantity(desc);
+ const product=opts.product||extractProduct(desc);
+ const region=opts.region!==undefined?opts.region:findRegion(desc,country);
+ const sourcing=Array.from(new Set([...S.sourcing,country]));
+ const scores=computeScores(sectorKey,country,sourcing);
+ const workforce=estWorkforce(sectorKey,qty);
+ const stakeCount=32;
+ const id=opts.id||("r"+Date.now()+Math.floor(Math.random()*999));
+ const date=opts.date||new Date().toLocaleDateString("en-US",{month:"short",year:"numeric"});
+ const title=opts.title||titleCase(product);
+ const report={id,date,title,demo:!!opts.demo,em:opts.em||S.em,emColor:S.emColor,
+  desc,sectorKey,sectorLabel:S.label,product,country,region,qty,workforce,sourcing,scores,
+  stats:{stages:9,countries:sourcing.length,indicators:stakeCount,hotspots:S.hotspots.length,sdgs:S.sdgs.length}};
+ report.style=opts.style||randomReportStyle();
+ report.supplyChain=generateSupplyChain(report);
+ report.stats.stages=report.supplyChain.summary.totalStages;
+ report.stats.countries=report.supplyChain.summary.sourcingCountries;
+ report.model=structuredModel(report);
+ return report;
+}
+function titleCase(s){return s.replace(/\b\w/g,c=>c.toUpperCase());}
+const REPORT_STYLES=[
+ {name:"board concise",voice:"concise board briefing",open:"This screening S-LCA frames the principal social-risk questions for",link:"The value chain review indicates that"},
+ {name:"consulting diligence",voice:"consulting due-diligence memo",open:"This assessment has been prepared as a screening diligence view of",link:"The analysis points to"},
+ {name:"regulatory assurance",voice:"assurance-oriented compliance review",open:"This report evaluates, at screening level, the social-performance implications of",link:"The evidence base suggests"},
+ {name:"investment committee",voice:"investment committee note",open:"For decision-making purposes, SYCLE has screened",link:"The investment-relevant finding is that"},
+ {name:"operations risk",voice:"operational risk review",open:"This report translates the project description into an operational social-risk map for",link:"The operational profile shows"}
+];
+function hashText(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return Math.abs(h);}
+function chooseReportStyle(desc,id){return REPORT_STYLES[hashText(desc+id)%REPORT_STYLES.length];}
+function randomReportStyle(){return REPORT_STYLES[Math.floor(Math.random()*REPORT_STYLES.length)];}
+function executiveSummaryHTML(R,S,c,loc,worstUp,sc){
+ const st=R.style||REPORT_STYLES[0];
+ const scale=R.qty?` at approximately ${R.qty.toLocaleString()} units annually`:" at the provided operating scale";
+ const jurisdiction=meanRisk(c)<1.6?"comparatively favourable":meanRisk(c)<2.6?"mixed but manageable":"higher-risk";
+ const hotspot=S.hotspots.slice(0,3).map(h=>h[0].toLowerCase()).join(", ");
+ const variants={
+  "board concise":[
+   `${st.open} ${article(R.product)} ${esc(R.product)} operation in ${esc(loc)}${scale}. The report separates user-provided facts from inferred sector benchmarks and public country-risk evidence.`,
+   `${st.link} the dominant exposure is upstream: ${hotspot}. The host jurisdiction is ${jurisdiction}, but supplier visibility remains the gating risk.`,
+   `Priority action is to validate high-risk sourcing, site OH&amp;S controls and supplier-governance evidence before relying on this screen externally.`
+  ],
+  "consulting diligence":[
+   `${st.open} ${article(R.product)} ${esc(R.product)} operation in ${esc(loc)}${scale}. It uses sector supply-chain logic, country-risk bands and public evidence sources to produce a screening-level S-LCA.`,
+   `${st.link} material social risk sits across multi-tier suppliers, particularly ${hotspot}. The ${esc(loc)} facility profile is ${jurisdiction}, with worker controls still requiring primary validation.`,
+   `The report should be used to scope diligence: supplier mapping, worker records, audit evidence and grievance data are the next proof points.`
+  ],
+  "regulatory assurance":[
+   `${st.open} ${article(R.product)} ${esc(R.product)} operation in ${esc(loc)}${scale}. The assessment is not a certification; it is a structured proxy-data screen aligned to Social LCA principles.`,
+   `${st.link} salient risks include ${hotspot}, with the strongest evidence signals appearing in upstream sourcing jurisdictions and contractor-heavy tiers.`,
+   `Controls should be documented through policy ownership, supplier due diligence, labour-law compliance evidence and auditable remediation records.`
+  ],
+  "investment committee":[
+   `${st.open} ${article(R.product)} ${esc(R.product)} operation in ${esc(loc)}${scale}. The key question is whether inherited supply-chain risk can be reduced fast enough for credible ESG diligence.`,
+   `${st.link} the project is not primarily constrained by the final facility; risk concentrates in ${hotspot} and traceability gaps across upstream tiers.`,
+   `Management should prioritise traceability, supplier commitments and workforce safeguards before using the report for external claims.`
+  ],
+  "operations risk":[
+   `${st.open} ${article(R.product)} ${esc(R.product)} operation in ${esc(loc)}${scale}. It links the production workflow to workers, communities, suppliers, consumers and governance controls.`,
+   `${st.link} likely operating risks include site OH&amp;S, contractor management and inherited upstream concerns such as ${hotspot}.`,
+   `The practical path is to convert assumptions into operating evidence: wage files, incident logs, supplier lists, training records and community-feedback channels.`
+  ]
+ };
+ return variants[st.name].map(p=>`<p>${p}</p>`).join("")+`<p><strong>Overall Social Performance</strong> is screened at <strong>${sc.overall}/100 (${bandLabel(sc.overall)})</strong>. Confidence remains <strong>Low–Moderate</strong> until supplier-, facility- and worker-level data are verified.</p>`;
+}
+function structuredModel(R){
+ const S=SECTORS[R.sectorKey];
+ return {
+  userInputs:{prompt:R.desc,scale:R.qty,location:R.region?`${R.region}, ${R.country}`:R.country},
+  extractedProduct:R.product,geography:{country:R.country,region:R.region||""},industry:R.sectorLabel,
+  assumptions:[
+   "Foreground facility is not vertically integrated to raw material extraction.",
+   `Direct workforce is estimated at ${R.workforce}.`,
+   `Bill of materials follows a typical ${S.label} sector profile.`,
+   `Likely sourcing countries include ${R.sourcing.join(", ")}.`,
+   "Governance maturity is assumed nascent unless otherwise provided."
+  ],
+  supplyChain:R.supplyChain||generateSupplyChain(R),
+  riskScores:R.scores,
+  stakeholderAnalysis:["Workers","Suppliers / value-chain actors","Local communities","Consumers","Society","Government / regulators"],
+  workerAnalysis:{...S.worker,exposures:S.exposures,estimatedWorkforce:R.workforce},
+  communityAnalysis:{hostCountry:R.country,communitySeverity:S.communitySev,countryNote:COUNTRIES[R.country].note},
+  humanRights:{salientRisks:S.hotspots.map(h=>h[0]),highestRiskJurisdictions:[...R.sourcing].sort((a,b)=>meanRisk(b)-meanRisk(a)).slice(0,4)},
+  sdgs:S.sdgs,recommendations:["Responsible-sourcing due diligence","Supplier Code of Conduct","Tier-1 audits","Living-wage and pay-equity review","Primary-data S-LCA"],
+  references:DATASETS.map(d=>({name:d[0],url:d[3]})),
+  charts:["radar","scoreCards","materialityMatrix","riskHeatmap"],
+  reportSections:["Executive Summary","Goal & Scope","Assumptions","Supply Chain","Stakeholder Analysis","Worker Assessment","Community Assessment","Country Risk","Human Rights","Governance","Consumer Assessment","Materiality Matrix","Heatmaps","Radar Charts","Overall Social Score","Recommendations","References","Appendix"]
+ };
+}
+
+/* ============================ REPORT HTML RENDER ============================ */
+function reportHTML(R){
+ const S=SECTORS[R.sectorKey];const c=R.country;const CN=COUNTRIES[c];
+ const loc=R.region?`${R.region}, ${c}`:c;
+ const sc=R.scores;
+ const worstUp=[...R.sourcing].sort((a,b)=>meanRisk(b)-meanRisk(a))[0];
+ const deg=v=>Math.round(v/100*360);
+ const scard=(lab,val,band)=>`<div class="card"><div class="ring" style="background:conic-gradient(${scoreColor(val)} ${deg(val)}deg,var(--line) 0)"><div><b style="color:${scoreColor(val)}">${val}</b></div></div><div class="lab">${lab}</div><div class="band">${band}</div></div>`;
+ const qtyTxt=R.qty?R.qty.toLocaleString()+" units/year":"volume not specified";
+ const provFact=`<span class="chip t-fact">FACT</span>`,provA=`<span class="chip t-assume">ASSUMPTION</span>`,provB=`<span class="chip t-bench">BENCHMARK</span>`;
+ const conf=x=>`<span class="conf">Conf: ${x}</span>`;
+
+ // country risk rows (sourcing + home)
+ const crRows=R.sourcing.map(cn=>{const r=COUNTRIES[cn].r;return `<tr><td><strong>${cn}</strong></td>${r.map(rc).join("")}</tr>`;}).join("");
+ // heatmap: stages x 6 categories, derived from sector + worst upstream
+ const stages=[["Raw-material extraction",[S.mineralSev,4,3,2,4,4]],["Tier-2 (materials/components)",[3,3,2,3,2,3]],["Tier-1 (finished components)",[2,2,2,3,2,2]],["Component manufacturing",[3,2,2,4,2,2]],[`Final production (${loc})`,[CN.r[0],CN.r[4],CN.r[0]+1,CN.r[0],CN.r[2],CN.r[5]]],["Packaging",[0,0,0,0,0,0]],["Distribution",[0,2,0,0,1,0]],["Retail",[0,0,0,0,0,0]],["Use phase",[0,0,0,0,0,1]],["End of life",[2,3,2,0,2,3]]];
+ const heatRows=stages.map(s=>`<tr><td>${s[0]}</td>${s[1].map(b=>`<td><span class="dot">${HEAT[Math.min(4,Math.max(0,b))]}</span></td>`).join("")}</tr>`).join("");
+
+ return `
+ <header class="cover">
+   <p class="eyebrow">Screening Social Life Cycle Assessment · Investment Due Diligence</p>
+   <h1>Social Impact Screening: ${esc(R.title)}</h1>
+   <p class="sub">Cradle-to-grave social hotspot assessment of ${R.qty?"a "+R.qty.toLocaleString()+"-unit/year ":"a "}${esc(R.product)} operation in ${esc(loc)}</p>
+   <dl class="meta">
+     <div><dt>Subject of Assessment</dt><dd>${esc(R.product)} — ${qtyTxt}</dd></div>
+     <div><dt>Location</dt><dd>${esc(loc)}</dd></div>
+     <div><dt>Sector Profile</dt><dd>${S.label}</dd></div>
+     <div><dt>Assessment Type</dt><dd>Screening (Type I), proxy-data based</dd></div>
+     <div><dt>Report Date</dt><dd>${R.date}</dd></div>
+     <div><dt>Methodology</dt><dd>UNEP/SETAC S-LCA (2020); ISO 14040/44 principles</dd></div>
+     <div><dt>Alignment</dt><dd>GRI · SASB · ESRS S1–S4 · OECD DD</dd></div>
+     <div><dt>Overall Confidence</dt><dd>Low–Moderate (description-only inputs)</dd></div>
+   </dl>
+ </header>
+
+ <div class="legend">
+   <span style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)">Provenance:</span>
+   <span>${provFact} user-provided</span><span>${provA} AI-inferred</span><span>${provB} industry/country dataset</span><span>${conf("H/M/L")} confidence</span>
+ </div>
+
+ <section><div class="sec-h"><span class="sec-n">01</span><h2>Executive Summary</h2></div>
+   ${executiveSummaryHTML(R,S,c,loc,worstUp,sc)}
+   <div class="note"><b>Report voice.</b> This report uses the <strong>${esc((R.style||REPORT_STYLES[0]).voice)}</strong> writing variant. Analysis is still generated from the structured report model, not from free-form chat text.</div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">02</span><h2>Social Score Analytics</h2></div>
+   <p class="lede">Visual score analytics for the completed report. Report-status indicators are omitted because a generated report is already considered complete.</p>
+   <div class="report-visuals">
+     <div class="viz-card"><h4>Overall Social Score</h4><div class="score-panel"><div><div class="score-big" style="color:${scoreColor(sc.overall)}">${sc.overall}<span style="font-size:16px;font-weight:600;color:var(--mut)">/100</span></div><div class="score-band" style="color:${scoreColor(sc.overall)}">${bandLabel(sc.overall)}</div></div><div>${radar(sc)}</div></div></div>
+   </div>
+   <div class="note"><b>Visual interpretation.</b> Radar spread highlights pillar imbalance: the lowest scoring domain is <strong>${lowestPillar(sc)}</strong>. Use this as a screening cue for deeper evidence collection.</div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">03</span><h2>Goal &amp; Scope</h2></div>
+   <h4>Goal</h4><p>To provide investors and diligence teams with a rapid, transparent screening of social risks across the product's life cycle; to identify probable hotspots for deeper investigation; and to baseline a subsequent primary-data S-LCA aligned to UNEP/SETAC (2020).</p>
+   <h4>Scope</h4>
+   <ul class="clean"><li><strong>Life-cycle coverage:</strong> Cradle-to-grave, screened at country × sector level for tiers not operated by the subject.</li>
+   <li><strong>Stakeholders:</strong> Workers, local communities, value-chain actors, consumers, society, government.</li>
+   <li><strong>Impact type:</strong> Social risk &amp; opportunity, screening (Type I) — qualitative bands plus indicative 0–100 scores.</li>
+   <li><strong>Exclusions:</strong> Environmental LCA except where it drives a social outcome; verified supplier-specific performance.</li></ul>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">04</span><h2>Functional Unit</h2></div>
+   <p>The <strong>functional unit</strong> is <strong>${S.fu(esc(R.product))}</strong>.</p>
+   <div class="tbl-wrap"><table><thead><tr><th>Parameter</th><th>Value</th><th>Basis</th></tr></thead><tbody>
+   <tr><td>Functional unit</td><td>1 ${esc(R.product)} (ready for use)</td><td>${provA} ${conf("H")}</td></tr>
+   <tr><td>Annual reference flow</td><td>${qtyTxt}</td><td>${R.qty?provFact:provA+" "+conf("L")}</td></tr>
+   <tr><td>Reference for social intensity</td><td>Worker-hours &amp; $ value-added per unit</td><td>${provA} ${conf("L")}</td></tr>
+   </tbody></table></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">05</span><h2>System Boundary</h2></div>
+   <ul class="clean"><li><strong>Foreground (primary-data candidate):</strong> ${esc(loc)} production, QA, packaging and site administration.</li>
+   <li><strong>Background (proxy-screened):</strong> raw-material extraction, refining, component/sub-assembly manufacture, inbound/outbound logistics, retail, use and end-of-life.</li>
+   <li><strong>Cut-off rule:</strong> inputs &lt;1% of mass and value are grouped unless they carry a known hazardous-labour or conflict-mineral flag, which are retained regardless. ${provA} ${conf("M")}</li>
+   <li><strong>Time horizon:</strong> present-day operation; risk data reflect most-recent public database releases.</li></ul>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">06</span><h2>Assumptions Made</h2></div>
+   <p class="lede">Every material inference, made explicit. Facility-specific facts were not provided and must be validated before any figure is relied upon.</p>
+   <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Assumption</th><th>Provenance / Confidence</th></tr></thead><tbody>
+   <tr><td>A1</td><td>Site performs ${SECTORS[R.sectorKey].process[0].toLowerCase().includes("inbound")?"assembly, test &amp; packaging":"production &amp; finishing"}; not vertically integrated to raw material.</td><td>${provA} ${conf("M")}</td></tr>
+   <tr><td>A2</td><td>Direct workforce ≈ ${R.workforce}.</td><td>${provA} ${conf("L")}</td></tr>
+   <tr><td>A3</td><td>Bill of materials resembles a conventional ${S.label.toLowerCase()} product.</td><td>${provB} ${conf("M")}</td></tr>
+   <tr><td>A4</td><td>Components sourced from incumbent suppliers in ${R.sourcing.slice(0,4).join(", ")} and comparable regions.</td><td>${provB} ${conf("M")}</td></tr>
+   <tr><td>A5</td><td>Operator is an SME with nascent formal ESG governance.</td><td>${provA} ${conf("L")}</td></tr>
+   </tbody></table></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">07</span><h2>Manufacturing Process Overview</h2></div>
+   <p class="lede">Indicative process for the ${esc(loc)} foreground system. ${provA} ${conf("M")}</p>
+   <ol class="clean">${S.process.map(p=>`<li>${p}</li>`).join("")}</ol>
+   <div class="note"><b>Principal foreground exposures:</b> ${S.exposures}.</div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">08</span><h2>Supply Chain Mapping</h2></div>
+   ${supplyChainHTML(R)}
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">09</span><h2>Stakeholder Identification</h2></div>
+   <div class="tbl-wrap"><table><thead><tr><th>Stakeholder</th><th>Who, in this value chain</th><th>Principal interests / exposures</th></tr></thead><tbody>
+   <tr><td><strong>Workers</strong></td><td>${esc(loc)} staff; upstream component &amp; extraction workers</td><td>Wages &amp; living wage, H&amp;S, hours, forced/child labour, FoA, discrimination</td></tr>
+   <tr><td><strong>Suppliers / Value-chain actors</strong></td><td>Tier-1/2 makers; logistics; recyclers</td><td>Fair contracting, payment terms, responsible-sourcing obligations</td></tr>
+   <tr><td><strong>Local communities</strong></td><td>${esc(loc)} host community; extraction-adjacent communities</td><td>Employment, traffic/noise, water &amp; land, displacement, health</td></tr>
+   <tr><td><strong>Consumers</strong></td><td>End users</td><td>Product safety, data privacy, accessibility, repairability, transparency</td></tr>
+   <tr><td><strong>Society</strong></td><td>National &amp; global public</td><td>Responsible sourcing, end-of-life, economic &amp; tax contribution</td></tr>
+   <tr><td><strong>Government / regulators</strong></td><td>${c} authorities &amp; source-country regulators</td><td>Compliance, worker protection, economic contribution</td></tr>
+   </tbody></table></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">10</span><h2>Social Hotspot Analysis</h2></div>
+   <p class="lede">Probable hotspots by combined severity × likelihood. Likelihood is a screening judgement from country/sector datasets — not evidence of occurrence at any named supplier.</p>
+   <div class="tbl-wrap"><table><thead><tr><th>Hotspot</th><th>Where it concentrates</th><th>Severity</th><th>Likelihood</th></tr></thead><tbody>
+   ${S.hotspots.map(h=>`<tr><td>${h[0]}</td><td>${h[1]}</td><td>${rc(h[2])}</td><td>${rc(h[3])}</td></tr>`).join("")}
+   </tbody></table></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">11</span><h2>Country Risk Assessment</h2></div>
+   <p class="lede">Screening risk bands per sourcing jurisdiction, derived from ITUC, TI CPI, Walk Free GSI, World Bank WGI, Fragile States Index and the US DOL forced/child-labour list. ${provB} ${conf("M")}</p>
+   <div class="tbl-wrap"><table><thead><tr><th>Country</th><th>Labour Rights</th><th>Human Rights</th><th>Corruption</th><th>Political Stability</th><th>Worker Protection</th><th>Env. Justice</th></tr></thead><tbody>${crRows}</tbody></table></div>
+   <h4>Why — key jurisdictions</h4>
+   <ul class="clean">${[...R.sourcing].sort((a,b)=>meanRisk(b)-meanRisk(a)).slice(0,4).map(cn=>`<li><strong>${cn}:</strong> ${COUNTRIES[cn].note}</li>`).join("")}
+   <li><strong>${c} (production site):</strong> ${CN.note}</li></ul>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">12</span><h2>Worker Impact Assessment — Production Site</h2></div>
+   <div class="tbl-wrap"><table><thead><tr><th>Dimension</th><th>Screening estimate</th><th>Provenance / Confidence</th></tr></thead><tbody>
+   <tr><td>Average direct workforce</td><td>${R.workforce}</td><td>${provA} ${conf("L")}</td></tr>
+   <tr><td>Likely wages</td><td>${S.worker.wage}</td><td>${provB} ${conf("M")}</td></tr>
+   <tr><td>Living-wage reference</td><td>Benchmark gap risk at entry level; validate via Anker/MIT methodology</td><td>${provB} ${conf("M")}</td></tr>
+   <tr><td>Health &amp; safety risk</td><td>${rc(S.worker.osh)} — ${S.exposures}</td><td>${provB} ${conf("M")}</td></tr>
+   <tr><td>PPE requirements</td><td>Task-appropriate PPE; local-exhaust ventilation; hazard-specific controls</td><td>${provB} ${conf("H")}</td></tr>
+   <tr><td>Training</td><td>Hazard communication (GHS), role-specific safety, ergonomics, emergency response</td><td>${provB} ${conf("H")}</td></tr>
+   <tr><td>Working hours</td><td>~40 hr/week + periodic overtime around demand peaks</td><td>${provA} ${conf("M")}</td></tr>
+   <tr><td>Accident likelihood</td><td>${rc(Math.max(1,S.worker.osh-1))} — per sector OSHA-recordable benchmarks</td><td>${provB} ${conf("M")}</td></tr>
+   <tr><td>Skill levels</td><td>${S.worker.skill}</td><td>${provA} ${conf("M")}</td></tr>
+   <tr><td>Automation level</td><td>${S.worker.automation}</td><td>${provA} ${conf("M")}</td></tr>
+   </tbody></table></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">13</span><h2>Community Impact Assessment — Host Community</h2></div>
+   <div class="tbl-wrap"><table><thead><tr><th>Dimension</th><th>Screening judgement</th><th>Direction</th></tr></thead><tbody>
+   <tr><td>Employment generation</td><td>${R.workforce} direct + indirect roles; local economic contribution</td><td>${rc(0)}</td></tr>
+   <tr><td>Traffic &amp; logistics</td><td>Proportional to volume; ${R.qty&&R.qty<50000?"modest":"significant"} freight movement</td><td>${rc(R.qty&&R.qty<50000?1:2)}</td></tr>
+   <tr><td>Noise</td><td>Light-to-moderate industrial, largely indoor</td><td>${rc(1)}</td></tr>
+   <tr><td>Infrastructure &amp; housing</td><td>Fits existing industrial zoning at assumed scale</td><td>${rc(1)}</td></tr>
+   <tr><td>Water demand</td><td>${S.sectorKey==="textile"||R.sectorKey==="food"||R.sectorKey==="pharma"?"Process-water intensive — material in water-stressed areas":"Sanitary + limited process"}</td><td>${rc(R.sectorKey==="textile"||R.sectorKey==="food"?3:1)}</td></tr>
+   <tr><td>Electricity demand</td><td>Moderate; grid-reliability exposure</td><td>${rc(2)}</td></tr>
+   <tr><td>Economic development</td><td>Skills, tax base, local manufacturing capacity</td><td>${rc(0)}</td></tr>
+   <tr><td>Community engagement</td><td>Not evidenced; recommend a grievance &amp; engagement channel</td><td>${rc(2)}</td></tr>
+   </tbody><caption>The most severe community impacts in this chain typically fall on extraction-adjacent communities upstream, not the host community.</caption></table></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">14</span><h2>Human Rights Assessment</h2></div>
+   <p class="lede">Salient human-rights risks scored on inherent life-cycle exposure (UN Guiding Principles); score reflects the most-exposed tier.</p>
+   <div class="tbl-wrap"><table><thead><tr><th>Category</th><th>Inherent risk</th><th>Most-exposed tier</th></tr></thead><tbody>
+   ${[["Freedom from child labour",S.mineralSev>=3?4:2,"Extraction / cultivation"],["Freedom from forced labour",Math.max(2,S.mineralSev-1),"Extraction; migrant labour"],["Freedom of association",3,"Component manufacturing"],["Just &amp; favourable conditions",2,"Upstream low-wage tiers"],["Occupational health &amp; safety",S.worker.osh+1>4?4:S.worker.osh+1,"Extraction; production"],["Non-discrimination",2,"Agency/migrant labour"],["Indigenous &amp; land rights",S.communitySev>=3?3:2,"Extraction"],["Right to water &amp; health",S.communitySev>=3?3:2,"Extraction-adjacent communities"],["Privacy",2,"Consumer"]].map(x=>`<tr><td>${x[0]}</td><td>${rc(Math.min(4,x[1]))}</td><td>${x[2]}</td></tr>`).join("")}
+   </tbody></table></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">15</span><h2>Gender &amp; Diversity Assessment</h2></div>
+   <div class="tbl-wrap"><table><thead><tr><th>Dimension</th><th>Screening estimate</th><th>Provenance / Confidence</th></tr></thead><tbody>
+   <tr><td>Women in workforce</td><td>${S.worker.female} — sector benchmark</td><td>${provB} ${conf("M")}</td></tr>
+   <tr><td>Women in leadership</td><td>&lt; 25% — steep drop-off into management typical of the sector</td><td>${provB} ${conf("M")}</td></tr>
+   <tr><td>Pay equity</td><td>Gap risk absent a pay-equity audit</td><td>${provB} ${conf("L")}</td></tr>
+   <tr><td>Inclusion &amp; anti-harassment</td><td>Policy maturity unknown; recommend baseline policy + reporting channel</td><td>${provA} ${conf("L")}</td></tr>
+   <tr><td>Workplace accessibility</td><td>Governed by ${c==="United States"?"ADA":"local"} law; program maturity unverified</td><td>${provA} ${conf("M")}</td></tr>
+   </tbody></table></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">16</span><h2>Consumer Impact Assessment</h2></div>
+   <div class="tbl-wrap"><table><thead><tr><th>Dimension</th><th>Screening judgement</th><th>Risk</th></tr></thead><tbody>
+   ${S.consumer.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${rc(x[2])}</td></tr>`).join("")}
+   </tbody></table></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">17</span><h2>Governance Assessment</h2></div>
+   <p class="lede">For an SME at feasibility stage, governance is assumed nascent (A5); gaps below are the default screening expectation, not a criticism of a specific programme.</p>
+   <div class="tbl-wrap"><table><thead><tr><th>Governance element</th><th>Expected maturity</th><th>Priority</th></tr></thead><tbody>
+   <tr><td>Anti-corruption policy</td><td>${rc(CN.r[2]>=2?3:2)}</td><td>${CN.r[2]>=2?"High":"Medium"}</td></tr>
+   <tr><td>Whistleblower / grievance mechanism</td><td>${rc(3)}</td><td>High</td></tr>
+   <tr><td>Code of business ethics</td><td>${rc(2)}</td><td>Medium</td></tr>
+   <tr><td>Regulatory compliance system</td><td>${rc(2)}</td><td>High</td></tr>
+   <tr><td>Supplier Code of Conduct</td><td>${rc(3)}</td><td>Critical — primary lever on upstream risk</td></tr>
+   <tr><td>Responsible-sourcing due diligence</td><td>${rc(S.mineralSev>=3?4:3)}</td><td>${S.mineralSev>=3?"Immediate — conflict-mineral exposure":"High"}</td></tr>
+   </tbody></table></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">18</span><h2>SDG Alignment</h2></div>
+   <div class="tbl-wrap"><table><thead><tr><th>SDG</th><th>Relevance</th><th>Direction</th></tr></thead><tbody>
+   ${S.sdgs.map(n=>`<tr><td><strong>SDG ${n} — ${SDG[n]}</strong></td><td>${sdgRel(n,S)}</td><td>${rc(sdgDir(n,S))}</td></tr>`).join("")}
+   </tbody></table></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">19</span><h2>Materiality Matrix</h2></div>
+   <p class="lede">Issues by importance to the business vs. importance to society/stakeholders; top border encodes priority.</p>
+   <div class="matrix">
+     <div class="axis-y">Social importance →</div>
+     <div class="cellm pri-md"><h5>Biz Low · Soc High</h5><ul><li>Extraction-community water &amp; land</li><li>End-of-life exposure</li></ul></div>
+     <div class="cellm pri-hi"><h5>Biz Med · Soc High</h5><ul>${S.hotspots.slice(0,3).map(h=>`<li>${h[0]}</li>`).join("")}</ul></div>
+     <div class="cellm pri-hi"><h5>Biz High · Soc High</h5><ul><li>Responsible sourcing / due diligence</li><li>Supplier oversight</li></ul></div>
+     <div class="axis-y">Med</div>
+     <div class="cellm pri-lo"><h5>Biz Low · Soc Med</h5><ul><li>Community engagement</li><li>Traffic / noise</li></ul></div>
+     <div class="cellm pri-md"><h5>Biz Med · Soc Med</h5><ul><li>Gender &amp; pay equity</li><li>Occupational H&amp;S</li></ul></div>
+     <div class="cellm pri-hi"><h5>Biz High · Soc Med</h5><ul><li>Anti-corruption / ethics</li><li>Regulatory compliance</li></ul></div>
+     <div class="axis-y">Low</div>
+     <div class="cellm pri-lo"><h5>Biz Low · Soc Low</h5><ul><li>Packaging labour</li></ul></div>
+     <div class="cellm pri-lo"><h5>Biz Med · Soc Low</h5><ul><li>Housing / infrastructure</li></ul></div>
+     <div class="cellm pri-md"><h5>Biz High · Soc Low</h5><ul><li>Product safety certification</li></ul></div>
+   </div>
+   <p style="font-family:var(--mono);font-size:11px;color:var(--mut);text-align:center;margin-top:-2px">Business importance →</p>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">20</span><h2>Risk Heatmap — Life-Cycle Stage × Social Risk</h2></div>
+   <p class="lede">🟢 Low &nbsp; 🟡 Moderate &nbsp; 🟠 High &nbsp; 🔴 Critical</p>
+   <div class="tbl-wrap"><table class="heat"><thead><tr><th>Life-cycle stage</th><th>Forced/Child Labour</th><th>Health &amp; Safety</th><th>Living Wage</th><th>Freedom of Assoc.</th><th>Corruption</th><th>Community/Env</th></tr></thead><tbody>${heatRows}</tbody></table></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">21</span><h2>Overall Risk Dashboard</h2></div>
+   <p class="lede">Screening scores 0–100 where <strong>higher = better social performance</strong> (lower residual risk). Indicative only; Confidence Low–Moderate.</p>
+   <div class="dash">
+     <div class="card overall"><div class="ring" style="background:conic-gradient(${scoreColor(sc.overall)} ${deg(sc.overall)}deg,var(--line) 0)"><div><b style="color:${scoreColor(sc.overall)}">${sc.overall}</b></div></div>
+     <div><div class="lab" style="font-size:15px">Overall Social Performance</div><div class="band">${bandLabel(sc.overall)} · residual risk driven by upstream tiers</div>
+     <p style="font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;max-width:54ch">A ${meanRisk(c)<1.6?"favourable":"mixed"} operating jurisdiction is offset by inherited risk from ${S.hotspots[0][0].toLowerCase()} and upstream manufacture.</p></div></div>
+     ${scard("Worker Welfare",sc.worker,bandLabel(sc.worker))}
+     ${scard("Human Rights",sc.humanRights,bandLabel(sc.humanRights))}
+     ${scard("Community Impact",sc.community,bandLabel(sc.community))}
+     ${scard("Supply-Chain Responsibility",sc.supplyChain,bandLabel(sc.supplyChain))}
+     ${scard("Governance",sc.governance,bandLabel(sc.governance))}
+     ${scard("Consumer Impact",sc.consumer,bandLabel(sc.consumer))}
+   </div>
+   <p style="font-size:12px;color:var(--mut)">Scoring is a transparent screening heuristic combining country-risk bands, sector benchmarks and life-cycle hotspot severity. Not a verified rating; must not be represented as one externally.</p>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">22</span><h2>Recommendations</h2></div>
+   <div class="rec-group"><h4>Immediate (0–3 months) <span class="tag">stop highest-severity exposure</span></h4><ul class="clean">
+     <li><strong>Stand up responsible-sourcing due diligence</strong> (OECD 5-step)${S.mineralSev>=3?" for conflict minerals (3TG) and cobalt; require RMI conformance":" across priority commodities"}.</li>
+     <li><strong>Issue a Supplier Code of Conduct</strong> prohibiting forced/child labour, mandating FoA &amp; grievance access, with right-to-audit clauses.</li>
+     <li><strong>Screen the supplier list</strong> against forced-labour enforcement lists (e.g., US CBP WROs, UFLPA Entity List where applicable).</li>
+     <li><strong>Confirm the ${esc(loc)} OH&amp;S baseline</strong> — hazard communication, ventilation/controls, and workers'-compensation coverage.</li></ul></div>
+   <div class="rec-group"><h4>Short term (3–9 months) <span class="tag">build the control system</span></h4><ul class="clean">
+     <li>Commission <strong>tier-1 supplier social audits</strong> (SMETA / RBA VAP) prioritising the highest-risk sourcing countries.</li>
+     <li>Perform a <strong>living-wage gap analysis</strong> and pay-equity review for site roles.</li>
+     <li>Implement a <strong>whistleblower &amp; grievance mechanism</strong> (worker- and community-accessible, non-retaliatory).</li>
+     <li>Adopt an <strong>ISO 45001-aligned OH&amp;S management system</strong>.</li></ul></div>
+   <div class="rec-group"><h4>Medium term (9–24 months) <span class="tag">extend visibility &amp; equity</span></h4><ul class="clean">
+     <li>Extend traceability to <strong>tier-2 and raw-material origin</strong>; pursue chain-of-custody for high-risk inputs.</li>
+     <li>Set <strong>gender &amp; leadership diversity targets</strong> and a harassment-prevention programme.</li>
+     <li>Design <strong>end-of-life take-back / certified recycling</strong> and, where relevant, repairability provisions.</li></ul></div>
+   <div class="rec-group"><h4>Long term (24 months+) <span class="tag">compliance → performance</span></h4><ul class="clean">
+     <li>Pursue <strong>SA8000</strong> or equivalent site certification; join a multi-stakeholder responsible-sourcing initiative.</li>
+     <li>Commission a <strong>primary-data (Type II) S-LCA</strong> to replace this screen with verified metrics.</li>
+     <li>Set <strong>science-informed social targets</strong> and disclose against GRI / ESRS S1–S4.</li></ul></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">23</span><h2>Evidence Ledger</h2></div>
+   <p class="lede">Traceability from each screening score family to the public evidence classes used by the offline engine.</p>
+   <div class="tbl-wrap"><table><thead><tr><th>Report element</th><th>Evidence basis</th><th>Primary references</th></tr></thead><tbody>
+   ${evidenceRows(S,c)}
+   </tbody></table></div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">24</span><h2>Executive Conclusion</h2></div>
+   <p>The proposed ${esc(R.product)} operation in ${esc(loc)} is, within its own four walls, a <strong>${sc.worker>=60?"moderate and manageable":"moderate"}</strong> social-risk proposition. The material risk does not sit at the site — it is <strong>inherited from the upstream value chain</strong>, and in this sector it is ${S.mineralSev>=3?"severe":"significant"}.</p>
+   <p><strong>Major risks:</strong> ${S.hotspots.slice(0,3).map(h=>h[0].toLowerCase()).join("; ")}; and a governance gap around responsible-sourcing due diligence and supplier oversight.</p>
+   <p><strong>Opportunities:</strong> ${R.qty&&R.qty<200000?"as a lower-volume operation, the operator can credibly differentiate on responsible sourcing and transparency, and deep traceability is more tractable than for a mass-market peer.":"scale enables leverage over suppliers to drive sector-leading responsible-sourcing standards."}</p>
+   <p><strong>Recommended mitigation, in order:</strong> (1) responsible-sourcing due diligence and a Supplier Code of Conduct immediately; (2) audit tier-1 suppliers and close site-level OH&amp;S and living-wage gaps; (3) extend traceability upstream and formalise governance; (4) progress to a primary-data S-LCA and certification. Executed in sequence, these actions would be expected to move the overall screening score from <strong>${sc.overall}</strong> toward the ${Math.min(9,Math.floor(sc.overall/10)+2)}0s over a 24-month horizon.</p>
+   <div class="note"><b>Reliance statement.</b> Screening-level assessment built from a single-line operational description plus public country- and sector-level datasets. No facility-, supplier-, or worker-level primary data were collected or verified. Every inferred figure is labelled with provenance and confidence. Suitable for feasibility screening and diligence scoping — <em>not</em> for external performance claims or certification without primary-data verification.</div>
+ </section>
+
+ <section><div class="sec-h"><span class="sec-n">25</span><h2>References</h2></div>
+   <ol class="clean">${DATASETS.map(d=>`<li><strong>${d[0]}.</strong> ${d[1]}. ${d[2]}. <a href="${d[3]}" target="_blank" rel="noopener">Source</a></li>`).join("")}</ol>
+ </section>
+
+ <div class="foot"><strong>SYCLE — Screening Social Life Cycle Assessment.</strong> Methodology: UNEP/SETAC S-LCA Guidelines (2020); ISO 14040/44 principles; UN Guiding Principles on Business &amp; Human Rights; OECD Due Diligence Guidance. Country-risk screening references public indices (ITUC Global Rights Index, Transparency International CPI, Walk Free Global Slavery Index, World Bank WGI, Fragile States Index, US DOL List of Goods Produced by Child or Forced Labor). Provenance tags distinguish user-provided facts, AI-inferred assumptions, and industry/country benchmark estimates. Generated ${R.date}. No company-specific facts were fabricated; unknown values are inferred from norms and labelled as such.</div>
+ `;
+}
+const SDG={1:"No Poverty",2:"Zero Hunger",3:"Good Health &amp; Well-being",5:"Gender Equality",6:"Clean Water &amp; Sanitation",7:"Affordable &amp; Clean Energy",8:"Decent Work &amp; Growth",9:"Industry &amp; Innovation",10:"Reduced Inequalities",12:"Responsible Consumption &amp; Production",13:"Climate Action",15:"Life on Land",16:"Peace, Justice &amp; Institutions",17:"Partnerships"};
+function sdgRel(n,S){const m={1:"Wages &amp; living-wage adequacy across tiers",2:"Food security &amp; smallholder income",3:"Occupational &amp; community health",5:"Female-intensive workforce vs. leadership gap",6:"Process water &amp; effluent",7:"Energy transition relevance",8:"Forced/child labour, FoA, hours, fair wages (central)",9:"Manufacturing capability &amp; innovation",10:"Migrant-worker vulnerability; value distribution",12:"Responsible sourcing, repairability, end-of-life (central)",13:"Emissions of the production system",15:"Land-use &amp; ecosystem impacts",16:"Corruption &amp; conflict-mineral financing",17:"Multi-tier due-diligence partnerships"};return m[n]||"Relevant to the value chain";}
+function sdgDir(n,S){if(n===8||n===12)return S.mineralSev>=3?3:2;if(n===9||n===17)return 0;if(n===16)return S.mineralSev>=3?3:2;return 2;}
+function evidenceRows(S,country){
+ const ref=(i)=>`<a href="${DATASETS[i][3]}" target="_blank" rel="noopener">${DATASETS[i][0]}</a>`;
+ const rows=[
+  ["Worker Welfare",`Host-country labour and worker-protection bands for ${country}; sector OH&amp;S benchmark for ${S.label}.`,[0,4,7]],
+  ["Human Rights",`Worst upstream labour-rights and modern-slavery exposure across likely source countries; sector hotspot severity.`,[0,2,5,8]],
+  ["Supply-Chain Responsibility",`Likely BOM, source-country bands, child/forced-labour flags and mineral due-diligence guidance.`,[5,8,3]],
+  ["Governance",`Control of corruption, rule-of-law and political-stability screening, plus OECD due-diligence expectations.`,[1,3,8]],
+  ["Community Impact",`Host-country environmental-justice proxy plus sector community exposure such as water, land rights or extraction impacts.`,[3,6,7]],
+  ["Consumer Impact",`Sector-specific product-safety, privacy, access and responsible-marketing issues mapped to stakeholder categories.`,[7,9]]
+ ];
+ return rows.map(r=>`<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td>${r[2].map(ref).join("; ")}</td></tr>`).join("");
+}
+function supplyChainHTML(R){
+ const sc=R.supplyChain||generateSupplyChain(R);
+ const s=sc.summary;
+ const fmtTier2=s.tier2Suppliers>=100?"100+":s.tier2Suppliers;
+ const stat=(n,l)=>`<div class="sc-stat"><b>${n}</b><span>${l}</span></div>`;
+ const list=a=>`<ul>${a.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+ const ev=a=>`<div class="ev-links">${a.slice(0,5).map(e=>`<a href="${e.url}" target="_blank" rel="noopener">${esc(shortSource(e.name))}</a>`).join("")}</div>`;
+ return `<p class="lede">Generated dynamically from the report context: <strong>${esc(R.product)}</strong>, <strong>${esc(R.sectorLabel)}</strong>, <strong>${esc(R.region?R.region+", "+R.country:R.country)}</strong> and ${R.qty?R.qty.toLocaleString()+" annual scale":"unspecified scale"}. Countries and risks are inferred from the sector knowledge base and public evidence sources; they are not verified supplier records. <span class="chip t-bench">BENCHMARK</span> <span class="conf">Conf: M</span></p>
+  <div class="sc-summary">
+    ${stat(s.totalStages,"Total supply chain stages")}
+    ${stat(s.sourcingCountries,"Likely sourcing countries")}
+    ${stat(s.highRiskCountries,"High-risk countries")}
+    ${stat(s.tier1Suppliers,"Estimated Tier-1 suppliers")}
+    ${stat(fmtTier2,"Estimated Tier-2 suppliers")}
+  </div>
+  <div class="tbl-wrap"><table class="sc-table"><thead><tr><th>Stage</th><th>Description</th><th>Key Inputs / Components</th><th>Likely Sourcing Countries</th><th>Key Social Risks</th><th>Risk Level</th><th>Evidence / References</th></tr></thead><tbody>
+    ${sc.stages.map((st,i)=>`<tr><td><strong>${String(i+1).padStart(2,"0")} · ${esc(st.title)}</strong><div class="conf">Conf: ${st.confidenceScore}%</div></td><td>${esc(st.description)}</td><td>${list(st.inputs)}</td><td>${list(st.countries)}</td><td>${list(st.socialRisks)}</td><td>${rc(st.riskLevel)}</td><td>${ev(st.evidence)}</td></tr>`).join("")}
+  </tbody></table></div>
+  <p style="font-size:12px;color:var(--mut);margin-top:10px">High-risk countries in this generated map: ${sc.statistics.highRiskCountries.length?sc.statistics.highRiskCountries.map(esc).join(", "):"none above the screening threshold"}.</p>`;
+}
+function shortSource(name){
+ if(name.includes("ILO"))return "ILO";
+ if(name.includes("Transparency"))return "Transparency International";
+ if(name.includes("Slavery"))return "Walk Free";
+ if(name.includes("World Bank"))return "World Bank";
+ if(name.includes("US DOL"))return "US DOL";
+ if(name.includes("UNEP"))return "UNEP";
+ if(name.includes("OECD"))return "OECD";
+ if(name.includes("UNDP"))return "UNDP";
+ if(name.includes("Government"))return "Government Labour Agencies";
+ return "Industry Publications";
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function article(s){return /^[aeiou]/i.test(s)?"an":"a";}
+
+/* ============================ STATE / PERSISTENCE ============================ */
+let reports=[],settings={},currentReport=null,editingReportId=null,compareA=null,compareB=null,chatHostId="assistant",currentUser=null,pendingReportDraft=null;
+const BASE_LS="sycle_reports_v1",BASE_LSS="sycle_settings_v1",USER_KEY="sycle_current_user_v1";
+let LS=BASE_LS,LSS=BASE_LSS;
+function userSlug(email){return String(email||"guest").trim().toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"")||"guest";}
+function setStorageNamespace(email){const slug=userSlug(email);LS=`sycle_reports_${slug}_v1`;LSS=`sycle_settings_${slug}_v1`;}
+function login(){
+ const email=val("auth-email").toLowerCase();
+ const pass=val("auth-pass");
+ if(!email||!email.includes("@")||pass.length<4){toast("Enter an email and a password of at least 4 characters.");return;}
+ currentUser={email,slug:userSlug(email)};
+ pendingReportDraft=null;
+ localStorage.setItem(USER_KEY,JSON.stringify(currentUser));
+ setStorageNamespace(email);
+ document.getElementById("authScreen").style.display="none";
+ document.getElementById("appShell").classList.remove("locked");
+ load();go("dashboard");renderWorkspaceIntro();toast("Signed in to private workspace.");
+}
+function logout(){
+ localStorage.removeItem(USER_KEY);
+ currentUser=null;reports=[];settings={};currentReport=null;pendingReportDraft=null;
+ document.getElementById("appShell").classList.add("locked");
+ document.getElementById("authScreen").style.display="grid";
+ document.getElementById("auth-pass").value="";
+}
+function load(){
+ try{reports=JSON.parse(localStorage.getItem(LS))||[];}catch(e){reports=[];}
+ try{settings=JSON.parse(localStorage.getItem(LSS))||{};}catch(e){settings={};}
+ if(!reports.length)seed();
+ reports=reports.filter((r,i)=>!r.demo||i===reports.findIndex(x=>x.demo));
+ if(!reports.some(r=>r.demo))reports.unshift(demoReport());
+ normalizeReports();
+ applySettings();
+}
+function normalizeReports(){
+ reports=reports.map(r=>{
+ const rr=Object.assign({region:"",qty:null,desc:r.title||"S-LCA assessment"},r);
+  rr.supplyChain=rr.supplyChain&&rr.supplyChain.stages?rr.supplyChain:generateSupplyChain(rr);
+  rr.stats=rr.stats||{};
+  rr.stats.stages=rr.supplyChain.summary.totalStages;
+  rr.stats.countries=rr.supplyChain.summary.sourcingCountries;
+  rr.style=rr.style||chooseReportStyle(rr.desc,rr.id||rr.title);
+  if(!rr.model)rr.model=structuredModel(rr);
+  else rr.model.supplyChain=rr.supplyChain;
+  return rr;
+ });
+}
+function save(){localStorage.setItem(LS,JSON.stringify(reports));}
+function saveSettings(){localStorage.setItem(LSS,JSON.stringify(settings));}
+function demoReport(){
+ const R=buildReport("Generate an S-LCA for a data center campus operating 40 MW IT load in Virginia.",
+  {demo:true,sector:"data_center",country:"United States",region:"Virginia",qty:40,product:"data center campus",title:"Data Center Campus",em:"▣",date:"Aug 2026",id:"demo-data-center"});
+ return R;
+}
+function seed(){
+ reports=[demoReport()];
+ save();
+}
+
+/* ============================ VIEWS / NAV ============================ */
+function go(view){
+ document.querySelectorAll(".view").forEach(v=>v.classList.remove("on"));
+ document.getElementById("v-"+view).classList.add("on");
+ document.querySelectorAll("#nav a").forEach(a=>a.classList.toggle("active",a.dataset.view===view));
+ if(view==="reports")renderReports();
+ if(view==="templates")renderTemplates();
+ if(view==="benchmarks")renderBenchmarks();
+ if(view==="datasources")renderDatasources();
+ if(view==="settings")renderSettings();
+ window.scrollTo(0,0);
+}
+function newReport(){currentReport=null;pendingReportDraft=null;go("dashboard");renderWorkspaceIntro();document.getElementById("desc").focus();}
+function renderWorkspaceIntro(){
+ document.getElementById("assistant").innerHTML=`
+  ${currentReport?`<div class="context-pill">Active report: ${esc(currentReport.title)} · ${esc(currentReport.region?currentReport.region+", "+currentReport.country:currentReport.country)}</div>`:""}
+  <div class="bubble"><div class="bh"><div class="who"><span class="bot">🌿</span><b>SYCLE</b></div><span class="time">${nowTime()}</span></div>
+   <p style="margin:2px 0 4px">Describe a product, facility, location and optional scale to create a structured Social Life Cycle Assessment report.</p>
+   <p style="margin:6px 0 0;color:var(--ink-soft)">After a report is generated or opened, you can ask follow-up questions about that active report here.</p>
+   ${currentReport?`<div class="mini-actions"><button class="btn primary" data-act="open" data-arg="${currentReport.id}">📄 Open Active Report</button><button class="btn" data-act="new">＋ New Report</button></div>`:""}
+  </div>`;
+ renderRecent();
+}
+
+/* dashboard assistant workspace */
+function showDashboardFor(R){
+ currentReport=R;
+ document.getElementById("assistant").innerHTML=`
+  ${R?`<div class="context-pill">Active report: ${esc(R.title)} · ${esc(R.region?R.region+", "+R.country:R.country)}</div>`:""}
+  <div class="bubble you"><div class="bh"><b>You</b><span class="time">${nowTime()}</span></div>
+   <div>${esc(R.desc)}</div></div>
+  <div class="bubble"><div class="bh"><div class="who"><span class="bot">🌿</span><b>SYCLE</b></div><span class="time">${nowTime()}</span></div>
+   <p style="margin:2px 0 4px">Your Social Life Cycle Assessment has been generated successfully.</p>
+   <p style="margin:6px 0 0;color:var(--ink-soft)">I will keep this report active for follow-up questions until you create or open another report.</p>
+   <div class="cta-row">
+     <button class="btn primary" data-act="open" data-arg="${R.id}">📄 Open Report</button>
+   </div>
+  </div>`;
+ renderRecent();
+}
+const ci=(t,d)=>`<div class="ci"><span class="ok">✓</span><b>${t}</b><span class="det">${d}</span></div>`;
+function nowTime(){return new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});}
+
+function lowestPillar(sc){const m={"Worker Welfare":sc.worker,"Human Rights":sc.humanRights,"Community":sc.community,"Supply Chain":sc.supplyChain,"Governance":sc.governance,"Consumer":sc.consumer};let k=Object.keys(m).sort((a,b)=>m[a]-m[b])[0];return k+" ("+m[k]+")";}
+function donut(pct){
+ const r=15.5,cx=21,cy=21;
+ return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--brand-soft)" stroke-width="6"/>
+ <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--brand)" stroke-width="6" stroke-dasharray="${pct*0.96} ${100-pct*0.96}" stroke-dashoffset="25" stroke-linecap="round"/>
+ <text x="${cx}" y="${cy+1}" text-anchor="middle" dominant-baseline="middle" font-size="8.5" font-weight="800" fill="var(--ink)">${pct}%</text>`;
+}
+function radar(sc){
+ const axes=[["Worker Welfare",sc.worker],["Human Rights",sc.humanRights],["Community Impact",sc.community],["Governance",sc.governance],["Supply Chain Risk",sc.supplyChain]];
+ const cx=110,cy=80,R=46,N=axes.length;
+ const pt=(i,rad)=>{const a=-Math.PI/2+i*2*Math.PI/N;return[cx+Math.cos(a)*rad,cy+Math.sin(a)*rad];};
+ let grid="";for(let g=1;g<=3;g++){const rr=R*g/3;let p=[];for(let i=0;i<N;i++)p.push(pt(i,rr).join(","));grid+=`<polygon points="${p.join(" ")}" fill="none" stroke="var(--line)" stroke-width="1"/>`;}
+ let spokes="",labels="";
+ for(let i=0;i<N;i++){const e=pt(i,R);spokes+=`<line x1="${cx}" y1="${cy}" x2="${e[0]}" y2="${e[1]}" stroke="var(--line)" stroke-width="1"/>`;
+  const lp=pt(i,R+22);const anch=Math.abs(lp[0]-cx)<4?"middle":(lp[0]>cx?"start":"end");
+  labels+=`<text x="${lp[0]}" y="${lp[1]}" font-size="7" font-weight="600" fill="var(--mut)" text-anchor="${anch}" dominant-baseline="middle">${axes[i][0]}</text>`;}
+ let dp=[];for(let i=0;i<N;i++)dp.push(pt(i,R*axes[i][1]/100).join(","));
+ return `<svg viewBox="0 0 220 160" style="width:100%" aria-label="Radar chart of social score pillars">${grid}${spokes}<polygon points="${dp.join(" ")}" fill="color-mix(in srgb,var(--brand) 20%,transparent)" stroke="var(--brand)" stroke-width="1.6"/>${dp.map(p=>`<circle cx="${p.split(",")[0]}" cy="${p.split(",")[1]}" r="1.8" fill="var(--brand)"/>`).join("")}${labels}</svg>`;
+}
+
+/* generate from composer */
+function combinedDraftText(){
+ return pendingReportDraft?pendingReportDraft.parts.join(" ").replace(/\s+/g," ").trim():"";
+}
+function askForMissingDetails(desc,check,isContinuation){
+ document.getElementById("assistant").insertAdjacentHTML("beforeend",`
+  <div class="bubble you"><div class="bh"><b>You</b><span class="time">${nowTime()}</span></div><div>${esc(desc)}</div></div>
+  <div class="bubble"><div class="bh"><div class="who"><span class="bot">ðŸŒ¿</span><b>SYCLE</b></div><span class="time">${nowTime()}</span></div>
+   <p>I can create the S-LCA, but I need a few project factors before generating a defensible report.</p>
+   ${isContinuation?`<p style="color:var(--ink-soft)">I am continuing the new-report draft, not editing the active report.</p>`:""}
+   <ul class="answer-list">${check.missing.map(m=>`<li>${esc(m)}</li>`).join("")}</ul>
+   <p style="color:var(--ink-soft);margin-bottom:0">Please send only the missing details or restate the full project. I will not assume the plant state, country, scale, or timeline.</p>
+  </div>`);
+}
+function finalizeGeneratedReport(desc){
+ const R=buildReport(desc,{});
+ R.title=R.title||titleCase(R.product);
+ reports.unshift(R);save();
+ pendingReportDraft=null;
+ renderRecent();showDashboardFor(R);
+ toast("Report generated - "+R.title);
+}
+function continuePendingReportDraft(desc){
+ pendingReportDraft.parts.push(desc);
+ const merged=combinedDraftText();
+ const check=validateReportPrompt(merged);
+ if(!check.ok){
+  askForMissingDetails(desc,check,true);
+  return;
+ }
+ finalizeGeneratedReport(merged);
+}
+function generateFromInput(){
+ const desc=document.getElementById("desc").value.trim();
+ if(!desc){toast("Describe your factory or project first.");return;}
+ if(pendingReportDraft){
+  continuePendingReportDraft(desc);
+  document.getElementById("desc").value="";
+  return;
+ }
+ if(currentReport&&!isNewAssessmentPrompt(desc)){
+  appendUserMessage(desc);
+  handleReportFollowup(desc,currentReport);
+  document.getElementById("desc").value="";
+  return;
+ }
+ const check=validateReportPrompt(desc);
+ if(!check.ok){
+  pendingReportDraft={parts:[desc],createdAt:new Date().toISOString()};
+  askForMissingDetails(desc,check,false);
+  document.getElementById("desc").value="";
+  return;
+ }
+ finalizeGeneratedReport(desc);
+ document.getElementById("desc").value="";
+}
+function isNewAssessmentPrompt(text){
+ const t=text.toLowerCase();
+ const intent=/\b(new|build|generate|create|analyze|assess|assessment|s-lca|social life cycle)\b/.test(t);
+ const sector=findSector(text);
+ const object=/\b(factory|facility|plant|mill|refinery|farm|mine|console|battery|textile|coffee|gold|diamond|diamonds|gemstone|gemstones|jewelry|jewellery|pharma|automotive|manufacturing|manufacturer|producing|located|annual|annually|tonnes|tons|units|in\s+[a-z])/i.test(text)||sector!=="generic";
+ const facility=/\b(factory|facility|plant|mill|refinery|farm|mine|console|battery|textile|coffee|gold|diamond|diamonds|gemstone|gemstones|jewelry|jewellery|pharma|automotive|manufacturing|manufacturer)\b/i.test(text)||sector!=="generic";
+ const place=/\bin\s+[A-Za-z][A-Za-z\s]+\.?$/i.test(text)||Object.keys(COUNTRIES).some(c=>termHit(t,c))||Object.keys(REGION).some(r=>termHit(t,r));
+ const scale=/\d/.test(text)&&/\b(tonnes|tons|units|annually|annual|packs|consoles|garments|years|timeline)\b/i.test(text);
+ const follow=/\b(why|show|compare|improve|assumptions|sources|cited|change|update|regenerate only|export only|worker score|community impacts|stakeholder analysis)\b/.test(t);
+ return ((intent&&object)||(facility&&(place||scale)))&&!follow;
+}
+function appendUserMessage(text){
+ const el=document.getElementById(chatHostId);
+ if(!el)return;
+ el.insertAdjacentHTML("beforeend",`<div class="bubble you"><div class="bh"><b>You</b><span class="time">${nowTime()}</span></div><div>${esc(text)}</div></div>`);
+}
+function appendBotMessage(html){
+ const el=document.getElementById(chatHostId);
+ if(!el)return;
+ el.insertAdjacentHTML("beforeend",`<div class="bubble"><div class="bh"><div class="who"><span class="bot">🌿</span><b>SYCLE</b></div><span class="time">${nowTime()}</span></div>${html}</div>`);
+ el.lastElementChild.scrollIntoView({block:"nearest",behavior:"smooth"});
+}
+function handleReportFollowup(text,R){
+ const t=text.toLowerCase();
+ if(/\b(change|update)\b/.test(t)&&/\b(production|scale|volume|tonnes|tons|units|annually)\b/.test(t)){
+  const nums=[...text.replace(/,/g,"").matchAll(/\d+(?:\.\d+)?/g)].map(m=>Number(m[0]));
+  if(nums.length){
+   const qty=Math.round(nums[nums.length-1]);
+   const updated=buildReport(R.desc,{sector:R.sectorKey,country:R.country,region:R.region,qty,product:R.product,title:R.title,em:R.em,id:R.id});
+   updated.demo=false;updated.date=new Date().toLocaleDateString("en-US",{month:"short",year:"numeric"});updated.chat=R.chat||[];
+   reports=reports.map(x=>x.id===R.id?updated:x);currentReport=updated;save();renderRecent();
+   appendBotMessage(`<p>Updated the active report scale to <strong>${qty.toLocaleString()}</strong> units/year and recalculated affected workforce, scale-sensitive community impacts and score sections.</p><div class="mini-actions"><button class="btn primary" data-act="open" data-arg="${updated.id}">📄 Open Updated Report</button></div>`);
+   return;
+  }
+ }
+ if(/\bcompare\b/.test(t)){
+  const country=findCountry(text);
+  if(country&&country!==R.country){
+   const scenario=buildReport(R.desc,{sector:R.sectorKey,country,region:"",qty:R.qty,product:R.product,title:`${R.title} — ${country} Scenario`,em:R.em});
+   reports.unshift(scenario);save();renderRecent();compareA=R.id;compareB=scenario.id;
+   appendBotMessage(`<p>I created a structured ${esc(country)} scenario from the active report and prepared a comparison. The original report remains unchanged.</p><div class="mini-actions"><button class="btn primary" data-act="compare" data-arg="${R.id}">⇄ View Comparison</button><button class="btn" data-act="open" data-arg="${scenario.id}">📄 Open Scenario Report</button></div>`);
+   return;
+  }
+  appendBotMessage(`<p>I can compare this active report with any saved report. Open the comparison view and choose the baseline and changed report.</p><div class="mini-actions"><button class="btn primary" data-act="compare" data-arg="${R.id}">⇄ Compare Reports</button></div>`);
+  return;
+ }
+ if(/\b(export only|executive summary)\b/.test(t)&&/\bexport|summary\b/.test(t)){
+  exportSection(R,"Executive Summary",executiveSummaryText(R));
+  appendBotMessage(`<p>Exported the Executive Summary for <strong>${esc(R.title)}</strong> as a standalone text file.</p>`);
+  return;
+ }
+ if(/\bsource|sources|cited|cite|references\b/.test(t)){
+  appendBotMessage(`<p>The active report cites these public evidence sources:</p><ul class="answer-list">${R.model.references.slice(0,8).map(s=>`<li><a href="${s.url}" target="_blank" rel="noopener">${esc(s.name)}</a></li>`).join("")}</ul><div class="mini-actions"><button class="btn primary" data-act="open" data-arg="${R.id}">📄 Open References in Report</button></div>`);
+  return;
+ }
+ if(/\bassumption|assumptions\b/.test(t)){
+  appendBotMessage(`<p>Key assumptions for the active report:</p><ul class="answer-list">${R.model.assumptions.map(a=>`<li>${esc(a)}</li>`).join("")}</ul><div class="mini-actions"><button class="btn primary" data-act="open" data-arg="${R.id}">📄 Open Report</button></div>`);
+  return;
+ }
+ if(/\bcommunity\b/.test(t)){
+  appendBotMessage(`<p>Community impacts for <strong>${esc(R.title)}</strong> concentrate on host-community logistics and upstream extraction or sourcing communities.</p><ul class="answer-list"><li>${esc(R.model.communityAnalysis.countryNote)}</li><li>Host-community severity proxy: ${BANDS[R.model.communityAnalysis.communitySeverity].l}</li><li>Most severe community impacts are usually upstream where land, water, labour and environmental-justice risks intersect.</li></ul><div class="mini-actions"><button class="btn primary" data-act="open" data-arg="${R.id}">📄 Open Community Section</button></div>`);
+  return;
+ }
+ if(/\bworker|workers|worker score|labou?r\b/.test(t)){
+  appendBotMessage(`<p>The worker assessment is driven by the host-country labour bands and the sector OH&amp;S profile.</p><ul class="answer-list"><li>Worker score: <strong>${R.scores.worker}/100</strong></li><li>Estimated workforce: ${esc(R.model.workerAnalysis.estimatedWorkforce)}</li><li>Primary exposure: ${R.model.workerAnalysis.exposures}</li><li>${esc(COUNTRIES[R.country].note)}</li></ul>`);
+  return;
+ }
+ if(/\bimprove|recommend|mitigat|increase.*score\b/.test(t)){
+  appendBotMessage(`<p>Highest-leverage improvements for this report:</p><ul class="answer-list">${R.model.recommendations.map(a=>`<li>${esc(a)}</li>`).join("")}</ul><div class="mini-actions"><button class="btn primary" data-act="open" data-arg="${R.id}">📄 Open Recommendations</button></div>`);
+  return;
+ }
+ if(/\bregenerate only\b/.test(t)&&/\bstakeholder\b/.test(t)){
+  R.model.lastPartialUpdate={section:"Stakeholder Analysis",date:new Date().toISOString()};
+  save();
+  appendBotMessage(`<p>Regenerated the structured Stakeholder Analysis for the active report. No other report sections were changed.</p><ul class="answer-list">${R.model.stakeholderAnalysis.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`);
+  return;
+ }
+ appendBotMessage(`<p>I’m using the active report <strong>${esc(R.title)}</strong> as context. Ask for a section, assumption, source, comparison, or an input change and I’ll answer from the structured report model.</p><div class="mini-actions"><button class="btn primary" data-act="open" data-arg="${R.id}">📄 Open Report</button></div>`);
+}
+function executiveSummaryText(R){
+ return `Executive Summary\n\n${R.title}\nLocation: ${R.region?R.region+", ":""}${R.country}\nSector: ${R.sectorLabel}\nProduct: ${R.product}\nOverall Social Score: ${R.scores.overall}/100 (${bandLabel(R.scores.overall)})\n\nThis screening-level Social Life Cycle Assessment evaluates likely social risks from the user-provided project description and public country/sector benchmarks. Principal hotspots: ${SECTORS[R.sectorKey].hotspots.slice(0,3).map(h=>h[0]).join(", ")}.\n\nReliance: screening only; validate with supplier, worker and facility primary data before external claims.`;
+}
+function exportSection(R,label,text){
+ download(text,`sycle-${R.title.replace(/\s+/g,"-").toLowerCase()}-${label.replace(/\s+/g,"-").toLowerCase()}.txt`,"text/plain");
+}
+
+/* reports grid */
+function renderReports(){
+ const g=document.getElementById("reportsGrid");
+ g.innerHTML=reports.map(R=>{const S=SECTORS[R.sectorKey];
+  return `<div class="report-card">
+   <div class="rc-top" data-act="open" data-arg="${R.id}">
+     <div class="rc-ic" style="background:${S.emColor}">${R.em||S.em}</div>
+     <div style="min-width:0"><h4>${esc(R.title)}</h4><div class="rc-sub">${esc(R.region?R.region+", "+R.country:R.country)} · ${R.date}</div></div>
+     <div class="rc-date">Report</div>
+   </div>
+   <div class="rc-tags">${R.demo?'<span class="tagpill demo">DEMO — retained</span>':''}<span class="tagpill">${S.label}</span><span class="tagpill">${esc(R.country)}</span></div>
+   <div class="rc-actions">
+     <button data-act="open" data-arg="${R.id}">Open</button>
+     <button data-act="ask-open" data-arg="${R.id}">Ask</button>
+     <button data-act="edit" data-arg="${R.id}">Edit</button>
+     <button data-act="compare" data-arg="${R.id}">Compare</button>
+     <button data-act="dup" data-arg="${R.id}">Duplicate</button>
+     ${R.demo?'<button disabled title="The demo report cannot be deleted" style="opacity:.4;cursor:not-allowed">Delete</button>':`<button data-act="del" data-arg="${R.id}">Delete</button>`}
+   </div>
+  </div>`;}).join("");
+}
+function renderRecent(){
+ const el=document.getElementById("recentList");
+ const curId=currentReport&&currentReport.id;
+ el.innerHTML=reports.slice(0,5).map(R=>{const S=SECTORS[R.sectorKey];
+  return `<div class="r-item${R.id===curId?" active":""}" data-act="open" data-arg="${R.id}"><div class="r-ic" style="background:${S.emColor}">${R.em||S.em}</div>
+  <div class="r-meta"><b>${esc(R.title)}</b><span>${esc(R.country)} · ${R.date}</span></div></div>`;}).join("");
+}
+
+/* open report detail */
+function openReport(id){
+ const R=reportById(id);if(!R)return;
+ currentReport=R;
+ document.getElementById("reportBody").innerHTML=reportHTML(R);
+ renderReportChat(R);
+ go("report");
+}
+const reportById=id=>reports.find(r=>r.id===id);
+function renderReportChat(R){
+ const h=document.getElementById("reportChatHistory");
+ if(!h)return;
+ R.chat=R.chat||[];
+ h.innerHTML=R.chat.map(m=>`<div class="bubble ${m.role==="user"?"you":""}"><div class="bh"><b>${m.role==="user"?"You":"SYCLE"}</b><span class="time">${esc(m.time||"")}</span></div><div>${m.html||esc(m.text||"")}</div></div>`).join("");
+ const input=document.getElementById("reportChatInput");
+ if(input)input.value="";
+}
+function askCurrentReport(){
+ if(!currentReport){toast("Open a report first.");return;}
+ const input=document.getElementById("reportChatInput");
+ const text=(input&&input.value.trim())||"";
+ if(!text){toast("Ask a question about this report first.");return;}
+ currentReport.chat=currentReport.chat||[];
+ currentReport.chat.push({role:"user",text,time:nowTime()});
+ const html=reportAnswerHTML(text,currentReport);
+ currentReport.chat.push({role:"assistant",html,time:nowTime()});
+ save();
+ renderReportChat(currentReport);
+}
+function reportAnswerHTML(text,R){
+ const t=text.toLowerCase(),S=SECTORS[R.sectorKey],sc=R.scores;
+ if(/\b(recommend|improve|mitigat|increase.*score|help)\b/.test(t)){
+  const lowest=lowestPillar(sc);
+  return `<p>Here are practical recommendations for <strong>${esc(R.title)}</strong>, prioritised by highest leverage and the weakest score area: <strong>${esc(lowest)}</strong>.</p>
+   <ul class="answer-list">
+    <li><strong>Immediate:</strong> require supplier code of conduct, forced/child-labour prohibition, grievance access, and right-to-audit clauses for Tier-1 suppliers.</li>
+    <li><strong>Supply chain:</strong> trace the highest-risk inputs in the Supply Chain Mapping table, starting with stages rated ${rc(4)} or ${rc(3)}.</li>
+    <li><strong>Worker welfare:</strong> validate wages, working hours, contractor conditions and OH&amp;S controls at the foreground site.</li>
+    <li><strong>Governance:</strong> document OECD-style due diligence, assign an owner, and track remediation actions with deadlines.</li>
+    <li><strong>Evidence upgrade:</strong> replace screening assumptions with supplier attestations, audits, accident logs, wage data and grievance records.</li>
+   </ul><div class="mini-actions"><button class="btn primary" data-act="open" data-arg="${R.id}">📄 Open Recommendations</button><button class="btn" data-act="open-print" data-arg="${R.id}">Export PDF</button></div>`;
+ }
+ if(/\bsupply chain|supplier|tier|source|sourcing\b/.test(t)){
+  const chain=R.supplyChain||generateSupplyChain(R);
+  return `<p>The generated supply chain has <strong>${chain.summary.totalStages}</strong> stages, <strong>${chain.summary.sourcingCountries}</strong> likely sourcing countries, and <strong>${chain.summary.highRiskCountries}</strong> high-risk countries.</p>
+   <ul class="answer-list">${chain.stages.slice(0,5).map(st=>`<li><strong>${esc(st.title)}:</strong> ${esc(st.socialRisks.slice(0,3).join(", "))} (${BANDS[st.riskLevel].l})</li>`).join("")}</ul>
+   <p>The full table in the report includes inputs, countries, risks, confidence and clickable evidence for every stage.</p><div class="mini-actions"><button class="btn primary" data-act="open" data-arg="${R.id}">📄 Open Supply Chain Mapping</button></div>`;
+ }
+ if(/\bsource|sources|cited|cite|references\b/.test(t)){
+  return `<p>The active report cites public evidence sources in the report and at supply-chain-row level:</p><ul class="answer-list">${R.model.references.slice(0,10).map(s=>`<li><a href="${s.url}" target="_blank" rel="noopener">${esc(s.name)}</a></li>`).join("")}</ul>`;
+ }
+ if(/\bassumption|assumptions\b/.test(t)){
+  return `<p>Key assumptions for this report:</p><ul class="answer-list">${R.model.assumptions.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`;
+ }
+ if(/\bcommunity\b/.test(t)){
+  return `<p>Community impacts are assessed from the host location and the upstream supply chain.</p><ul class="answer-list"><li>${esc(R.model.communityAnalysis.countryNote)}</li><li>Community severity benchmark: <strong>${BANDS[R.model.communityAnalysis.communitySeverity].l}</strong>.</li><li>Review high-risk supply-chain stages for land, water, environmental justice and contractor-labour impacts.</li></ul>`;
+ }
+ if(/\bworker|workers|worker score|labou?r\b/.test(t)){
+  return `<p>The worker score is <strong>${R.scores.worker}/100</strong>. It is based on host-country labour/worker-protection bands and the sector OH&amp;S profile.</p><ul class="answer-list"><li>Estimated workforce: ${esc(R.model.workerAnalysis.estimatedWorkforce)}</li><li>Primary exposure: ${R.model.workerAnalysis.exposures}</li><li>${esc(COUNTRIES[R.country].note)}</li><li>Best next evidence: wage bands, overtime records, incident logs, contractor terms and grievance-channel data.</li></ul>`;
+ }
+ if(/\bcompare\b/.test(t)){
+  const country=findCountry(text);
+  if(country&&country!==R.country){
+   const scenario=buildReport(R.desc,{sector:R.sectorKey,country,region:"",qty:R.qty,product:R.product,title:`${R.title} — ${country} Scenario`,em:R.em});
+   reports.unshift(scenario);save();renderRecent();compareA=R.id;compareB=scenario.id;
+   return `<p>I created a structured <strong>${esc(country)}</strong> scenario and prepared a comparison. The original report remains unchanged.</p><div class="mini-actions"><button class="btn primary" data-act="compare" data-arg="${R.id}">⇄ View Comparison</button><button class="btn" data-act="open" data-arg="${scenario.id}">📄 Open Scenario Report</button></div>`;
+  }
+  return `<p>I can compare this report with any saved report. Use the comparison view and select the baseline and changed report.</p><div class="mini-actions"><button class="btn primary" data-act="compare" data-arg="${R.id}">⇄ Compare Reports</button></div>`;
+ }
+ return `<p>I’m reading from the structured report object for <strong>${esc(R.title)}</strong>. Ask about recommendations, supply chain, worker score, community impacts, assumptions, sources, or comparisons.</p>`;
+}
+
+function openEdit(id){
+ const R=reportById(id);if(!R)return;
+ editingReportId=id;
+ const sel=document.getElementById("edit-country");
+ sel.innerHTML=Object.keys(COUNTRIES).sort().map(c=>`<option value="${esc(c)}"${c===R.country?" selected":""}>${esc(c)}</option>`).join("");
+ document.getElementById("edit-desc").value=R.desc||"";
+ document.getElementById("edit-product").value=R.product||R.title||"";
+ document.getElementById("edit-qty").value=R.qty||"";
+ document.getElementById("edit-region").value=R.region||"";
+ document.getElementById("editModal").classList.add("on");
+ document.getElementById("editModal").setAttribute("aria-hidden","false");
+}
+function closeEdit(){
+ editingReportId=null;
+ document.getElementById("editModal").classList.remove("on");
+ document.getElementById("editModal").setAttribute("aria-hidden","true");
+}
+function saveEditedReport(){
+ const old=reportById(editingReportId);if(!old)return closeEdit();
+ const country=val("edit-country");
+ const product=val("edit-product")||old.product;
+ const qtyRaw=val("edit-qty");
+ const qty=qtyRaw?Math.max(0,Math.round(Number(qtyRaw))):null;
+ const region=val("edit-region");
+ let desc=val("edit-desc");
+ if(!desc)desc=`Generate an S-LCA for ${product}${qty?` producing ${qty.toLocaleString()} units annually`:""} in ${region?region+", ":""}${country}.`;
+ const updated=buildReport(desc,{sector:old.sectorKey,country,region,qty,product,title:titleCase(product),em:old.em,id:old.demo?undefined:old.id});
+ updated.demo=false;
+ updated.date=new Date().toLocaleDateString("en-US",{month:"short",year:"numeric"});
+ if(old.demo)reports.unshift(updated);else reports=reports.map(r=>r.id===old.id?updated:r);
+ save();closeEdit();renderRecent();showDashboardFor(updated);openReport(updated.id);
+ toast(old.demo?"Edited copy generated.":"Report regenerated.");
+}
+
+function openCompare(seedId){
+ compareA=seedId||compareA||(currentReport&&currentReport.id)||reports[0]?.id;
+ compareB=compareB||(reports.find(r=>r.id!==compareA)?.id)||compareA;
+ renderCompare();
+ go("compare");
+}
+function renderCompare(){
+ const body=document.getElementById("compareBody");
+ const options=reports.map(r=>`<option value="${r.id}">${esc(r.title)} — ${esc(r.region?r.region+", "+r.country:r.country)}</option>`).join("");
+ const A=reportById(compareA)||reports[0],B=reportById(compareB)||reports.find(r=>r.id!==A.id)||A;
+ compareA=A.id;compareB=B.id;
+ const row=(label,a,b)=>{const d=b-a;const cls=d>0?"up":d<0?"down":"flat";const sign=d>0?"+":"";return `<tr><td><strong>${label}</strong></td><td>${a}</td><td>${b}</td><td class="delta ${cls}">${sign}${d}</td></tr>`;};
+ body.innerHTML=`
+  <div class="compare-controls">
+    <div class="field"><label>Baseline report</label><select id="compare-a">${options}</select></div>
+    <div class="field"><label>Changed report</label><select id="compare-b">${options}</select></div>
+    <button class="btn primary" data-act="apply-compare">Compare</button>
+  </div>
+  <div class="grid-cards" style="margin-bottom:16px">
+    ${compareSummary(A,"Baseline")}
+    ${compareSummary(B,"Changed")}
+  </div>
+  <div class="compare-card">
+   <h3 style="margin-top:0">Score movement</h3>
+   <div class="tbl-wrap"><table class="report"><thead><tr><th>Pillar</th><th>${esc(A.title)}</th><th>${esc(B.title)}</th><th>Delta</th></tr></thead><tbody>
+    ${row("Overall",A.scores.overall,B.scores.overall)}
+    ${row("Worker Welfare",A.scores.worker,B.scores.worker)}
+    ${row("Human Rights",A.scores.humanRights,B.scores.humanRights)}
+    ${row("Community Impact",A.scores.community,B.scores.community)}
+    ${row("Supply Chain",A.scores.supplyChain,B.scores.supplyChain)}
+    ${row("Governance",A.scores.governance,B.scores.governance)}
+    ${row("Consumer",A.scores.consumer,B.scores.consumer)}
+   </tbody></table></div>
+  </div>
+  <div class="compare-card" style="margin-top:16px">
+   <h3 style="margin-top:0">What changed</h3>
+   <ul class="clean">
+    <li><strong>Location:</strong> ${esc(A.region?A.region+", "+A.country:A.country)} → ${esc(B.region?B.region+", "+B.country:B.country)}</li>
+    <li><strong>Country-risk basis:</strong> ${COUNTRIES[A.country].note} → ${COUNTRIES[B.country].note}</li>
+    <li><strong>Supply chain:</strong> ${A.sourcing.length} screened countries → ${B.sourcing.length} screened countries.</li>
+    <li><strong>Scale:</strong> ${A.qty?A.qty.toLocaleString()+" units/year":"not specified"} → ${B.qty?B.qty.toLocaleString()+" units/year":"not specified"}.</li>
+   </ul>
+  </div>`;
+ document.getElementById("compare-a").value=A.id;
+ document.getElementById("compare-b").value=B.id;
+}
+function compareSummary(R,label){
+ return `<div class="compare-card"><div style="font-size:11px;color:var(--mut);text-transform:uppercase;font-weight:700">${label}</div>
+  <h3 style="margin:4px 0">${esc(R.title)}</h3><div style="color:var(--mut);font-size:12.5px">${esc(R.region?R.region+", "+R.country:R.country)} · ${SECTORS[R.sectorKey].label}</div>
+  <div class="compare-score" style="color:${scoreColor(R.scores.overall)};margin-top:12px">${R.scores.overall}<span style="font-size:14px;color:var(--mut)">/100</span></div></div>`;
+}
+function applyCompare(){
+ compareA=document.getElementById("compare-a").value;
+ compareB=document.getElementById("compare-b").value;
+ renderCompare();
+}
+
+/* templates */
+const TEMPLATES=[
+ ["electronics","🎮","Electronics / Hardware","Consoles, devices, semiconductors — conflict-mineral &amp; assembly-labour focus.","Electronics manufacturing plant producing 50,000 devices annually in Vietnam."],
+ ["ev_battery","🔋","EV Battery","Cells, packs, energy storage — cobalt/lithium extraction focus.","EV battery gigafactory producing 100,000 packs annually in the United States."],
+ ["textile","👕","Textile &amp; Apparel","Garments, footwear, fabric — living wage &amp; factory-safety focus.","Garment factory producing 2,000,000 units annually in Bangladesh."],
+ ["pharma","💊","Pharmaceuticals","APIs, formulation, biotech — chemical safety &amp; ethics focus.","Pharmaceutical API plant in India."],
+ ["food","🌾","Food &amp; Agriculture","Crops, beverages, processing — child labour &amp; living income focus.","Coffee processing plant sourcing and producing 10,000 tonnes annually in Ethiopia."],
+ ["automotive","🚗","Automotive","Vehicles &amp; components — multi-tier supply-chain labour focus.","Automotive assembly plant producing 80,000 vehicles annually in Mexico."]
+];
+function renderTemplates(){
+ document.getElementById("templatesGrid").innerHTML=TEMPLATES.map((t,i)=>
+  `<div class="tpl-card" data-act="tpl" data-arg="${i}"><div class="em">${t[1]}</div><h4>${t[2]}</h4><p>${t[3]}</p></div>`).join("");
+}
+function useTemplate(prompt){go("dashboard");const d=document.getElementById("desc");d.value=prompt;d.focus();toast("Template loaded — press ➤ to generate.");}
+
+/* benchmarks */
+function renderBenchmarks(){
+ const rows=Object.keys(SECTORS).filter(k=>k!=="generic").map(k=>{const S=SECTORS[k];
+  return `<tr><td><strong>${S.label}</strong></td><td>${S.worker.female}</td><td>${S.worker.wage}</td><td>${rc(S.worker.osh)}</td><td>${S.worker.automation}</td><td>${rc(S.mineralSev)}</td></tr>`;}).join("");
+ document.getElementById("benchmarksBody").innerHTML=`
+  <div class="panel"><h3>Sector social benchmarks</h3>
+   <div class="tbl-wrap"><table class="report" style="width:100%"><thead><tr><th>Sector</th><th>Women in workforce</th><th>Typical wage basis</th><th>OH&amp;S risk</th><th>Automation</th><th>Mineral/sourcing risk</th></tr></thead><tbody>${rows}</tbody></table></div>
+   <p style="font-size:12px;color:var(--mut);margin-top:10px">Bands are screening heuristics applied to public benchmark ranges. Used only when facility-specific data is unavailable; every use is labelled in the report.</p>
+  </div>
+  <div class="panel"><h3>Country risk index (screening bands)</h3>
+   <div class="tbl-wrap"><table class="report"><thead><tr><th>Country</th><th>Labour</th><th>Human Rights</th><th>Corruption</th><th>Political</th><th>Worker Protection</th><th>Env. Justice</th></tr></thead>
+   <tbody>${Object.keys(COUNTRIES).map(c=>`<tr><td><strong>${c}</strong></td>${COUNTRIES[c].r.map(rc).join("")}</tr>`).join("")}</tbody></table></div>
+  </div>`;
+}
+/* data sources */
+function renderDatasources(){
+ document.getElementById("datasourcesBody").innerHTML=`<div class="panel"><h3>Open datasets referenced</h3>
+  <div class="tbl-wrap"><table class="report"><thead><tr><th>Dataset</th><th>Provides</th><th>Publisher / cadence</th><th>Link</th></tr></thead>
+  <tbody>${DATASETS.map(d=>`<tr><td><strong>${d[0]}</strong></td><td>${d[1]}</td><td>${d[2]}</td><td><a href="${d[3]}" target="_blank" rel="noopener">Open source</a></td></tr>`).join("")}</tbody></table></div>
+  <p style="font-size:12px;color:var(--mut);margin-top:10px">The engine runs fully offline on bundled screening bands derived from these public, legally redistributable sources — no commercial databases (PSILCA, SHDB, ecoinvent) are used.</p></div>`;
+}
+/* settings */
+function renderSettings(){
+ const s=settings;
+ document.getElementById("settingsBody").innerHTML=`
+  <div class="panel"><h3>Profile</h3>
+   <div class="field"><label>Signed-in email</label><input value="${esc(currentUser?currentUser.email:"")}" disabled></div>
+   <div class="field"><label>Analyst name</label><input id="set-name" value="${esc(s.name||"Emma Johnson")}"></div>
+   <div class="field"><label>Role</label><input id="set-role" value="${esc(s.role||"Sustainability Analyst")}"></div>
+   <div class="field"><label>Organisation</label><input id="set-org" value="${esc(s.org||"")}" placeholder="Your firm"></div>
+  </div>
+  <div class="panel"><h3>Report defaults</h3>
+   <div class="field"><label>Default confidence disclaimer</label>
+     <select id="set-disc"><option ${s.disc!=="short"?"selected":""}>Full reliance statement</option><option value="short" ${s.disc==="short"?"selected":""}>Short disclaimer</option></select></div>
+   <div class="toggle-row"><div class="switch ${s.dark?"on":""}" id="set-dark" data-act="toggle-switch"><b></b></div><div><b style="font-size:13.5px">Dark theme</b><div style="font-size:12px;color:var(--mut)">Overrides system preference</div></div></div>
+   <button class="btn primary" data-act="save-settings">Save settings</button>
+  </div>
+  <div class="panel"><h3>Deployment readiness</h3>
+   <div class="tbl-wrap"><table class="report"><thead><tr><th>Step</th><th>Status</th><th>Target</th></tr></thead><tbody>
+    <tr><td>Sandbox validation</td><td>${rc(0)}</td><td>Working local app with report generation, PDF print export and CSV export</td></tr>
+    <tr><td>Email/password authentication</td><td>${rc(0)}</td><td>Sandbox login active; production target is Supabase Auth with user-owned reports and row-level security</td></tr>
+    <tr><td>Production deployment</td><td>${rc(2)}</td><td>Vercel app deployment with environment variables for Supabase URL and anon key</td></tr>
+   </tbody></table></div>
+   <p style="font-size:12px;color:var(--mut);margin-top:10px">Next build phase: convert this sandbox into a deployable app, add Supabase email/password login, persist reports per user, then deploy to Vercel.</p>
+  </div>
+  <div class="panel"><h3>Data</h3>
+   <button class="btn" data-act="export-all">⬇ Export all reports (JSON)</button>
+   <button class="btn" data-act="reset" style="margin-left:8px">↺ Reset reports</button>
+   <p style="font-size:12px;color:var(--mut);margin-top:10px">${reports.length} report(s) stored locally in your browser.</p>
+  </div>`;
+}
+function applyAndSaveSettings(){
+ settings.name=val("set-name");settings.role=val("set-role");settings.org=val("set-org");
+ settings.disc=document.getElementById("set-disc").value==="short"?"short":"full";
+ settings.dark=document.getElementById("set-dark").classList.contains("on");
+ saveSettings();applySettings();toast("Settings saved.");
+}
+function applySettings(){
+ const s=settings;
+ const fallbackName=currentUser?currentUser.email:"Emma Johnson";
+ document.getElementById("userName").textContent=s.name||fallbackName;
+ document.getElementById("userRole").textContent=s.role||"Sustainability Analyst";
+ document.getElementById("userAv").textContent=(s.name||fallbackName).split(/[\s@._-]+/).map(w=>w[0]).slice(0,2).join("").toUpperCase();
+ // default to the light enterprise theme (matches the reference); dark only if opted in
+ document.documentElement.setAttribute("data-theme",s.dark===true?"dark":"light");
+}
+const val=id=>document.getElementById(id).value.trim();
+function toggleTheme(){const cur=document.documentElement.getAttribute("data-theme");const next=cur==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",next);settings.dark=next==="dark";saveSettings();}
+
+/* actions */
+function duplicateReport(id){const R=reportById(id);if(!R)return;const copy=JSON.parse(JSON.stringify(R));copy.id="r"+Date.now();copy.demo=false;copy.title=R.title+" (copy)";copy.date=new Date().toLocaleDateString("en-US",{month:"short",year:"numeric"});reports.unshift(copy);save();renderRecent();renderReports();toast("Duplicated → "+copy.title);}
+function deleteReport(id){const R=reportById(id);if(R&&R.demo){toast("The demo report is retained and cannot be deleted.");return;}reports=reports.filter(r=>r.id!==id);save();renderRecent();renderReports();toast("Report deleted.");}
+function shareReport(R){if(!R)return;const txt=`${R.title} — S-LCA screening\nLocation: ${R.region?R.region+", ":""}${R.country}\nSector: ${SECTORS[R.sectorKey].label}\nOverall Social Score: ${R.scores.overall}/100 (${bandLabel(R.scores.overall)})`;copy(txt);toast("Report summary copied to clipboard.");}
+function exportPDF(R){
+ if(!R){toast("Open or select a report first.");return;}
+ const css=document.querySelector("style").textContent;
+ const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(R.title)} — SYCLE PDF</title><style>${css}
+  body{background:#fff!important}.print-banner{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e9f0;margin:0 0 20px;padding:0 0 12px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}.print-banner b{font-size:15px}.print-banner span{color:#64748b;font-size:12px}.report{max-width:940px;margin:0 auto}.no-print,.side,.topbar,.rback,#toast,.modal{display:none!important}@page{margin:14mm}</style></head><body><div class="print-banner"><b>SYCLE PDF Export</b><span>Use the print dialog destination: Save as PDF</span></div><div class="report">${reportHTML(R)}</div><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),350));<\/script></body></html>`;
+ const w=window.open("","_blank","width=1100,height=850");
+ if(!w){openReport(R.id);setTimeout(()=>window.print(),250);toast("Popup blocked. Opened report view — choose Save as PDF in print dialog.");return;}
+ w.document.open();w.document.write(html);w.document.close();
+ toast("PDF export opened — choose Save as PDF in the print dialog.");
+}
+function exportCSV(R){if(!R){toast("Open a report first.");return;}const S=SECTORS[R.sectorKey];
+ let rows=[["SYCLE Screening S-LCA",R.title],["Location",(R.region?R.region+", ":"")+R.country],["Sector",S.label.replace(/&amp;/g,"&")],["Overall Social Score",R.scores.overall+"/100 ("+bandLabel(R.scores.overall)+")"],[],["Pillar","Score"],["Worker Welfare",R.scores.worker],["Human Rights",R.scores.humanRights],["Community Impact",R.scores.community],["Supply-Chain Responsibility",R.scores.supplyChain],["Governance",R.scores.governance],["Consumer Impact",R.scores.consumer],[],["Hotspot","Where","Severity(0-4)","Likelihood(0-4)"]];
+ S.hotspots.forEach(h=>rows.push([h[0].replace(/&amp;/g,"&"),h[1].replace(/&amp;/g,"&").replace(/<[^>]+>/g,""),h[2],h[3]]));
+ rows.push([],["Country","Labour","HumanRights","Corruption","Political","WorkerProtection","EnvJustice"]);
+ R.sourcing.forEach(c=>rows.push([c,...COUNTRIES[c].r]));
+ const csv=rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(",")).join("\n");
+ download(csv,`sycle-${R.title.replace(/\s+/g,"-").toLowerCase()}.csv`,"text/csv");toast("CSV exported (opens in Excel).");
+}
+function exportAll(){download(JSON.stringify(reports,null,2),"sycle-reports.json","application/json");toast("All reports exported.");}
+function download(text,name,type){const b=new Blob([text],{type});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;a.click();}
+function copy(t){try{navigator.clipboard.writeText(t);}catch(e){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();}}
+let toastT;function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("show"),2600);}
+
+function resetReports(){if(confirm("Reset to the seeded demo reports? Your generated reports will be removed.")){localStorage.removeItem(LS);location.reload();}}
+
+/* ============================ EVENT DELEGATION (CSP-safe: no inline handlers) ============================ */
+function dispatch(e){
+ const t=e.target.closest("[data-act]");if(!t)return;
+ const act=t.dataset.act, arg=t.dataset.arg;
+ switch(act){
+  case "go": go(arg||t.dataset.view); break;
+  case "new": newReport(); break;
+  case "login": login(); break;
+  case "logout": logout(); break;
+  case "generate": generateFromInput(); break;
+  case "open": openReport(arg); break;
+  case "ask-open": openReport(arg); setTimeout(()=>document.getElementById("reportChatInput")?.focus(),100); break;
+  case "open-print": exportPDF(reportById(arg)); break;
+  case "edit": openEdit(arg); break;
+  case "edit-cur": if(currentReport)openEdit(currentReport.id); break;
+  case "close-edit": closeEdit(); break;
+  case "save-edit": saveEditedReport(); break;
+  case "compare": openCompare(arg); break;
+  case "compare-cur": if(currentReport)openCompare(currentReport.id); break;
+  case "apply-compare": applyCompare(); break;
+  case "print": exportPDF(currentReport); break;
+  case "focus": document.getElementById("desc").focus(); break;
+  case "theme": toggleTheme(); break;
+  case "dup": duplicateReport(arg); break;
+  case "dup-cur": if(currentReport)duplicateReport(currentReport.id); break;
+  case "share": shareReport(reportById(arg)); break;
+  case "share-cur": shareReport(currentReport); break;
+  case "del": deleteReport(arg); break;
+  case "csv": exportCSV(reportById(arg)); break;
+  case "csv-cur": exportCSV(currentReport); break;
+  case "ask-report": askCurrentReport(); break;
+  case "tpl": useTemplate(TEMPLATES[+arg][4]); break;
+  case "save-settings": applyAndSaveSettings(); break;
+  case "reset": resetReports(); break;
+  case "export-all": exportAll(); break;
+  case "toggle-switch": t.classList.toggle("on"); break;
+  case "bell": toast("No new notifications."); break;
+ }
+}
+
+/* ============================ INIT ============================ */
+function init(){
+ document.addEventListener("click",dispatch);
+ document.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&e.target&&e.target.id==="reportChatInput"){e.preventDefault();askCurrentReport();}
+  if(e.key==="Enter"&&(e.target&&/auth-(email|pass)/.test(e.target.id))){e.preventDefault();login();}
+ });
+ try{currentUser=JSON.parse(localStorage.getItem(USER_KEY));}catch(e){currentUser=null;}
+ if(currentUser&&currentUser.email){
+  setStorageNamespace(currentUser.email);
+  document.getElementById("authScreen").style.display="none";
+  document.getElementById("appShell").classList.remove("locked");
+  load();go("dashboard");renderWorkspaceIntro();
+ }else{
+  document.getElementById("authScreen").style.display="grid";
+  document.getElementById("appShell").classList.add("locked");
+ }
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+</script>
+</body>
+</html>

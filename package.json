@@ -1,0 +1,9 @@
+{
+  "name": "sycle-platform",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-static.js"
+  },
+  "devDependencies": {}
+}
