@@ -35,3 +35,9 @@ No legal value is populated without human verification.
 Add a complete stakeholder-category catalogue, source registry, product map,
 connector framework, official API/file connector plans, ingestion CLI, and
 licensed-database/MRIO adapter interfaces. Tests use recorded payloads only.
+
+## Phase 6 - Clarifying questions
+
+Add a pure ReportSpec question service that evaluates plausible answers through
+an injected scoring function, always asks ambiguous geography, and records
+unanswered defaults as assumptions. No API hook exists in the static app.
