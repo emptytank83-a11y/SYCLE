@@ -47,3 +47,9 @@ unanswered defaults as assumptions. No API hook exists in the static app.
 Create a catalogue-driven assembler that selects the most specific ranked
 evidence, downgrades fallback confidence, emits gaps, resolves verified rules,
 and derives sourcing only from trade and mineral-share evidence.
+
+## Phase 8 - Deterministic scoring
+
+Add configured indicator normalisation, weighted roll-ups with complete traces,
+confidence/weight sensitivity bounds, and an explicit activity-weighting status.
+All methodology choices remain pending expert review.

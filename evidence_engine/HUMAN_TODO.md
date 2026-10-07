@@ -37,3 +37,12 @@ convert it to the canonical connector input documented in `ingestion/README.md`.
 The UNEP source ranking and passenger-car ICE/EV product mappings are draft
 expert judgements. A qualified S-LCA practitioner and trade-classification
 specialist must approve them before production use.
+
+## Scoring methodology
+
+- Approve every normalisation bound, indicator weight, subcategory mapping, and
+  pillar weight in `scoring/config.json`. They are methodology judgements, not
+  observed data, and remain `expert_review: pending`.
+- Define confidence ranges and sensitivity policy with an S-LCA method owner.
+- License and implement an activity-weighting adapter before describing supply-
+  chain hotspot scores as worker-hour weighted.

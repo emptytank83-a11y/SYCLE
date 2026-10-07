@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "expert_review": "pending",
+  "pillar_weights": {"workers":0.20,"local_communities":0.15,"society":0.20,"consumers":0.10,"value_chain_actors":0.25,"children":0.10},
+  "indicators": {
+    "worker_injury_rate":{"pillar":"workers","subcategory":"health_and_safety","weight":1,"normalisation":{"type":"minmax","min":0,"max":10,"direction":"lower_is_better"}},
+    "union_membership_rate":{"pillar":"workers","subcategory":"freedom_of_association","weight":1,"normalisation":{"type":"minmax","min":0,"max":100,"direction":"higher_is_better"}},
+    "local_unemployment_rate":{"pillar":"local_communities","subcategory":"local_employment","weight":1,"normalisation":{"type":"minmax","min":0,"max":30,"direction":"lower_is_better"}},
+    "corruption_perception_score":{"pillar":"society","subcategory":"corruption","weight":1,"normalisation":{"type":"minmax","min":0,"max":100,"direction":"higher_is_better"}},
+    "sourcing_concentration":{"pillar":"value_chain_actors","subcategory":"supplier_relationships","weight":1,"normalisation":{"type":"minmax","min":0,"max":100,"direction":"lower_is_better"}},
+    "child_forced_labour_goods_flag":{"pillar":"children","subcategory":"child_labour","weight":1,"normalisation":{"type":"boolean","preferred":false}}
+  }
+}
