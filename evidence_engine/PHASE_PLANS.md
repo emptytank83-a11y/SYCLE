@@ -29,3 +29,9 @@ York ambiguity, Albany county resolution, and Texas.
 Generate null-only state rule seeds from ingested US subdivision records,
 implement verified-only hierarchical lookup, and add an unverified-rule CLI.
 No legal value is populated without human verification.
+
+## Phase 5 - Indicator catalogue and ingestion framework
+
+Add a complete stakeholder-category catalogue, source registry, product map,
+connector framework, official API/file connector plans, ingestion CLI, and
+licensed-database/MRIO adapter interfaces. Tests use recorded payloads only.

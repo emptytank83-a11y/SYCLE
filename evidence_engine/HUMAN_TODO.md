@@ -20,3 +20,20 @@ judgement, or manual source acquisition requires a person.
 - Replace each null only after checking the linked authoritative page, record
   effective date, reviewer, and review timestamp. Until then the engine returns
   a gap and the narrator cannot state the rule.
+
+## Source licensing and downloads
+
+Commercial-use licensing must be reviewed for every connector before production
+use. Current status is deliberately `null`: BLS SOII, BLS CPS, Census ACS, MIT
+Living Wage, OSHA enforcement/establishment data, ITUC Global Rights Index,
+Transparency International CPI, World Bank WGI, Walk Free GSI, Fund for Peace
+FSI, US DOL List of Goods, UN Comtrade/USITC DataWeb, and USGS Mineral Commodity
+Summaries.
+
+Manual downloads are required for sources without a stable supported API. Save
+the original file, download URL, edition, download timestamp, and checksum, then
+convert it to the canonical connector input documented in `ingestion/README.md`.
+
+The UNEP source ranking and passenger-car ICE/EV product mappings are draft
+expert judgements. A qualified S-LCA practitioner and trade-classification
+specialist must approve them before production use.

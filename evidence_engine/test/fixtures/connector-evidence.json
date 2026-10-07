@@ -1,0 +1,1 @@
+{"evidence":[{"indicator_id":"worker_injury_rate","geography_id":"US-NY","sector_code":"3361","value":1.23,"value_text":null,"geo_level_used":"state","is_fallback":false,"confidence":"H","notes":"Synthetic recorded connector fixture; not production evidence"}]}
