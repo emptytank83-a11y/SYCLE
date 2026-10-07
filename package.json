@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node scripts/build-static.js"
+    "build": "node scripts/build-static.js",
+    "dev": "node scripts/dev-server.js"
   },
   "devDependencies": {}
 }

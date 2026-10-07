@@ -230,6 +230,9 @@ a{color:var(--brand);text-decoration:none}
 .rec-group h4{border-bottom:1px solid var(--line-soft);padding-bottom:7px}
 .rec-group h4 .tag{float:right;font-family:var(--mono);font-size:10px;color:var(--mut);font-weight:400}
 .foot{margin-top:40px;padding-top:16px;border-top:2px solid var(--ink);font-size:11px;color:var(--mut);line-height:1.6}
+.evidence-questions{display:grid;gap:14px;margin:16px 0}.evidence-question{border-top:1px solid var(--line-soft);padding-top:12px}.evidence-question:first-child{border-top:0;padding-top:0}.evidence-question label{display:block;font-weight:700;font-size:13px;margin-bottom:6px}.evidence-question select{width:100%;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:10px;border-radius:7px;font:inherit}.evidence-state{display:flex;align-items:center;gap:9px;color:var(--mut);font-size:13px}.evidence-state:before{content:"";width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.quality-banner{border:1px solid var(--line);border-left:4px solid var(--accent);background:var(--accent-soft);padding:14px 16px;border-radius:8px;margin:16px 0}.quality-banner.blocked{border-left-color:var(--h);background:var(--h-bg)}.quality-grid{display:grid;grid-template-columns:repeat(4,minmax(100px,1fr));gap:10px;margin-top:12px}.quality-grid div{background:var(--panel);border:1px solid var(--line-soft);padding:9px;border-radius:6px}.quality-grid b{display:block;font-size:18px}.quality-grid span{font-size:10px;color:var(--mut);text-transform:uppercase}
+.evidence-score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}.evidence-score{border:1px solid var(--line);padding:13px;border-radius:8px;background:var(--panel)}.evidence-score b{font-size:24px}.evidence-score span{display:block;color:var(--mut);font-size:11px;margin-top:3px}.evidence-bar{height:7px;background:var(--line-soft);border-radius:5px;margin-top:9px;overflow:hidden}.evidence-bar i{display:block;height:100%;background:var(--brand)}.citation{font-family:var(--mono);font-size:10px;color:var(--accent);white-space:nowrap}.gap-list li{color:var(--ink-soft)}.legacy-warning{border:1px solid var(--h);background:var(--h-bg);color:var(--ink);padding:12px 15px;border-radius:8px;margin-bottom:16px}.report-status-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:12px;background:var(--accent-soft);color:var(--accent)}.report-status-tag.legacy{background:var(--h-bg);color:var(--h)}
 
 /* ===== mockup-match overrides ===== */
 .icn{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
@@ -320,7 +323,7 @@ a{color:var(--brand);text-decoration:none}
 @media(max-width:900px){.compare-brief{grid-template-columns:1fr}.driver-row{grid-template-columns:28px minmax(140px,.55fr) minmax(200px,1fr)}.driver-reason{grid-column:2/-1}.comparison-facts{grid-template-columns:repeat(2,1fr)}.comparison-fact:nth-child(2){border-right:0}.comparison-fact:nth-child(-n+2){border-bottom:1px solid var(--line)}.action-list{grid-template-columns:1fr}}
 @media(max-width:720px){.edit-grid,.compare-controls,.sourcing-compare{grid-template-columns:1fr}.edit-grid .wide{grid-column:auto}.driver-row{grid-template-columns:24px 1fr}.score-bars,.driver-reason{grid-column:2}.comparison-facts{grid-template-columns:1fr}.comparison-fact{border-right:0;border-bottom:1px solid var(--line)}.comparison-fact:last-child{border-bottom:0}.compare-section-head{display:block}.compare-section-head p{text-align:left;margin-top:5px}}
 @media(max-width:520px){.topbar{padding:0 10px}.topbar .user{padding-left:4px}.topbar .user .um{display:none}.topbar .signout{width:38px;padding:0;font-size:0}.topbar .signout .icn{width:17px;height:17px}}
-@media(max-width:760px){.report-visuals,.report-visuals .score-panel{grid-template-columns:1fr}}
+@media(max-width:760px){.report-visuals,.report-visuals .score-panel{grid-template-columns:1fr}.quality-grid,.evidence-score-grid{grid-template-columns:1fr 1fr}.quality-grid div:last-child{grid-column:1/-1}}
 @media print{
   .side,.topbar,.rback,.no-print{display:none!important}
   .app{grid-template-columns:1fr}.content{padding:0}
@@ -961,7 +964,51 @@ function structuredModel(R){
 }
 
 /* ============================ REPORT HTML RENDER ============================ */
+function reportHTMLV2(R){
+ const V=R.evidence_v2,Q=V.quality||{},scores=V.scores||{},pillars=scores.pillars||{},spec=V.spec||{};
+ const refs=V.references||[],refNo=new Map(refs.map((ref,index)=>[ref.id,index+1]));
+ const evidenceNo=new Map((V.indicators||[]).map((item,index)=>[item.id,index+1]));
+ const cite=ids=>{const links=(ids||[]).map(id=>{if(evidenceNo.has(id)){const item=V.indicators[evidenceNo.get(id)-1],n=refNo.get(item.source.id);return n?`<a class="citation" href="${item.source.url}" target="_blank" rel="noopener">[E${evidenceNo.get(id)} / R${n}]</a>`:`<span class="citation">[E${evidenceNo.get(id)}]</span>`;}const n=refNo.get(id);return n?`<a class="citation" href="${refs[n-1].url}" target="_blank" rel="noopener">[R${n}]</a>`:"";}).filter(Boolean);return links.join(" ");};
+ const sec=(n,title,body)=>`<section><div class="sec-h"><span class="sec-n">${String(n).padStart(2,"0")}</span><h2>${title}</h2></div>${body}</section>`;
+ const fmt=value=>Number.isFinite(value)?Math.round(value):"N/A";
+ const scoreCard=(key,label)=>{const value=pillars[key],trace=(scores.trace?.pillars||[]).find(row=>row.pillar===key);return `<div class="evidence-score"><b>${fmt(value)}${Number.isFinite(value)?'<small style="font-size:12px;color:var(--mut)">/100</small>':""}</b><span>${label}</span><div class="evidence-bar"><i style="width:${Number.isFinite(value)?value:0}%"></i></div>${trace?`<div style="margin-top:6px">${cite(trace.evidence_ids)}</div>`:'<div style="margin-top:6px;color:var(--mut);font-size:10px">Evidence gap - not scored</div>'}</div>`;};
+ const overall=Q.exportable&&Number.isFinite(scores.overall)?Math.round(scores.overall):null;
+ const userRows=(V.assumptions||[]).map(item=>`<tr><td><span class="chip ${item.type.startsWith("USER")?"t-fact":"t-assume"}">${esc(item.type)}</span></td><td>${esc(item.field.replaceAll("_"," "))}</td><td>${esc(String(item.value??"Not provided"))}</td></tr>`).join("");
+ const indicatorRows=(V.indicators||[]).map(item=>`<tr><td><strong>${esc(item.name)}</strong><br><span style="color:var(--mut)">${esc(item.interpretation)}</span></td><td>${item.value_text?esc(item.value_text):`${item.value} ${esc(item.unit)}`}</td><td>${esc(item.geography)}</td><td>${esc(item.confidence)}</td><td>${cite([item.id])}</td></tr>`).join("");
+ const chainRows=(V.supply_chain?.stages||[]).map(stage=>`<tr><td><strong>${esc(stage.title)}</strong></td><td>${esc(stage.description)}</td><td>${stage.inputs.map(esc).join("; ")}</td><td>${stage.countries.length?stage.countries.map(esc).join(", "):"Not modelled"}<br><span style="color:var(--mut)">${esc(stage.country_basis)}</span></td><td>${stage.screening_topics.map(esc).join("; ")}</td><td>${esc(stage.confidence)}</td><td>${cite(stage.evidence)}</td></tr>`).join("");
+ const signalRows=(V.signals||[]).map(signal=>`<tr><td>${esc(signal.good)}</td><td>${esc(signal.country)}</td><td>${esc(signal.issue)}</td><td>${cite(["us-dol-goods-2024"])}</td></tr>`).join("");
+ const gapRows=(V.gaps||[]).map(gap=>`<li><strong>${esc(gap.id.replaceAll("_"," "))}:</strong> ${esc(gap.reason)}</li>`).join("");
+ const refRows=refs.map((ref,index)=>`<tr><td>R${index+1}</td><td><a href="${ref.url}" target="_blank" rel="noopener"><strong>${esc(ref.name)}</strong></a><br>${esc(ref.publisher)}</td><td>${esc(ref.edition)}</td><td>${new Date(ref.retrieved_at).toLocaleDateString()}</td><td><span class="citation">${esc(ref.checksum.slice(0,12))}</span></td></tr>`).join("");
+ const heatRows=(scores.trace?.pillars||[]).map(row=>{const risk=100-row.score,label=risk>=75?"Very High":risk>=55?"High":risk>=35?"Medium":risk>=15?"Low":"Very Low";return `<tr><td>${esc(row.pillar.replaceAll("_"," "))}</td><td>${Math.round(risk)}</td><td>${label}</td><td>${cite(row.evidence_ids)}</td></tr>`;}).join("");
+ const matrixRows=(V.indicators||[]).map(item=>{const row=(scores.trace?.pillars||[]).find(trace=>trace.evidence_ids.includes(item.id));const materiality=row?Math.round(100-row.score):"Not scored";return `<tr><td>${esc(item.name)}</td><td>${materiality}</td><td>${esc(item.confidence)}</td><td>${cite([item.id])}</td></tr>`;}).join("");
+ return `<header class="cover"><p class="eyebrow">Validated Screening Social Life Cycle Assessment</p><h1>${esc(R.title)}</h1><p class="sub">Evidence-led screening of ${esc(R.product)} in ${esc(spec.locationLabel)}</p><dl class="meta"><div><dt>User-provided scale</dt><dd>${R.qty?R.qty.toLocaleString()+" units/year":"Not provided"}</dd></div><div><dt>Location</dt><dd>${esc(spec.locationLabel)}</dd></div><div><dt>Industry</dt><dd>${esc(R.sectorLabel)}</dd></div><div><dt>Site status</dt><dd>${esc(spec.answers.site_status)}</dd></div><div><dt>System boundary</dt><dd>${esc(spec.answers.system_boundary.replaceAll("_"," "))}</dd></div><div><dt>Generated</dt><dd>${new Date(V.generated_at).toLocaleString()}</dd></div><div><dt>Method</dt><dd>UNEP S-LCA 2020 aligned screening</dd></div><div><dt>Evidence coverage</dt><dd>${Q.evidence_coverage_percent}% of score pillars</dd></div></dl></header>
+ <div class="quality-banner ${Q.exportable?"":"blocked"}"><strong>${esc(Q.statement)}</strong><div class="quality-grid"><div><b>${Q.evidence_records}</b><span>Evidence records</span></div><div><b>${Q.scored_pillars}/6</b><span>Scored pillars</span></div><div><b>${Q.declared_gaps}</b><span>Declared gaps</span></div><div><b>${V.validation.valid?"PASS":"FAIL"}</b><span>Consistency validation</span></div></div></div>
+ ${sec(1,"Executive Summary",`<p>This screening report is built from <strong>${Q.evidence_records} retrieved evidence records</strong>, user-confirmed project factors, and explicitly labelled process-model assumptions. It does not treat country or trade data as proof of conditions at a named facility or supplier.</p><p>${overall===null?"An overall score is not published because the minimum evidence threshold was not met.":`The reproducible screening evidence index is <strong>${overall}/100</strong>, based on ${Q.scored_pillars} evidence-backed pillars. Missing pillars are excluded and disclosed rather than assigned invented values.`}</p>${V.gaps.length?`<div class="note"><b>Material evidence gaps.</b><ul class="gap-list">${gapRows}</ul></div>`:""}`)}
+ ${sec(2,"Goal & Scope",`<p><strong>Goal.</strong> Identify evidence-supported social-risk signals and priority diligence needs for the described project.</p><p><strong>Boundary.</strong> ${esc(spec.answers.system_boundary.replaceAll("_"," "))}; site status ${esc(spec.answers.site_status)}; operating scope ${esc(spec.answers.operating_scope.replaceAll("_"," "))}. <span class="chip t-fact">USER CONFIRMED</span></p><p><strong>Reliance.</strong> Screening and diligence scoping only. Site and supplier primary data are required before external performance claims.</p>`)}
+ ${sec(3,"Functional Unit",`<p>The screening reference is <strong>one unit of ${esc(R.product)}</strong> at the user-provided annual scale of <strong>${R.qty?R.qty.toLocaleString():"not specified"}</strong>. No activity-variable or worker-hour weighting is claimed.</p>`)}
+ ${sec(4,"Inputs, Assumptions & Boundaries",`<div class="tbl-wrap"><table class="report"><thead><tr><th>Provenance</th><th>Field</th><th>Value</th></tr></thead><tbody>${userRows}</tbody></table></div>`)}
+ ${sec(5,"Manufacturing Process",`<p>The process sequence below is an industry process model, not a claim about the site's installed operations. The user-confirmed operating scope determines the foreground stage. ${cite(["census-naics-2022"])}</p><div class="flow">${(V.supply_chain?.stages||[]).map(stage=>`<div class="stage"><b>${esc(stage.title)}</b><br><span>${esc(stage.description)} ${cite(stage.evidence)}</span></div><div class="arrow">&darr;</div>`).join("")}</div>`)}
+ ${sec(6,"Supply Chain Mapping",`<p>Countries appear only where the report has retrieved trade evidence or a user-confirmed host location. Trade partners are market proxies and are not represented as actual suppliers.</p><div class="tbl-wrap"><table class="report"><thead><tr><th>Stage</th><th>Description</th><th>Inputs</th><th>Countries and basis</th><th>Diligence topics</th><th>Confidence</th><th>Evidence</th></tr></thead><tbody>${chainRows}</tbody></table></div>`)}
+ ${sec(7,"Country & Location Evidence",`<div class="tbl-wrap"><table class="report"><thead><tr><th>Indicator</th><th>Observation</th><th>Geography</th><th>Confidence</th><th>Evidence</th></tr></thead><tbody>${indicatorRows||'<tr><td colspan="5">No verified indicators were retrieved.</td></tr>'}</tbody></table></div>`)}
+ ${sec(8,"Stakeholder Analysis",`<div class="tbl-wrap"><table class="report"><thead><tr><th>Stakeholder</th><th>Evidence used</th><th>Current limitation</th></tr></thead><tbody><tr><td>Workers</td><td>Labour-market and representation evidence ${cite((V.indicators||[]).filter(i=>["union_membership_rate","local_unemployment_rate"].includes(i.indicator_id)).map(i=>i.id))}</td><td>No facility payroll, hours, injury, grievance or contractor records.</td></tr><tr><td>Local communities</td><td>Host-geography labour-market context ${cite((V.indicators||[]).filter(i=>i.indicator_id==="local_unemployment_rate").map(i=>i.id))}</td><td>No site-level land, traffic, water, noise or engagement data.</td></tr><tr><td>Value-chain actors</td><td>Trade-partner proxy ${cite((V.indicators||[]).filter(i=>i.indicator_id==="top_partner_import_share").map(i=>i.id))}</td><td>No named supplier list or purchase-spend data.</td></tr><tr><td>Consumers</td><td>Not scored</td><td>No product safety, accessibility, privacy or complaint evidence.</td></tr><tr><td>Society and government</td><td>Country governance proxy ${cite((V.indicators||[]).filter(i=>i.indicator_id==="control_of_corruption_estimate").map(i=>i.id))}</td><td>Not an assessment of operator controls.</td></tr></tbody></table></div>`)}
+ ${sec(9,"Worker Assessment",`<p>Worker conclusions are limited to retrieved location context. The report does not infer wages, headcount, automation, injury rates or facility unionisation.</p>${(V.indicators||[]).filter(i=>["union_membership_rate","local_unemployment_rate"].includes(i.indicator_id)).map(i=>`<div class="note"><b>${esc(i.name)}:</b> ${i.value} ${esc(i.unit)} at ${esc(i.geography)}. ${esc(i.interpretation)} ${cite([i.id])}</div>`).join("")||'<div class="note"><b>Gap.</b> No worker indicators were retrieved.</div>'}`)}
+ ${sec(10,"Community Impact Assessment",`<p>No facility-specific community outcome is asserted. Host labour-market context is reported in Section 7; land, displacement, Indigenous rights, water, traffic, noise, tax and grievance evidence remain primary-data requirements.</p>`)}
+ ${sec(11,"Human Rights Assessment",signalRows?`<p>These are public commodity risk signals. They become findings only if supplier linkage is established.</p><div class="tbl-wrap"><table class="report"><thead><tr><th>Good</th><th>Listed geography</th><th>Interpretation</th><th>Evidence</th></tr></thead><tbody>${signalRows}</tbody></table></div>`:`<div class="note"><b>Gap.</b> No product-country labour listing was asserted. Absence of a signal is not evidence of low risk. ${cite(["us-dol-goods-2024"])}</div>`)}
+ ${sec(12,"Gender & Diversity Assessment",`<div class="note"><b>Evidence gap.</b> No workforce gender, pay-equity, management representation, accommodation or harassment data were provided or retrieved. SYCLE does not substitute a sector percentage for facility evidence.</div>`)}
+ ${sec(13,"Governance Assessment",`<p>Country governance data provide context only and are not used as evidence of the operator's policies or controls.</p>${(V.indicators||[]).filter(i=>i.indicator_id==="control_of_corruption_estimate").map(i=>`<div class="note"><b>${esc(i.name)}:</b> ${i.value}. ${esc(i.interpretation)} ${cite([i.id])}</div>`).join("")||'<div class="note"><b>Gap.</b> No governance observation was retrieved.</div>'}`)}
+ ${sec(14,"Consumer Assessment",`<div class="note"><b>Evidence gap.</b> No verified product-safety, accessibility, privacy, complaint, recall or responsible-marketing evidence was supplied. The consumer pillar is not scored.</div>`)}
+ ${sec(15,"Social Hotspot Analysis",`<p>The topics below are diligence prompts attached to process stages. They are not findings about a named supplier. ${cite(["oecd-rbc-2018"])}</p><div class="tbl-wrap"><table class="report"><thead><tr><th>Stage</th><th>Potential diligence topics</th><th>Evidence status</th></tr></thead><tbody>${(V.supply_chain?.stages||[]).map(stage=>`<tr><td>${esc(stage.title)}</td><td>${stage.screening_topics.map(esc).join(", ")}</td><td>${stage.countries.length?"Trade or host geography available":"Country linkage gap"} ${cite(stage.evidence)}</td></tr>`).join("")}</tbody></table></div>`)}
+ ${sec(16,"SDG Alignment",`<p>Potential alignment is presented as a management lens, not measured contribution: SDG 8 (decent work), SDG 10 (reduced inequalities), SDG 12 (responsible production) and SDG 16 (strong institutions). ${cite(["unep-2020","oecd-rbc-2018"])}</p>`)}
+ ${sec(17,"Materiality Matrix",`<p>Materiality is calculated only where an evidence-backed score exists. Unscored topics remain gaps.</p><div class="tbl-wrap"><table class="report"><thead><tr><th>Topic</th><th>Screening risk (100 - score)</th><th>Confidence</th><th>Evidence</th></tr></thead><tbody>${matrixRows||'<tr><td colspan="4">No scored evidence.</td></tr>'}</tbody></table></div>`)}
+ ${sec(18,"Risk Heatmap",`<div class="tbl-wrap"><table class="report heat"><thead><tr><th>Pillar</th><th>Risk index</th><th>Band</th><th>Evidence</th></tr></thead><tbody>${heatRows||'<tr><td colspan="4">No scored evidence.</td></tr>'}</tbody></table></div>`)}
+ ${sec(19,"Overall Social Score",`<div class="quality-banner ${overall===null?"blocked":""}"><strong>${overall===null?"Overall score not published":`${overall}/100 screening evidence index`}</strong><p>${esc(scores.trace?.formula||"")}</p><p>Coverage: ${scores.coverage?.scored_pillars||0} of 6 pillars. This is a screening index, not a verified facility performance rating.</p></div><div class="evidence-score-grid">${scoreCard("workers","Workers")}${scoreCard("local_communities","Local communities")}${scoreCard("society","Society / governance")}${scoreCard("value_chain_actors","Value-chain actors")}${scoreCard("children","Children / human rights")}${scoreCard("consumers","Consumers")}</div>`)}
+ ${sec(20,"Recommendations",`<ol>${(V.recommendations||[]).map(item=>`<li>${esc(item)}</li>`).join("")}</ol>`)}
+ ${sec(21,"References",`<div class="tbl-wrap"><table class="report"><thead><tr><th>ID</th><th>Source</th><th>Edition</th><th>Retrieved</th><th>Checksum</th></tr></thead><tbody>${refRows}</tbody></table></div>`)}
+ ${sec(22,"Appendix: Reproducibility & Gaps",`<h4>Score trace</h4><div class="tbl-wrap"><table class="report"><thead><tr><th>Pillar</th><th>Score</th><th>Weight</th><th>Formula input</th><th>Evidence</th></tr></thead><tbody>${(scores.trace?.pillars||[]).map(row=>`<tr><td>${esc(row.pillar)}</td><td>${row.score}</td><td>${row.weight}</td><td>${esc(row.formula)}</td><td>${cite(row.evidence_ids)}</td></tr>`).join("")}</tbody></table></div><h4>Declared evidence gaps</h4>${V.gaps.length?`<ul class="gap-list">${gapRows}</ul>`:"<p>No retrieval gaps were recorded. Primary-data gaps described in the report still apply.</p>"}<p><strong>Validation:</strong> ${V.validation.valid?"Passed":"Failed"}. Exportable: ${V.validation.exportable?"Yes":"No"}.</p>`)}
+ <div class="foot">SYCLE validated screening S-LCA. Dataset editions, retrieval times and checksums are retained in this report. Public proxy data cannot establish conditions at an unnamed facility or supplier.</div>`;
+}
 function reportHTML(R){
+ if(R.evidence_v2?.version===2&&R.evidence_v2.spec&&R.evidence_v2.quality)return reportHTMLV2(R);
  const S=SECTORS[R.sectorKey];const c=R.country;const CN=COUNTRIES[c];
  const loc=R.region?`${R.region}, ${c}`:c;
  const sc=R.scores;
@@ -1288,7 +1335,7 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;","
 function article(s){return /^[aeiou]/i.test(s)?"an":"a";}
 
 /* ============================ STATE / PERSISTENCE ============================ */
-let reports=[],settings={},currentReport=null,editingReportId=null,compareA=null,compareB=null,chatHostId="assistant",currentUser=null,pendingReportDraft=null;
+let reports=[],settings={},currentReport=null,editingReportId=null,compareA=null,compareB=null,chatHostId="assistant",currentUser=null,pendingReportDraft=null,pendingEvidenceDraft=null;
 const BASE_LS="sycle_reports_v1",BASE_LSS="sycle_settings_v1",USER_KEY="sycle_current_user_v1";
 let LS=BASE_LS,LSS=BASE_LSS;
 function userSlug(email){return String(email||"guest").trim().toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"")||"guest";}
@@ -1298,7 +1345,7 @@ function login(){
  const pass=val("auth-pass");
  if(!email||!email.includes("@")||pass.length<4){toast("Enter an email and a password of at least 4 characters.");return;}
  currentUser={email,slug:userSlug(email)};
- pendingReportDraft=null;
+ pendingReportDraft=null;pendingEvidenceDraft=null;
  localStorage.setItem(USER_KEY,JSON.stringify(currentUser));
  setStorageNamespace(email);
  document.getElementById("authScreen").style.display="none";
@@ -1307,7 +1354,7 @@ function login(){
 }
 function logout(){
  localStorage.removeItem(USER_KEY);
- currentUser=null;reports=[];settings={};currentReport=null;pendingReportDraft=null;
+ currentUser=null;reports=[];settings={};currentReport=null;pendingReportDraft=null;pendingEvidenceDraft=null;
  document.getElementById("appShell").classList.add("locked");
  document.getElementById("authScreen").style.display="grid";
  document.getElementById("auth-pass").value="";
@@ -1359,7 +1406,7 @@ function go(view){
  if(view==="compare")renderCompare();
  window.scrollTo(0,0);
 }
-function newReport(){currentReport=null;pendingReportDraft=null;go("dashboard");renderWorkspaceIntro();document.getElementById("desc").focus();}
+function newReport(){currentReport=null;pendingReportDraft=null;pendingEvidenceDraft=null;go("dashboard");renderWorkspaceIntro();document.getElementById("desc").focus();}
 function renderWorkspaceIntro(){
  document.getElementById("assistant").innerHTML=`
   ${currentReport?`<div class="context-pill">Active report: ${esc(currentReport.title)} · ${esc(currentReport.region?currentReport.region+", "+currentReport.country:currentReport.country)}</div>`:""}
@@ -1379,8 +1426,8 @@ function showDashboardFor(R){
   <div class="bubble you"><div class="bh"><b>You</b><span class="time">${nowTime()}</span></div>
    <div>${esc(R.desc)}</div></div>
   <div class="bubble"><div class="bh"><div class="who"><span class="bot">🌿</span><b>SYCLE</b></div><span class="time">${nowTime()}</span></div>
-   <p style="margin:2px 0 4px">Your Social Life Cycle Assessment has been generated successfully.</p>
-   <p style="margin:6px 0 0;color:var(--ink-soft)">I will keep this report active for follow-up questions until you create or open another report.</p>
+   <p style="margin:2px 0 4px">Your validated screening Social Life Cycle Assessment has been generated successfully.</p>
+   <p style="margin:6px 0 0;color:var(--ink-soft)">${R.evidence_v2?`${R.evidence_v2.quality.evidence_records} evidence records retrieved; ${R.evidence_v2.quality.scored_pillars} of 6 pillars scored; ${R.evidence_v2.quality.declared_gaps} retrieval gaps declared.`:"Legacy report - regenerate before relying on or exporting it."}</p>
    <div class="cta-row">
      <button class="btn primary" data-act="open" data-arg="${R.id}">📄 Open Report</button>
    </div>
@@ -1424,15 +1471,63 @@ function askForMissingDetails(desc,check,isContinuation){
    <p style="color:var(--ink-soft);margin-bottom:0">Please send only the missing details or restate the full project. I will not assume the plant state, country, scale, or timeline.</p>
   </div>`);
 }
-function finalizeGeneratedReport(desc){
- const R=buildReport(desc,{});
- R.title=R.title||titleCase(R.product);
- reports.unshift(R);save();
- pendingReportDraft=null;
- renderRecent();showDashboardFor(R);
- toast("Report generated - "+R.title);
+function evidenceSpec(desc,overrides={}){
+ const sectorKey=overrides.sector||findSector(desc),S=SECTORS[sectorKey],country=overrides.country||findCountry(desc);
+ return {product:overrides.product||extractProduct(desc),sectorKey,sectorLabel:S.label.replace(/&amp;/g,"&"),country,region:overrides.region!==undefined?overrides.region:findRegion(desc,country),qty:overrides.qty!==undefined?overrides.qty:parseQuantity(desc),prompt:desc};
 }
-function continuePendingReportDraft(desc){
+async function callEvidenceService(spec,answers={}){
+ const response=await fetch("/api/evidence-report",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({spec,answers})});
+ const payload=await response.json().catch(()=>({status:"error",message:"Evidence service returned an unreadable response."}));
+ if(!response.ok&&payload.status!=="blocked")throw new Error(payload.message||`Evidence service failed (${response.status}).`);
+ return payload;
+}
+function renderEvidenceQuestions(desc,questions,isEdit){
+ document.getElementById("assistant").insertAdjacentHTML("beforeend",`
+  <div class="bubble"><div class="bh"><div class="who"><span class="bot">SY</span><b>SYCLE Evidence Gate</b></div><span class="time">${nowTime()}</span></div>
+   <p>I found the basic project details. These factors materially change the supply chain, evidence selection, or score, so the report will not be generated until they are confirmed.</p>
+   <div class="evidence-questions">${questions.map(q=>`<div class="evidence-question"><label for="evidence-q-${q.id}">${esc(q.text)}</label><select id="evidence-q-${q.id}"><option value="">Select one...</option>${q.options.map(o=>`<option value="${o.value}">${esc(o.label)}</option>`).join("")}</select></div>`).join("")}</div>
+   <button class="btn primary" data-act="submit-evidence">Retrieve evidence and generate report</button>
+   <p style="color:var(--mut);font-size:12px;margin-bottom:0">No score or report exists yet. SYCLE will retrieve evidence only after these answers are supplied.</p>
+  </div>`);
+}
+function evidenceScores(V){
+ const p=V.scores.pillars||{};
+ return {worker:p.workers??null,humanRights:p.children??null,community:p.local_communities??null,supplyChain:p.value_chain_actors??null,governance:p.society??null,consumer:p.consumers??null,overall:V.quality.exportable?V.scores.overall:null};
+}
+function completeEvidenceReport(desc,V,replaceId){
+ const spec=V.spec,R=buildReport(desc,{sector:spec.sectorKey,country:spec.country,region:spec.region,qty:spec.qty,product:spec.product,id:replaceId||undefined});
+ R.evidence_v2=V;R.region=spec.region;R.country=spec.country;R.qty=spec.qty;R.sourcing=[...new Set(V.sourcing.map(item=>item.country))];R.scores=evidenceScores(V);
+ R.supplyChain={summary:{totalStages:V.supply_chain.stages.length,sourcingCountries:R.sourcing.length,highRiskCountries:0,tier1Suppliers:null,tier2Suppliers:null},statistics:{countries:R.sourcing,highRiskCountries:[]},stages:V.supply_chain.stages,references:V.references};
+ R.stats={stages:V.supply_chain.stages.length,countries:R.sourcing.length,indicators:V.indicators.length,hotspots:V.signals.length,sdgs:4};
+ R.model={userInputs:{prompt:desc,scale:R.qty,location:spec.locationLabel},extractedProduct:R.product,geography:{country:R.country,region:R.region},industry:R.sectorLabel,assumptions:V.assumptions,supplyChain:R.supplyChain,riskScores:R.scores,stakeholderAnalysis:["Workers","Local communities","Value-chain actors","Consumers","Society and government"],workerAnalysis:{evidence:V.indicators.filter(i=>["union_membership_rate","local_unemployment_rate"].includes(i.indicator_id))},communityAnalysis:{evidence:V.indicators.filter(i=>i.indicator_id==="local_unemployment_rate")},humanRights:{signals:V.signals},sdgs:[8,10,12,16],recommendations:V.recommendations,references:V.references,charts:["evidenceScores","materiality","riskHeatmap"],reportSections:["Executive Summary","Goal & Scope","Functional Unit","Inputs & Assumptions","Manufacturing Process","Supply Chain Mapping","Country Evidence","Stakeholder Analysis","Worker Assessment","Community Impact","Human Rights","Gender & Diversity","Governance","Consumer Assessment","Hotspots","SDG Alignment","Materiality Matrix","Risk Heatmap","Overall Social Score","Recommendations","References","Appendix"]};
+ R.demo=false;R.date=new Date().toLocaleDateString("en-US",{month:"short",year:"numeric"});R.title=titleCase(R.product);R.chat=replaceId?(reportById(replaceId)?.chat||[]):[];
+ if(replaceId)reports=reports.map(item=>item.id===replaceId?R:item);else reports.unshift(R);
+ save();pendingReportDraft=null;pendingEvidenceDraft=null;renderRecent();showDashboardFor(R);toast(`Validated report generated - ${R.title}`);
+}
+async function runEvidenceGeneration(desc,spec,answers={},replaceId=null){
+ document.getElementById("assistant").insertAdjacentHTML("beforeend",`<div class="bubble" id="evidence-loading"><div class="evidence-state">Retrieving official evidence and running consistency checks...</div></div>`);
+ try{
+  const result=await callEvidenceService(spec,answers);document.getElementById("evidence-loading")?.remove();
+  if(result.status==="needs_clarification"){
+   pendingEvidenceDraft={desc,spec,answers,questions:result.questions,replaceId};renderEvidenceQuestions(desc,result.questions,!!replaceId);return;
+  }
+  if(result.status!=="complete"){
+   pendingEvidenceDraft=null;appendBotMessage(`<p><strong>Report generation stopped.</strong> ${esc(result.message||"The evidence package could not be validated.")}</p><p>No report or score was saved.</p>`);return;
+  }
+  completeEvidenceReport(desc,result.evidence_v2,replaceId);
+ }catch(error){document.getElementById("evidence-loading")?.remove();pendingEvidenceDraft=null;appendBotMessage(`<p><strong>Report generation stopped.</strong> ${esc(error.message)}</p><p>SYCLE fails closed: no legacy template report was created.</p>`);}
+}
+async function submitEvidenceQuestions(){
+ if(!pendingEvidenceDraft)return;
+ const answers={...pendingEvidenceDraft.answers};let missing=false;
+ for(const q of pendingEvidenceDraft.questions){const el=document.getElementById(`evidence-q-${q.id}`);if(!el?.value){missing=true;el?.focus();break;}answers[q.id]=el.value;}
+ if(missing){toast("Answer every evidence question before generating the report.");return;}
+ const draft=pendingEvidenceDraft;pendingEvidenceDraft=null;await runEvidenceGeneration(draft.desc,draft.spec,answers,draft.replaceId);
+}
+async function finalizeGeneratedReport(desc,overrides={},replaceId=null){
+ const spec=evidenceSpec(desc,overrides);await runEvidenceGeneration(desc,spec,{},replaceId);
+}
+async function continuePendingReportDraft(desc){
  pendingReportDraft.parts.push(desc);
  const merged=combinedDraftText();
  const check=validateReportPrompt(merged);
@@ -1440,13 +1535,13 @@ function continuePendingReportDraft(desc){
   askForMissingDetails(desc,check,true);
   return;
  }
- finalizeGeneratedReport(merged);
+ await finalizeGeneratedReport(merged);
 }
-function generateFromInput(){
+async function generateFromInput(){
  const desc=document.getElementById("desc").value.trim();
  if(!desc){toast("Describe your factory or project first.");return;}
  if(pendingReportDraft){
-  continuePendingReportDraft(desc);
+  await continuePendingReportDraft(desc);
   document.getElementById("desc").value="";
   return;
  }
@@ -1463,7 +1558,7 @@ function generateFromInput(){
   document.getElementById("desc").value="";
   return;
  }
- finalizeGeneratedReport(desc);
+ await finalizeGeneratedReport(desc);
  document.getElementById("desc").value="";
 }
 function isNewAssessmentPrompt(text){
@@ -1563,6 +1658,7 @@ function renderReports(){
      <div class="rc-date">Report</div>
    </div>
    <div class="rc-tags">${R.demo?'<span class="tagpill demo">DEMO — retained</span>':''}<span class="tagpill">${S.label}</span><span class="tagpill">${esc(R.country)}</span></div>
+   <div><span class="report-status-tag ${R.evidence_v2?"":"legacy"}">${R.evidence_v2?"VALIDATED V2":"LEGACY - REGENERATE"}</span></div>
    <div class="rc-actions">
      <button data-act="open" data-arg="${R.id}">Open</button>
      <button data-act="ask-open" data-arg="${R.id}">Ask</button>
@@ -1585,7 +1681,7 @@ function renderRecent(){
 function openReport(id){
  const R=reportById(id);if(!R)return;
  currentReport=R;
- document.getElementById("reportBody").innerHTML=reportHTML(R);
+ document.getElementById("reportBody").innerHTML=(R.evidence_v2?"":'<div class="legacy-warning"><strong>Legacy report:</strong> this assessment came from the retired template generator. It is view-only; PDF, CSV and sharing are blocked until it is regenerated through the evidence workflow.</div>')+reportHTML(R);
  renderReportChat(R);
  go("report");
 }
@@ -1611,6 +1707,7 @@ function askCurrentReport(){
  renderReportChat(currentReport);
 }
 function reportAnswerHTML(text,R){
+ if(R.evidence_v2)return evidenceAnswerHTML(text,R);
  const t=text.toLowerCase(),S=SECTORS[R.sectorKey],sc=R.scores;
  if(/\b(recommend|improve|mitigat|increase.*score|help)\b/.test(t)){
   const lowest=lowestPillar(sc);
@@ -1652,6 +1749,18 @@ function reportAnswerHTML(text,R){
  }
  return `<p>I’m reading from the structured report object for <strong>${esc(R.title)}</strong>. Ask about recommendations, supply chain, worker score, community impacts, assumptions, sources, or comparisons.</p>`;
 }
+function evidenceAnswerHTML(text,R){
+ const t=text.toLowerCase(),V=R.evidence_v2,items=V.indicators||[],parts=[];
+ const wantsActions=/\b(recommend|improve|mitigat|help|action|next step)\b|what should (we|i) do/.test(t);
+ if(/\b(score|scoring|why.*lower|why.*higher)\b/.test(t))parts.push(`<p>The published index is ${V.quality.exportable?Math.round(V.scores.overall)+"/100":"not published"}. It uses a weighted mean of only the ${V.scores.coverage.scored_pillars} evidence-backed pillars; missing pillars are excluded and disclosed.</p><ul class="answer-list">${Object.entries(V.scores.pillars).map(([key,value])=>`<li><strong>${esc(key.replaceAll("_"," "))}:</strong> ${Number.isFinite(value)?Math.round(value):"not scored"}</li>`).join("")}</ul>`);
+ if(/\b(worker|labour|labor|union|employment)\b/.test(t)){const selected=items.filter(item=>["union_membership_rate","local_unemployment_rate"].includes(item.indicator_id));parts.push(`<p>Worker evidence is limited to retrieved location context; SYCLE does not infer site wages, injury rates, hours or headcount.</p><ul class="answer-list">${selected.map(item=>`<li><strong>${esc(item.name)}:</strong> ${item.value} ${esc(item.unit)} at ${esc(item.geography)}. ${esc(item.interpretation)}</li>`).join("")||"<li>No worker observations were retrieved.</li>"}</ul>`);}
+ if(/\b(source|citation|reference|dataset)\b/.test(t))parts.push(`<p>This report retained ${V.references.length} versioned sources:</p><ul class="answer-list">${V.references.map(ref=>`<li><a href="${ref.url}" target="_blank" rel="noopener">${esc(ref.name)}</a> - ${esc(ref.edition)}; checksum ${esc(ref.checksum.slice(0,12))}</li>`).join("")}</ul>`);
+ if(/\b(assumption|provided|input|boundary)\b/.test(t))parts.push(`<p>The report separates user-confirmed inputs from model boundaries:</p><ul class="answer-list">${V.assumptions.map(item=>`<li><strong>${esc(item.type)} - ${esc(item.field)}:</strong> ${esc(String(item.value))}</li>`).join("")}</ul>`);
+ if(/\b(supply|supplier|chain|country|countries)\b/.test(t))parts.push(`<p>The supply-chain map contains ${V.supply_chain.stages.length} product-specific stages. Countries appear only from retrieved UN Comtrade records or the user-confirmed host location.</p><ul class="answer-list">${V.supply_chain.stages.map(stage=>`<li><strong>${esc(stage.title)}:</strong> ${stage.countries.length?stage.countries.map(esc).join(", "):"country linkage not modelled"} - ${esc(stage.country_basis)}</li>`).join("")}</ul>`);
+ if(/\b(gap|missing|confidence|quality|valid)\b/.test(t))parts.push(`<p>${esc(V.quality.statement)}</p><ul class="answer-list">${V.gaps.map(gap=>`<li><strong>${esc(gap.id)}:</strong> ${esc(gap.reason)}</li>`).join("")||"<li>No retrieval failure was recorded. Primary-data gaps in the report still apply.</li>"}</ul>`);
+ if(wantsActions)parts.push(`<p>These actions follow directly from the evidence gaps and risk signals in this report:</p><ol class="answer-list">${V.recommendations.map(item=>`<li>${esc(item)}</li>`).join("")}</ol>`);
+ return parts.join("")||`<p>I am answering from the validated evidence package for <strong>${esc(R.title)}</strong>. Ask about its sources, supply chain, worker evidence, scoring, assumptions, gaps or recommendations.</p>`;
+}
 
 function openEdit(id){
  const R=reportById(id);if(!R)return;
@@ -1670,7 +1779,7 @@ function closeEdit(){
  document.getElementById("editModal").classList.remove("on");
  document.getElementById("editModal").setAttribute("aria-hidden","true");
 }
-function saveEditedReport(){
+async function saveEditedReport(){
  const old=reportById(editingReportId);if(!old)return closeEdit();
  const country=val("edit-country");
  const product=val("edit-product")||old.product;
@@ -1679,12 +1788,10 @@ function saveEditedReport(){
  const region=val("edit-region");
  let desc=val("edit-desc");
  if(!desc)desc=`Generate an S-LCA for ${product}${qty?` producing ${qty.toLocaleString()} units annually`:""} in ${region?region+", ":""}${country}.`;
- const updated=buildReport(desc,{sector:old.sectorKey,country,region,qty,product,title:titleCase(product),em:old.em,id:old.demo?undefined:old.id});
- updated.demo=false;
- updated.date=new Date().toLocaleDateString("en-US",{month:"short",year:"numeric"});
- if(old.demo)reports.unshift(updated);else reports=reports.map(r=>r.id===old.id?updated:r);
- save();closeEdit();renderRecent();showDashboardFor(updated);openReport(updated.id);
- toast(old.demo?"Edited copy generated.":"Report regenerated.");
+ const replaceId=old.demo?null:old.id;
+ closeEdit();go("dashboard");renderWorkspaceIntro();
+ document.getElementById("assistant").insertAdjacentHTML("beforeend",`<div class="bubble you"><div class="bh"><b>You</b><span class="time">${nowTime()}</span></div><div>${esc(desc)}</div></div>`);
+ await finalizeGeneratedReport(desc,{sector:old.sectorKey,country,region,qty,product},replaceId);
 }
 
 function openCompare(seedId){
@@ -1757,6 +1864,11 @@ function sourcingStats(R){
  return {countries,high,average:avgCompare(countries.map(meanRisk))};
 }
 function comparisonReason(key,A,B){
+ if(A.evidence_v2&&B.evidence_v2){
+  const map={worker:"workers",humanRights:"children",community:"local_communities",supplyChain:"value_chain_actors",governance:"society",consumer:"consumers"},pillar=map[key];
+  const describe=R=>{const trace=R.evidence_v2.scores.trace.pillars.find(row=>row.pillar===pillar);if(!trace)return "not scored";const names=trace.evidence_ids.map(id=>R.evidence_v2.indicators.find(item=>item.id===id)).filter(Boolean).map(item=>`${item.name} (${item.geography})`);return names.join(", ")||"no evidence";};
+  return `The baseline score is supported by ${describe(A)}; the comparison score is supported by ${describe(B)}. Both reports retain the source edition and checksum.`;
+ }
  const ar=countryRiskData(A),br=countryRiskData(B),as=SECTORS[A.sectorKey],bs=SECTORS[B.sectorKey],sa=sourcingStats(A),sb=sourcingStats(B);
  const band=n=>BANDS[Math.max(0,Math.min(4,Math.round(n)))].l.toLowerCase();
  if(key==="worker")return `Host-country labour risk is ${band(ar[0])} versus ${band(br[0])}; worker-protection risk is ${band(ar[4])} versus ${band(br[4])}; sector OH&S exposure is ${band(as.worker.osh)} versus ${band(bs.worker.osh)}.`;
@@ -1780,8 +1892,9 @@ function diligenceAction(driver,weaker){
  return actions[driver.key];
 }
 function smartComparison(A,B){
- const drivers=COMPARE_PILLARS.map(p=>({...p,a:A.scores[p.key],b:B.scores[p.key],delta:B.scores[p.key]-A.scores[p.key],reason:comparisonReason(p.key,A,B)})).sort((x,y)=>Math.abs(y.delta)-Math.abs(x.delta));
+ const drivers=COMPARE_PILLARS.map(p=>({...p,a:A.scores[p.key],b:B.scores[p.key],delta:B.scores[p.key]-A.scores[p.key],reason:comparisonReason(p.key,A,B)})).filter(item=>Number.isFinite(item.a)&&Number.isFinite(item.b)).sort((x,y)=>Math.abs(y.delta)-Math.abs(x.delta));
  const overall=B.scores.overall-A.scores.overall,biggest=drivers[0];
+ if(!biggest)return {drivers:[],overall,biggest:{key:"worker",label:"No common scored pillar",delta:0},stronger:null,weaker:A,verdict:"The reports do not share a scored pillar.",explanation:"No like-for-like evidence-backed pillar is available.",shared:[],uniqueA:A.sourcing||[],uniqueB:B.sourcing||[],overlap:0,sa:sourcingStats(A),sb:sourcingStats(B)};
  const stronger=overall>0?B:overall<0?A:null,weaker=overall>0?A:overall<0?B:(A.scores[biggest.key]<=B.scores[biggest.key]?A:B);
  const verdict=!stronger?"The two factories have the same overall screening score.":`${stronger.title} has the stronger screening result by ${Math.abs(overall)} point${Math.abs(overall)===1?"":"s"}.`;
  const explanation=`The largest separation is ${biggest.label.toLowerCase()} (${biggest.delta>0?B.title:A.title} leads by ${Math.abs(biggest.delta)}). ${biggest.reason}`;
@@ -1799,9 +1912,10 @@ function countryTokens(countries,highRisk){
 }
 function renderCompare(){
  const body=document.getElementById("compareBody");
- if(reports.length<2){body.innerHTML=`<div class="compare-empty"><h3>Two reports are needed for comparison</h3><p>Create another factory assessment, then return here to compare the material differences and their likely drivers.</p><button class="btn primary" data-act="new">Create another report</button></div>`;return;}
- const options=reports.map(R=>`<option value="${R.id}">${esc(R.title)} - ${esc(reportLocation(R))}</option>`).join("");
- const A=reportById(compareA)||reports[0],B=reportById(compareB)||reports.find(R=>R.id!==A.id)||A;
+ const comparable=reports.filter(reportExportable);
+ if(comparable.length<2){body.innerHTML=`<div class="compare-empty"><h3>Two validated reports are needed</h3><p>Legacy and below-threshold reports cannot be compared because their scores are not defensible. Regenerate two assessments through the evidence workflow.</p><button class="btn primary" data-act="new">Create validated report</button></div>`;return;}
+ const options=comparable.map(R=>`<option value="${R.id}">${esc(R.title)} - ${esc(reportLocation(R))}</option>`).join("");
+ const A=comparable.find(R=>R.id===compareA)||comparable[0],B=comparable.find(R=>R.id===compareB&&R.id!==A.id)||comparable.find(R=>R.id!==A.id)||A;
  compareA=A.id;compareB=B.id;
  const C=smartComparison(A,B),scaleA=A.qty?A.qty.toLocaleString()+"/year":"Not specified",scaleB=B.qty?B.qty.toLocaleString()+"/year":"Not specified";
  const row=(label,a,b)=>{const d=b-a,cls=d>0?"up":d<0?"down":"flat";return `<tr><td><strong>${label}</strong></td><td>${a}</td><td>${b}</td><td class="delta ${cls}">${d>0?"+":""}${d}</td></tr>`;};
@@ -1903,11 +2017,27 @@ const val=id=>document.getElementById(id).value.trim();
 function toggleTheme(){const cur=document.documentElement.getAttribute("data-theme");const next=cur==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",next);settings.dark=next==="dark";saveSettings();}
 
 /* actions */
+function reportExportable(R){return !!(R&&R.evidence_v2&&R.evidence_v2.validation?.valid&&R.evidence_v2.quality?.exportable);}
+function shareValidatedReport(R){
+ if(!R)return;
+ if(!reportExportable(R)){toast("Blocked: regenerate this report through the validated evidence workflow.");return;}
+ const V=R.evidence_v2,txt=`${R.title} - validated S-LCA screening\nLocation: ${V.spec.locationLabel}\nSector: ${R.sectorLabel}\nScreening evidence index: ${Math.round(V.scores.overall)}/100\nEvidence coverage: ${V.quality.scored_pillars}/6 pillars\nValidation: passed`;
+ copy(txt);toast("Validated report summary copied.");
+}
+function exportEvidenceCSV(R){
+ const V=R.evidence_v2;
+ const rows=[["SYCLE Validated Screening S-LCA",R.title],["Location",V.spec.locationLabel],["Sector",R.sectorLabel],["Screening evidence index",Math.round(V.scores.overall)+"/100"],["Evidence coverage",V.quality.scored_pillars+"/6 pillars"],["Validation","Passed"],[],["Indicator","Value","Unit","Geography","Confidence","Source","Edition","URL"]];
+ V.indicators.forEach(item=>rows.push([item.name,item.value,item.unit,item.geography,item.confidence,item.source.name,item.source.edition,item.source.url]));
+ rows.push([],["Supply chain stage","Countries","Country basis","Diligence topics","Confidence"]);V.supply_chain.stages.forEach(stage=>rows.push([stage.title,stage.countries.join("; "),stage.country_basis,stage.screening_topics.join("; "),stage.confidence]));
+ rows.push([],["Reference","Publisher","Edition","Retrieved","Checksum","URL"]);V.references.forEach(ref=>rows.push([ref.name,ref.publisher,ref.edition,ref.retrieved_at,ref.checksum,ref.url]));
+ const csv=rows.map(row=>row.map(value=>`"${String(value??"").replace(/"/g,'""')}"`).join(",")).join("\n");download(csv,`sycle-${R.title.replace(/\s+/g,"-").toLowerCase()}-evidence.csv`,"text/csv");toast("Validated evidence CSV exported.");
+}
 function duplicateReport(id){const R=reportById(id);if(!R)return;const copy=JSON.parse(JSON.stringify(R));copy.id="r"+Date.now();copy.demo=false;copy.title=R.title+" (copy)";copy.date=new Date().toLocaleDateString("en-US",{month:"short",year:"numeric"});reports.unshift(copy);save();renderRecent();renderReports();toast("Duplicated → "+copy.title);}
 function deleteReport(id){const R=reportById(id);if(R&&R.demo){toast("The demo report is retained and cannot be deleted.");return;}reports=reports.filter(r=>r.id!==id);save();renderRecent();renderReports();toast("Report deleted.");}
 function shareReport(R){if(!R)return;const txt=`${R.title} — S-LCA screening\nLocation: ${R.region?R.region+", ":""}${R.country}\nSector: ${SECTORS[R.sectorKey].label}\nOverall Social Score: ${R.scores.overall}/100 (${bandLabel(R.scores.overall)})`;copy(txt);toast("Report summary copied to clipboard.");}
 function exportPDF(R){
  if(!R){toast("Open or select a report first.");return;}
+ if(!reportExportable(R)){toast("PDF blocked: report is legacy, invalid, or below the evidence threshold.");return;}
  const css=document.querySelector("style").textContent;
  const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(R.title)} — SYCLE PDF</title><style>${css}
   body{background:#fff!important}.print-banner{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e9f0;margin:0 0 20px;padding:0 0 12px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}.print-banner b{font-size:15px}.print-banner span{color:#64748b;font-size:12px}.report{max-width:940px;margin:0 auto}.no-print,.side,.topbar,.rback,#toast,.modal{display:none!important}@page{margin:14mm}</style></head><body><div class="print-banner"><b>SYCLE PDF Export</b><span>Use the print dialog destination: Save as PDF</span></div><div class="report">${reportHTML(R)}</div><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),350));<\/script></body></html>`;
@@ -1916,7 +2046,7 @@ function exportPDF(R){
  w.document.open();w.document.write(html);w.document.close();
  toast("PDF export opened — choose Save as PDF in the print dialog.");
 }
-function exportCSV(R){if(!R){toast("Open a report first.");return;}const S=SECTORS[R.sectorKey];
+function exportCSV(R){if(!R){toast("Open a report first.");return;}if(!reportExportable(R)){toast("CSV blocked: regenerate through the validated evidence workflow.");return;}if(R.evidence_v2)return exportEvidenceCSV(R);const S=SECTORS[R.sectorKey];
  let rows=[["SYCLE Screening S-LCA",R.title],["Location",(R.region?R.region+", ":"")+R.country],["Sector",S.label.replace(/&amp;/g,"&")],["Overall Social Score",R.scores.overall+"/100 ("+bandLabel(R.scores.overall)+")"],[],["Pillar","Score"],["Worker Welfare",R.scores.worker],["Human Rights",R.scores.humanRights],["Community Impact",R.scores.community],["Supply-Chain Responsibility",R.scores.supplyChain],["Governance",R.scores.governance],["Consumer Impact",R.scores.consumer],[],["Hotspot","Where","Severity(0-4)","Likelihood(0-4)"]];
  S.hotspots.forEach(h=>rows.push([h[0].replace(/&amp;/g,"&"),h[1].replace(/&amp;/g,"&").replace(/<[^>]+>/g,""),h[2],h[3]]));
  rows.push([],["Country","Labour","HumanRights","Corruption","Political","WorkerProtection","EnvJustice"]);
@@ -1941,6 +2071,7 @@ function dispatch(e){
   case "login": login(); break;
   case "logout": logout(); break;
   case "generate": generateFromInput(); break;
+  case "submit-evidence": submitEvidenceQuestions(); break;
   case "open": openReport(arg); break;
   case "ask-open": openReport(arg); setTimeout(()=>document.getElementById("reportChatInput")?.focus(),100); break;
   case "open-print": exportPDF(reportById(arg)); break;
@@ -1956,8 +2087,8 @@ function dispatch(e){
   case "theme": toggleTheme(); break;
   case "dup": duplicateReport(arg); break;
   case "dup-cur": if(currentReport)duplicateReport(currentReport.id); break;
-  case "share": shareReport(reportById(arg)); break;
-  case "share-cur": shareReport(currentReport); break;
+  case "share": shareValidatedReport(reportById(arg)); break;
+  case "share-cur": shareValidatedReport(currentReport); break;
   case "del": deleteReport(arg); break;
   case "csv": exportCSV(reportById(arg)); break;
   case "csv-cur": exportCSV(currentReport); break;
