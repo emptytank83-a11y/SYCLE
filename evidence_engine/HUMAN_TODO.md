@@ -46,3 +46,10 @@ specialist must approve them before production use.
 - Define confidence ranges and sensitivity policy with an S-LCA method owner.
 - License and implement an activity-weighting adapter before describing supply-
   chain hotspot scores as worker-hour weighted.
+
+## Narrator integration
+
+- Select and security-review a structured-output LLM client in a backend
+  service. The browser must never receive provider secrets.
+- Approve narrator prompts and validation rejection handling before enabling
+  prose generation in production.

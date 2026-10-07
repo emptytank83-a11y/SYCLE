@@ -53,3 +53,9 @@ and derives sourcing only from trade and mineral-share evidence.
 Add configured indicator normalisation, weighted roll-ups with complete traces,
 confidence/weight sensitivity bounds, and an explicit activity-weighting status.
 All methodology choices remain pending expert review.
+
+## Phase 9 - Constrained narrator and validator
+
+Add an injected structured narrator with evidence/number/geography enforcement,
+plus a read-only validator for legacy and v2 reports and a saved-report CLI.
+Record the absence of a production LLM client as an integration blocker.

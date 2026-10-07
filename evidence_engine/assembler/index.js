@@ -85,7 +85,12 @@ function assembleEvidenceBundle(spec, catalogue, repo) {
   const sourceIds = new Set(sourceVersions.map((version) => version.source_id));
   return {
     spec: structuredClone(spec),
-    geography: { chain: spec.geo_chain.map((geo) => geo.id), resolved_level: spec.geo_chain[0].level },
+    geography: {
+      chain: spec.geo_chain.map((geo) => geo.id),
+      names: spec.geo_chain.map((geo) => geo.name),
+      known_names: repo.list("geography").map((geo) => geo.name),
+      resolved_level: spec.geo_chain[0].level,
+    },
     indicators,
     gaps,
     sourcing,

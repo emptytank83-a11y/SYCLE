@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const { MemoryEvidenceRepository } = require("../storage");
 const { listUnverifiedRules } = require("../rules");
 const { DEFINITIONS, createConnector } = require("../ingestion/official-connectors");
+const { validateReports } = require("../validator");
 
 async function main(argv = process.argv.slice(2), io = process) {
   const [command, file] = argv;
@@ -34,7 +35,14 @@ async function main(argv = process.argv.slice(2), io = process) {
     io.stdout.write(`${JSON.stringify(results, null, 2)}\n`);
     return 0;
   }
-  io.stderr.write("Usage: evidence-engine <rules:unverified|connectors:list|connectors:run> ...\n");
+  if (command === "validate") {
+    if (!file) throw new Error("validate requires a saved-report JSON file");
+    const parsed = JSON.parse(fs.readFileSync(file, "utf8"));
+    const reports = Array.isArray(parsed) ? parsed : parsed.reports;
+    io.stdout.write(`${JSON.stringify(validateReports(reports || []), null, 2)}\n`);
+    return 0;
+  }
+  io.stderr.write("Usage: evidence-engine <rules:unverified|connectors:list|connectors:run|validate> ...\n");
   return 2;
 }
 
