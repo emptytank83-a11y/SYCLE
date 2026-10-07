@@ -1,27 +1,9 @@
 "use strict";
 
-const fs = require("node:fs");
-const path = require("node:path");
-const vm = require("node:vm");
+const { loadLegacyRuntime } = require("../comparison/legacy-runtime");
 
 function loadLegacyGenerator() {
-  const appPath = path.resolve(__dirname, "..", "..", "sycle-platform.html");
-  const html = fs.readFileSync(appPath, "utf8");
-  const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
-  if (!scripts.length) throw new Error("Legacy application script not found");
-  const sandbox = {
-    console,
-    Date,
-    Math,
-    JSON,
-    setTimeout,
-    clearTimeout,
-    document: { readyState: "loading", addEventListener() {} },
-    localStorage: { getItem() { return null; }, setItem() {}, removeItem() {} },
-  };
-  vm.createContext(sandbox);
-  vm.runInContext(scripts.at(-1)[1], sandbox, { filename: "sycle-platform.html" });
-  return sandbox.buildReport;
+  return loadLegacyRuntime().buildReport;
 }
 
-module.exports = { loadLegacyGenerator };
+module.exports = { loadLegacyGenerator, loadLegacyRuntime };

@@ -59,3 +59,9 @@ All methodology choices remain pending expert review.
 Add an injected structured narrator with evidence/number/geography enforcement,
 plus a read-only validator for legacy and v2 reports and a saved-report CLI.
 Record the absence of a production LLM client as an integration blocker.
+
+## Phase 10 - Pipeline, comparison, regression, and adapter
+
+Compose the full evidence pipeline, comparison output, golden drift harness,
+methodology export, and opt-in legacy-schema adapter. Verify the existing PDF
+renderer accepts an adapted report without changing UI code.

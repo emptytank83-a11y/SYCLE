@@ -6,6 +6,11 @@ const { MemoryEvidenceRepository } = require("../storage");
 const { listUnverifiedRules } = require("../rules");
 const { DEFINITIONS, createConnector } = require("../ingestion/official-connectors");
 const { validateReports } = require("../validator");
+const { exportMethodology } = require("../methodology");
+const { loadCatalogue } = require("../catalogue");
+const { loadScoringConfig } = require("../scoring");
+const { comparePipelines } = require("../comparison");
+const { loadLegacyRuntime } = require("../comparison/legacy-runtime");
 
 async function main(argv = process.argv.slice(2), io = process) {
   const [command, file] = argv;
@@ -42,7 +47,21 @@ async function main(argv = process.argv.slice(2), io = process) {
     io.stdout.write(`${JSON.stringify(validateReports(reports || []), null, 2)}\n`);
     return 0;
   }
-  io.stderr.write("Usage: evidence-engine <rules:unverified|connectors:list|connectors:run|validate> ...\n");
+  if (command === "methodology") {
+    io.stdout.write(exportMethodology(loadCatalogue(), loadScoringConfig()));
+    return 0;
+  }
+  if (command === "compare") {
+    const prompt = file;
+    const seedFile = argv[2] || process.env.EVIDENCE_ENGINE_REPOSITORY;
+    if (!prompt || !seedFile) throw new Error("compare requires <prompt> <repository-seed.json>");
+    const seed = JSON.parse(fs.readFileSync(seedFile, "utf8"));
+    const repo = new MemoryEvidenceRepository(seed);
+    const result = await comparePipelines(prompt, { legacyRuntime: loadLegacyRuntime(), repo, catalogue: loadCatalogue(), scoringConfig: loadScoringConfig() });
+    io.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    return 0;
+  }
+  io.stderr.write("Usage: evidence-engine <rules:unverified|connectors:list|connectors:run|validate|methodology|compare> ...\n");
   return 2;
 }
 
