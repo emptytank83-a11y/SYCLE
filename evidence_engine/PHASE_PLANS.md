@@ -41,3 +41,9 @@ licensed-database/MRIO adapter interfaces. Tests use recorded payloads only.
 Add a pure ReportSpec question service that evaluates plausible answers through
 an injected scoring function, always asks ambiguous geography, and records
 unanswered defaults as assumptions. No API hook exists in the static app.
+
+## Phase 7 - Evidence assembler
+
+Create a catalogue-driven assembler that selects the most specific ranked
+evidence, downgrades fallback confidence, emits gaps, resolves verified rules,
+and derives sourcing only from trade and mineral-share evidence.
