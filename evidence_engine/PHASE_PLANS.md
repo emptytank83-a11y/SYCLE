@@ -17,3 +17,9 @@ is touched; the tests load the legacy inline script through an isolated VM.
 Add runtime-validated record schemas, a typed repository service, an immutable
 in-memory implementation, and a new evidence-only SQL migration. Existing
 tables and application files remain untouched.
+
+## Phase 3 - Geography resolver
+
+Create ISO/Census file importers and a repository-backed resolver that returns
+candidate chains instead of guessing. Add recorded offline fixtures for New
+York ambiguity, Albany county resolution, and Texas.

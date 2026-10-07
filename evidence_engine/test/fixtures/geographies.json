@@ -1,0 +1,16 @@
+{
+  "provenance": {
+    "description": "Reduced recorded fixture shaped from ISO 3166 and US Census identifiers; tests only",
+    "iso_url": "https://www.iso.org/iso-3166-country-codes.html",
+    "census_url": "https://www.census.gov/library/reference/code-lists/ansi.html",
+    "verified": false
+  },
+  "records": [
+    {"id":"US","name":"United States","level":"country","parent_id":null,"aliases":["USA"]},
+    {"id":"US-NY","name":"New York","level":"state","parent_id":"US","aliases":["New York State","NY"]},
+    {"id":"US-TX","name":"Texas","level":"state","parent_id":"US","aliases":["TX"]},
+    {"id":"US-NY-001","name":"Albany County","level":"county","parent_id":"US-NY","aliases":[]},
+    {"id":"US-PLACE-01000","name":"Albany","level":"site","parent_id":"US-NY-001","aliases":["Albany, NY"]},
+    {"id":"US-PLACE-51000","name":"New York","level":"site","parent_id":"US-NY","aliases":["New York City","NYC"]}
+  ]
+}
