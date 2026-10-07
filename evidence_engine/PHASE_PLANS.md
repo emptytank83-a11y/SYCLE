@@ -23,3 +23,9 @@ tables and application files remain untouched.
 Create ISO/Census file importers and a repository-backed resolver that returns
 candidate chains instead of guessing. Add recorded offline fixtures for New
 York ambiguity, Albany county resolution, and Texas.
+
+## Phase 4 - Jurisdiction rules
+
+Generate null-only state rule seeds from ingested US subdivision records,
+implement verified-only hierarchical lookup, and add an unverified-rule CLI.
+No legal value is populated without human verification.
