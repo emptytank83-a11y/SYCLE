@@ -2,6 +2,8 @@
 
 const test=require("node:test");
 const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const path=require("node:path");
 const {generate,validate}=require("../production");
 
 const carSpec={product:"year Car operation",sectorKey:"automotive",sectorLabel:"Automotive / Vehicles",country:"United States",region:"New York",qty:4000,prompt:"4 year Car operation producing 4,000 units annually in New York"};
@@ -39,4 +41,12 @@ test("validator blocks incomplete or unsupported reports before persistence",asy
   const result=await generate({spec:{...carSpec,answers:carAnswers}});const report=structuredClone(result.evidence_v2);
   report.supply_chain.stages[0].evidence.push("missing-source");const checked=validate(report);
   assert.equal(checked.valid,false);assert.equal(checked.exportable,false);assert.ok(checked.errors.some(item=>item.code==="unsupported_supply_chain_claim"));
+});
+
+test("validated report renderer retains the stage-by-risk heatmap",()=>{
+  const source=fs.readFileSync(path.join(__dirname,"..","..","sycle-platform.html"),"utf8");
+  assert.match(source,/stage-risk-heatmap/);
+  assert.match(source,/Life-Cycle Stage &times; Social Risk/);
+  assert.match(source,/DOL goods signal intersects/);
+  assert.match(source,/Low means no elevated signal was encoded/);
 });
