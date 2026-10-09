@@ -20,7 +20,7 @@ const CASES = [
       country: "United States",
       region: "New York",
       qty: 4000,
-      product: "Car",
+      product: "car",
     },
   },
   {
@@ -30,7 +30,7 @@ const CASES = [
       country: "Germany",
       region: "",
       qty: 10000,
-      product: "Lithium battery",
+      product: "lithium-ion battery",
     },
   },
   {
@@ -40,7 +40,7 @@ const CASES = [
       country: "Brazil",
       region: "",
       qty: 800,
-      product: "Coffee plantation",
+      product: "coffee",
     },
   },
 ];

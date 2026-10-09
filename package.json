@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build-static.js",
-    "dev": "node scripts/dev-server.js"
+    "dev": "node scripts/dev-server.js",
+    "test": "node --test evidence_engine/test/*.test.js",
+    "warehouse:refresh": "node evidence_engine/warehouse/refresh-snapshot.js",
+    "warehouse:seed": "node evidence_engine/warehouse/seed-supabase.js"
   },
   "devDependencies": {}
 }
