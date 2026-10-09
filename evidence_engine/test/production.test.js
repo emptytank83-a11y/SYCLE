@@ -48,5 +48,7 @@ test("validated report renderer retains the stage-by-risk heatmap",()=>{
   assert.match(source,/stage-risk-heatmap/);
   assert.match(source,/Life-Cycle Stage &times; Social Risk/);
   assert.match(source,/DOL goods signal intersects/);
-  assert.match(source,/Low means no elevated signal was encoded/);
+  assert.match(source,/Risk is not assessed, not low/);
+  assert.match(source,/Green is reserved for an evidence-backed low-risk result/);
+  assert.doesNotMatch(source,/id:"living_wage"[^\n]+moderate:\["working hours"/);
 });
