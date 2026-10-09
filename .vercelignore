@@ -1,0 +1,8 @@
+work/
+supabase/.temp/
+.codex-pitch-build/
+Sycle_VC_Pitch_Deck_Khosla_Style/
+Sycle_VC_Pitch_Deck_Khosla_Style.pptx
+Sycle_VC_Pitch_Deck_Khosla_Style.pptx.inspect.ndjson
+__pycache__/
+sycle-*.png
