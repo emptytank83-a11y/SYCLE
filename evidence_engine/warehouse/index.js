@@ -12,6 +12,7 @@ function regionKey(spec){
 
 function requestedVariant(spec){
   if(spec.sectorKey==="automotive")return spec.answers?.vehicle_variant||"ice";
+  if(spec.sectorKey==="solar_pv")return spec.answers?.pv_technology||"crystalline_silicon";
   return "default";
 }
 

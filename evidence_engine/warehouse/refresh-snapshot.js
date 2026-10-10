@@ -68,7 +68,8 @@ async function main(){
     ["cobalt","COD","DR Congo","Child labour"],["diamonds","AGO","Angola","Forced labour and child labour"],["diamonds","COD","DR Congo","Forced labour and child labour"],["diamonds","SLE","Sierra Leone","Child labour"],
     ["gold","COD","DR Congo","Forced labour and child labour"],["gold","GHA","Ghana","Child labour"],["gold","MLI","Mali","Child labour"],["gold","BFA","Burkina Faso","Child labour"],
     ["cotton","CHN","China","Forced labour"],["cotton","IND","India","Child labour"],["cotton","PAK","Pakistan","Child labour"],
-    ["coffee","BRA","Brazil","Child labour"],["coffee","COL","Colombia","Child labour"],["coffee","ETH","Ethiopia","Child labour"]
+    ["coffee","BRA","Brazil","Child labour"],["coffee","COL","Colombia","Child labour"],["coffee","ETH","Ethiopia","Child labour"],
+    ["polysilicon","CHN","China","Forced labour"]
   ];
   for(const [material,countryCode,countryName,issue] of dolFlags)records.push(record({indicator_id:"child_forced_labour_goods_flag",indicator_name:"DOL child/forced-labour goods signal",geography_key:countryCode,geography_name:countryName,geography_level:"country",country_code:countryCode,value:1,value_text:`${material}: ${issue}`,unit:"boolean",confidence:"H",interpretation:"Product-country listing signal; actual supplier linkage must be verified.",source_version_id:versionId("us-dol-goods"),dimensions:{material,issue}}));
 

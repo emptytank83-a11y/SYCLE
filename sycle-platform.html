@@ -621,7 +621,7 @@ function validateReportPrompt(text){
  const qty=parseQuantity(text);
  const product=extractProduct(text);
  const hasTimeline=/\b(timeline|assessment period|over\s+\d+\s+years?|within\s+\d+\s+years?|\d+\s+years?)\b/i.test(text);
- const hasSubjectSignal=findSector(text)!=="generic"||/\b(factory|facility|plant|mill|refinery|farm|mine|plantation|campus|data center|datacenter|console|battery|coffee|gold|pharma|automotive|textile|diamond|diamonds|gemstone|gemstones|jewelry|jewellery|manufacturing|manufacturer|polishing|cutting)\b/i.test(text);
+ const hasSubjectSignal=findSector(text)!=="generic"||/\b(factory|facility|plant|mill|refinery|farm|mine|plantation|campus|data center|datacenter|console|battery|solar|photovoltaic|pv module|coffee|gold|pharma|automotive|textile|diamond|diamonds|gemstone|gemstones|jewelry|jewellery|manufacturing|manufacturer|polishing|cutting)\b/i.test(text);
  const subjectOk=hasSubjectSignal&&product!=="manufactured product"&&!/\b(want|need|please|slca|s-lca|social life cycle)\b/i.test(product);
  const missing=[];
  if(!subjectOk)missing.push("product, facility type, or industry being assessed");
@@ -633,6 +633,16 @@ function validateReportPrompt(text){
 
 // Sector profiles
 const SECTORS={
+ solar_pv:{label:"Solar Photovoltaics",em:"PV",aka:["solar panel","solar panels","solar module","solar modules","solar pv","solar photovoltaic","photovoltaic panel","photovoltaic module","pv panel","pv module","solar power"],
+  fu:u=>`one (1) ${u} produced, installed and managed through end of life`,
+  process:["Quartz and metallurgical-silicon production","Polysilicon purification","Ingot growth and wafer slicing","Solar-cell manufacturing","Module assembly","Inverter and balance-of-system production","Installation and commissioning","Operations and maintenance","Decommissioning and recycling"],
+  exposures:"silica and chemical exposure, furnace and electrical safety, repetitive assembly, construction hazards, heat stress and controlled end-of-life handling",
+  components:[["Quartz and polysilicon","China; Germany; United States; Malaysia","Forced-labour due diligence; chemical and furnace safety"],["Wafers and cells","China; Southeast Asia; India","Working hours; freedom of association; chemical exposure"],["Solar glass","China; India; Malaysia; Vietnam","Furnace safety; migrant labour"],["Aluminium frame","China; India; Australia; Canada","Mining and smelting safety; community rights"],["Silver paste and copper","Mexico; China; Peru; Chile","Mine safety; community rights"],["Encapsulant and backsheet","China; Japan; South Korea; United States","Chemical exposure; process safety"],["Inverters and balance of system","China; Germany; United States; India","Electrical safety; supplier working hours"]],
+  sourcing:["China","Germany","United States","Malaysia","India","Vietnam","Mexico","Peru","Chile","Australia","Canada","Japan","South Korea"],
+  hotspots:[["Forced-labour due diligence","Polysilicon supply chains",4,3],["Occupational health and safety","Quartz, silicon, cell and installation work",3,3],["Working hours and freedom of association","Wafer, cell and module manufacturing",3,3],["Migrant and subcontracted labour","Construction and installation",3,3],["Community and land rights","Mineral extraction and project siting",3,2],["End-of-life worker exposure","Panel dismantling and materials recovery",3,2]],
+  worker:{female:"Facility data required",wage:"Host-location and facility evidence required",osh:3,automation:"Medium-High",skill:"Process operators, electrical trades, installers and maintenance technicians"},
+  consumer:[["Electrical and fire safety","Module, inverter and system certification",2],["Product durability","Warranty, degradation and quality controls",2],["End-of-life transparency","Take-back, reuse and recycling information",2]],
+  sdgs:[3,7,8,9,10,12,13,16],mineralSev:3,communitySev:3,emColor:"#edf6e9"},
  electronics:{label:"Electronics / Consumer Hardware",em:"🎮",aka:["console","gaming","electronic","semiconductor","computer","laptop","phone","smartphone","circuit","pcb","chip","device","tv","tablet","camera","drone","server"],
   fu:u=>`one (1) ${u} unit produced, packaged and delivered to the end consumer`,
   process:["Inbound goods &amp; ESD-controlled inspection","PCBA integration / rework (SMT reflow &amp; hand-soldering)","Mechanical assembly (enclosure, heatsink, storage)","Firmware flashing &amp; functional/burn-in test","Final QA, serialisation &amp; packaging","Warehousing &amp; dispatch"],
@@ -737,7 +747,7 @@ SECTORS.diamond={label:"Diamond / Gemstone Manufacturing",em:"◇",aka:["diamond
  sdgs:[3,5,8,9,12,16,17],mineralSev:4,communitySev:3,emColor:"#eef2ff"};
 function findSector(text){
  const t=text.toLowerCase();
- for(const k in SECTORS){if(SECTORS[k].aka.some(w=>t.includes(w)))return k;}
+ for(const k in SECTORS){if(SECTORS[k].aka.some(w=>termHit(t,w)))return k;}
  return "generic";
 }
 const DATASETS=[
@@ -781,12 +791,13 @@ const scoreColor=s=>s>=75?"var(--l)":s>=55?"var(--m)":s>=40?"var(--h)":"var(--vh
 
 /* ============================ GENERATOR ============================ */
 function parseQuantity(text){
- const m=text.replace(/,/g,"").match(/(\d+(?:\.\d+)?)\s*(mw|megawatt|megawatts|tonnes|tons|ton|t|units|unit|packs|consoles|garments|k|thousand|million|m|per|\/)?/i);
+ const m=text.replace(/,/g,"").match(/(\d+(?:\.\d+)?)\s*(mw|megawatts?|tonnes?|tons?|units?|modules?|panels?|packs?|consoles?|garments?|k\b|thousand\b|million\b|m\b|per\b|\/)?/i);
  if(m){let n=parseFloat(m[1]);const u=(m[2]||"").toLowerCase();if(u==="k"||u==="thousand")n*=1e3;if(u==="million"||u==="m")n*=1e6;if(u||n>=100)return Math.round(n);}
  return null;
 }
 function extractProduct(text){
  const known=[
+  ["solar photovoltaic module","solar photovoltaic module"],["photovoltaic module","solar photovoltaic module"],["photovoltaic panel","solar photovoltaic module"],["solar panels","solar photovoltaic module"],["solar panel","solar photovoltaic module"],["solar pv","solar photovoltaic module"],["solar power","solar photovoltaic module"],
   ["gaming console","gaming console"],["lithium-ion battery","lithium-ion battery"],["lithium battery","lithium-ion battery"],["ev battery","EV battery"],
   ["data center","data center"],["data centre","data center"],["gold refinery","gold refinery"],["coffee plantation","coffee"],
   ["diamond","diamond"],["automobile","car"],["vehicle","vehicle"],["car","car"],["garment","garment"],["textile","textile product"],
@@ -809,7 +820,7 @@ function extractProduct(text){
  return p.length>2&&p.length<48?p:"manufactured product";
 }
 function estWorkforce(sector,qty){
- const perWorker={electronics:250,ev_battery:400,diamond:90,textile:1200,pharma:600,food:2000,automotive:60,metals:150,data_center:1,generic:800}[sector]||800;
+ const perWorker={solar_pv:300,electronics:250,ev_battery:400,diamond:90,textile:1200,pharma:600,food:2000,automotive:60,metals:150,data_center:1,generic:800}[sector]||800;
  if(!qty)return "20–50 FTE (assumed)";
  const n=sector==="data_center"?Math.max(30,Math.round(qty*3.8)):Math.max(8,Math.round(qty/perWorker));
  const lo=Math.max(5,Math.round(n*0.7)),hi=Math.round(n*1.4);

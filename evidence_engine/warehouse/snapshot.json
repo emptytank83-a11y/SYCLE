@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-09T19:17:48.871Z",
+  "generated_at": "2026-10-10T05:37:18.720Z",
   "sources": [
     {
       "id": "unep-2020",
@@ -102,6 +102,33 @@
       "source_type": "industry_process"
     },
     {
+      "id": "iea-solar-pv",
+      "name": "Solar PV Global Supply Chains",
+      "publisher": "International Energy Agency",
+      "canonical_url": "https://www.iea.org/reports/solar-pv-global-supply-chains",
+      "licence": "CC BY 4.0",
+      "update_cadence": "Irregular",
+      "source_type": "industry_process"
+    },
+    {
+      "id": "doe-solar-pv",
+      "name": "Solar Photovoltaics Supply Chain Deep Dive Assessment",
+      "publisher": "U.S. Department of Energy",
+      "canonical_url": "https://www.energy.gov/cmei/systems/solar-photovoltaics-supply-chain-review-report",
+      "licence": "U.S. government public information",
+      "update_cadence": "Irregular",
+      "source_type": "industry_process"
+    },
+    {
+      "id": "irena-pv-eol",
+      "name": "End-of-Life Management: Solar Photovoltaic Panels",
+      "publisher": "IRENA and IEA-PVPS",
+      "canonical_url": "https://www.irena.org/publications/2016/Jun/End-of-life-management-Solar-Photovoltaic-Panels",
+      "licence": "IRENA publication",
+      "update_cadence": "Irregular",
+      "source_type": "industry_process"
+    },
+    {
       "id": "itu-ewaste",
       "name": "Global E-waste Monitor",
       "publisher": "ITU and UNITAR",
@@ -143,105 +170,126 @@
       "id": "unep-2020-v1",
       "source_id": "unep-2020",
       "edition": "2020",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "d52307bca0e4ad1c67b65e7b912f074b9d401ce53c6b9929065eeddc867ee4eb"
     },
     {
       "id": "oecd-rbc-2018-v1",
       "source_id": "oecd-rbc-2018",
       "edition": "2018",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "08aa1930840b372df52965b5b82c6cac774f435240581e1499be6465d53d104e"
     },
     {
       "id": "naics-2022-v1",
       "source_id": "naics-2022",
       "edition": "2022",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "6d6e92a2e7be75908597c578b00071311e91860151c8cbeaa4ffb27b57700466"
     },
     {
       "id": "worldbank-wdi-v1",
       "source_id": "worldbank-wdi",
       "edition": "latest available through 2025",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "db3979874254aa59d928c7579173cba3fd14113a812eaaee66dbb44a165beec5"
     },
     {
       "id": "worldbank-wgi-v1",
       "source_id": "worldbank-wgi",
       "edition": "2025 revision",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "aa3d10d90622b451a6e393ee1c6a2ea37520625d7c0dfd29c9b893466da1fb78"
     },
     {
       "id": "bls-laus-v1",
       "source_id": "bls-laus",
       "edition": "August 2026 preliminary",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
-      "checksum": "dc5dcfa7837c7c5ec0a3871e1f3c3ae6b932922bc9350e9407a4938c8acc54f0"
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
+      "checksum": "1451a3cfc86a9936236525d6d32dead6ccc841c2c3a7ef7e916fa8d22ae95b45"
     },
     {
       "id": "bls-union-v1",
       "source_id": "bls-union",
       "edition": "2025 annual averages",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "8181300254eeb2a3a424400167c57739dcd7af89d076c78ddf47efa057bf2ca2"
     },
     {
       "id": "us-dol-goods-v1",
       "source_id": "us-dol-goods",
       "edition": "2024",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "856ed1244b3c7753624e83c5414e8673cccb53c3726dcefd400703be0b9f95ad"
     },
     {
       "id": "usgs-mcs-v1",
       "source_id": "usgs-mcs",
       "edition": "2026",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "ad3a56e01f87ece24c353c4a154aff7eecf348cbc176442f535408f8ff2a7459"
     },
     {
       "id": "fao-faostat-v1",
       "source_id": "fao-faostat",
       "edition": "latest available through 2025",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "cfa9ced946b91765d39a659451518971be2893ad6976918a21ce2999ae482463"
     },
     {
       "id": "iea-battery-v1",
       "source_id": "iea-battery",
       "edition": "2022; referenced 2026",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "a103234ff1647396ba1704fdfd9a8ff82f3a34deed1c117fd8e277a6fc2f1072"
+    },
+    {
+      "id": "iea-solar-pv-v1",
+      "source_id": "iea-solar-pv",
+      "edition": "2022",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
+      "checksum": "d3ca4f446467db47f1155321af9663863c05a75728b60ceec06a770558092827"
+    },
+    {
+      "id": "doe-solar-pv-v1",
+      "source_id": "doe-solar-pv",
+      "edition": "2022",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
+      "checksum": "77a815d20ac5b6472c2b5dc2ac00ffcce49b80f2b7eaf92d15b3c7fa382d52b2"
+    },
+    {
+      "id": "irena-pv-eol-v1",
+      "source_id": "irena-pv-eol",
+      "edition": "2016",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
+      "checksum": "60d425cdde657137397daee87ce6e6622d0b584e5fdf202a5fc49594fbf07eaf"
     },
     {
       "id": "itu-ewaste-v1",
       "source_id": "itu-ewaste",
       "edition": "2024",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "9ccaf320368c5ca28af5a0ec88c6ed7793ccbcd0efa910bf363ea2d496d0e0d1"
     },
     {
       "id": "kimberley-process-v1",
       "source_id": "kimberley-process",
       "edition": "2024",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "1a2e4fdc7ed356648f3e95abb9e40740b42d9317bcc466e00512b0e818179e48"
     },
     {
       "id": "who-pharma-v1",
       "source_id": "who-pharma",
       "edition": "current guidance retrieved 2026",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "dd4f5d947f9ff7a8e2a45df9771db515e3fe8f8b52c35131a48a141ee53ae852"
     },
     {
       "id": "ilo-ilostat-v1",
       "source_id": "ilo-ilostat",
       "edition": "latest available through 2025",
-      "retrieved_at": "2026-10-09T19:17:48.871Z",
+      "retrieved_at": "2026-10-10T05:37:18.720Z",
       "checksum": "c1841936012257c34eccbda5ead8ae9a579e1425d77f28735331e1a928f10f7e"
     }
   ],
@@ -7934,6 +7982,27 @@
         "material": "coffee",
         "issue": "Child labour"
       }
+    },
+    {
+      "id": "ev-child_forced_labour_goods_flag-48956394574ec9a0",
+      "indicator_id": "child_forced_labour_goods_flag",
+      "indicator_name": "DOL child/forced-labour goods signal",
+      "geography_key": "CHN",
+      "geography_name": "China",
+      "geography_level": "country",
+      "country_code": "CHN",
+      "sector_key": null,
+      "product_key": null,
+      "value": 1,
+      "value_text": "polysilicon: Forced labour",
+      "unit": "boolean",
+      "confidence": "H",
+      "interpretation": "Product-country listing signal; actual supplier linkage must be verified.",
+      "source_version_id": "us-dol-goods-v1",
+      "dimensions": {
+        "material": "polysilicon",
+        "issue": "Forced labour"
+      }
     }
   ],
   "material_origins": [
@@ -9061,9 +9130,1214 @@
       ],
       "confidence": "M",
       "source_version_id": "who-pharma-v1"
+    },
+    {
+      "id": "origin-high_purity_quartz-CHN",
+      "material_key": "high_purity_quartz",
+      "material_name": "High-purity quartz",
+      "country_code": "CHN",
+      "country_name": "China",
+      "basis": "Quartz and metallurgical-grade silicon supply-chain screening geographies documented in the IEA and DOE solar-PV assessments; not a supplier list",
+      "social_topics": [
+        "mine safety",
+        "worker exposure",
+        "land rights"
+      ],
+      "confidence": "M",
+      "source_version_id": "iea-solar-pv-v1"
+    },
+    {
+      "id": "origin-high_purity_quartz-BRA",
+      "material_key": "high_purity_quartz",
+      "material_name": "High-purity quartz",
+      "country_code": "BRA",
+      "country_name": "Brazil",
+      "basis": "Quartz and metallurgical-grade silicon supply-chain screening geographies documented in the IEA and DOE solar-PV assessments; not a supplier list",
+      "social_topics": [
+        "mine safety",
+        "worker exposure",
+        "land rights"
+      ],
+      "confidence": "M",
+      "source_version_id": "iea-solar-pv-v1"
+    },
+    {
+      "id": "origin-high_purity_quartz-USA",
+      "material_key": "high_purity_quartz",
+      "material_name": "High-purity quartz",
+      "country_code": "USA",
+      "country_name": "United States",
+      "basis": "Quartz and metallurgical-grade silicon supply-chain screening geographies documented in the IEA and DOE solar-PV assessments; not a supplier list",
+      "social_topics": [
+        "mine safety",
+        "worker exposure",
+        "land rights"
+      ],
+      "confidence": "M",
+      "source_version_id": "iea-solar-pv-v1"
+    },
+    {
+      "id": "origin-high_purity_quartz-IND",
+      "material_key": "high_purity_quartz",
+      "material_name": "High-purity quartz",
+      "country_code": "IND",
+      "country_name": "India",
+      "basis": "Quartz and metallurgical-grade silicon supply-chain screening geographies documented in the IEA and DOE solar-PV assessments; not a supplier list",
+      "social_topics": [
+        "mine safety",
+        "worker exposure",
+        "land rights"
+      ],
+      "confidence": "M",
+      "source_version_id": "iea-solar-pv-v1"
+    },
+    {
+      "id": "origin-polysilicon-CHN",
+      "material_key": "polysilicon",
+      "material_name": "Solar-grade polysilicon",
+      "country_code": "CHN",
+      "country_name": "China",
+      "basis": "Major solar-grade polysilicon manufacturing geographies documented in the IEA and DOE solar-PV assessments; not a supplier list",
+      "social_topics": [
+        "forced-labour due diligence",
+        "chemical exposure",
+        "working hours"
+      ],
+      "confidence": "M",
+      "source_version_id": "iea-solar-pv-v1"
+    },
+    {
+      "id": "origin-polysilicon-DEU",
+      "material_key": "polysilicon",
+      "material_name": "Solar-grade polysilicon",
+      "country_code": "DEU",
+      "country_name": "Germany",
+      "basis": "Major solar-grade polysilicon manufacturing geographies documented in the IEA and DOE solar-PV assessments; not a supplier list",
+      "social_topics": [
+        "forced-labour due diligence",
+        "chemical exposure",
+        "working hours"
+      ],
+      "confidence": "M",
+      "source_version_id": "iea-solar-pv-v1"
+    },
+    {
+      "id": "origin-polysilicon-USA",
+      "material_key": "polysilicon",
+      "material_name": "Solar-grade polysilicon",
+      "country_code": "USA",
+      "country_name": "United States",
+      "basis": "Major solar-grade polysilicon manufacturing geographies documented in the IEA and DOE solar-PV assessments; not a supplier list",
+      "social_topics": [
+        "forced-labour due diligence",
+        "chemical exposure",
+        "working hours"
+      ],
+      "confidence": "M",
+      "source_version_id": "iea-solar-pv-v1"
+    },
+    {
+      "id": "origin-polysilicon-MYS",
+      "material_key": "polysilicon",
+      "material_name": "Solar-grade polysilicon",
+      "country_code": "MYS",
+      "country_name": "Malaysia",
+      "basis": "Major solar-grade polysilicon manufacturing geographies documented in the IEA and DOE solar-PV assessments; not a supplier list",
+      "social_topics": [
+        "forced-labour due diligence",
+        "chemical exposure",
+        "working hours"
+      ],
+      "confidence": "M",
+      "source_version_id": "iea-solar-pv-v1"
+    },
+    {
+      "id": "origin-silver-MEX",
+      "material_key": "silver",
+      "material_name": "Silver paste feedstock",
+      "country_code": "MEX",
+      "country_name": "Mexico",
+      "basis": "Major silver mine-production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "mine safety",
+        "community rights",
+        "contract labour"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-silver-CHN",
+      "material_key": "silver",
+      "material_name": "Silver paste feedstock",
+      "country_code": "CHN",
+      "country_name": "China",
+      "basis": "Major silver mine-production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "mine safety",
+        "community rights",
+        "contract labour"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-silver-PER",
+      "material_key": "silver",
+      "material_name": "Silver paste feedstock",
+      "country_code": "PER",
+      "country_name": "Peru",
+      "basis": "Major silver mine-production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "mine safety",
+        "community rights",
+        "contract labour"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-silver-CHL",
+      "material_key": "silver",
+      "material_name": "Silver paste feedstock",
+      "country_code": "CHL",
+      "country_name": "Chile",
+      "basis": "Major silver mine-production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "mine safety",
+        "community rights",
+        "contract labour"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-solar_glass-CHN",
+      "material_key": "solar_glass",
+      "material_name": "Solar glass",
+      "country_code": "CHN",
+      "country_name": "China",
+      "basis": "PV glass and module manufacturing screening geographies documented in the IEA and DOE solar-PV assessments; not a supplier list",
+      "social_topics": [
+        "furnace safety",
+        "working hours",
+        "migrant labour"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-solar_glass-IND",
+      "material_key": "solar_glass",
+      "material_name": "Solar glass",
+      "country_code": "IND",
+      "country_name": "India",
+      "basis": "PV glass and module manufacturing screening geographies documented in the IEA and DOE solar-PV assessments; not a supplier list",
+      "social_topics": [
+        "furnace safety",
+        "working hours",
+        "migrant labour"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-solar_glass-MYS",
+      "material_key": "solar_glass",
+      "material_name": "Solar glass",
+      "country_code": "MYS",
+      "country_name": "Malaysia",
+      "basis": "PV glass and module manufacturing screening geographies documented in the IEA and DOE solar-PV assessments; not a supplier list",
+      "social_topics": [
+        "furnace safety",
+        "working hours",
+        "migrant labour"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-solar_glass-VNM",
+      "material_key": "solar_glass",
+      "material_name": "Solar glass",
+      "country_code": "VNM",
+      "country_name": "Vietnam",
+      "basis": "PV glass and module manufacturing screening geographies documented in the IEA and DOE solar-PV assessments; not a supplier list",
+      "social_topics": [
+        "furnace safety",
+        "working hours",
+        "migrant labour"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-solar_aluminium-CHN",
+      "material_key": "solar_aluminium",
+      "material_name": "Aluminium frame stock",
+      "country_code": "CHN",
+      "country_name": "China",
+      "basis": "Aluminium is a primary module and mounting-system input in the IEA and DOE solar-PV assessments; geographies are production benchmarks, not suppliers",
+      "social_topics": [
+        "mine and smelter safety",
+        "community rights",
+        "contract labour"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-solar_aluminium-IND",
+      "material_key": "solar_aluminium",
+      "material_name": "Aluminium frame stock",
+      "country_code": "IND",
+      "country_name": "India",
+      "basis": "Aluminium is a primary module and mounting-system input in the IEA and DOE solar-PV assessments; geographies are production benchmarks, not suppliers",
+      "social_topics": [
+        "mine and smelter safety",
+        "community rights",
+        "contract labour"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-solar_aluminium-AUS",
+      "material_key": "solar_aluminium",
+      "material_name": "Aluminium frame stock",
+      "country_code": "AUS",
+      "country_name": "Australia",
+      "basis": "Aluminium is a primary module and mounting-system input in the IEA and DOE solar-PV assessments; geographies are production benchmarks, not suppliers",
+      "social_topics": [
+        "mine and smelter safety",
+        "community rights",
+        "contract labour"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-solar_aluminium-CAN",
+      "material_key": "solar_aluminium",
+      "material_name": "Aluminium frame stock",
+      "country_code": "CAN",
+      "country_name": "Canada",
+      "basis": "Aluminium is a primary module and mounting-system input in the IEA and DOE solar-PV assessments; geographies are production benchmarks, not suppliers",
+      "social_topics": [
+        "mine and smelter safety",
+        "community rights",
+        "contract labour"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-pv_polymers-CHN",
+      "material_key": "pv_polymers",
+      "material_name": "Encapsulant and backsheet polymers",
+      "country_code": "CHN",
+      "country_name": "China",
+      "basis": "Encapsulant and backsheet inputs identified in the DOE solar-PV supply-chain assessment; geographies are screening benchmarks, not suppliers",
+      "social_topics": [
+        "chemical exposure",
+        "working hours",
+        "process safety"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-pv_polymers-JPN",
+      "material_key": "pv_polymers",
+      "material_name": "Encapsulant and backsheet polymers",
+      "country_code": "JPN",
+      "country_name": "Japan",
+      "basis": "Encapsulant and backsheet inputs identified in the DOE solar-PV supply-chain assessment; geographies are screening benchmarks, not suppliers",
+      "social_topics": [
+        "chemical exposure",
+        "working hours",
+        "process safety"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-pv_polymers-KOR",
+      "material_key": "pv_polymers",
+      "material_name": "Encapsulant and backsheet polymers",
+      "country_code": "KOR",
+      "country_name": "South Korea",
+      "basis": "Encapsulant and backsheet inputs identified in the DOE solar-PV supply-chain assessment; geographies are screening benchmarks, not suppliers",
+      "social_topics": [
+        "chemical exposure",
+        "working hours",
+        "process safety"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-pv_polymers-USA",
+      "material_key": "pv_polymers",
+      "material_name": "Encapsulant and backsheet polymers",
+      "country_code": "USA",
+      "country_name": "United States",
+      "basis": "Encapsulant and backsheet inputs identified in the DOE solar-PV supply-chain assessment; geographies are screening benchmarks, not suppliers",
+      "social_topics": [
+        "chemical exposure",
+        "working hours",
+        "process safety"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-pv_inverter-CHN",
+      "material_key": "pv_inverter",
+      "material_name": "Inverter and electrical balance-of-system",
+      "country_code": "CHN",
+      "country_name": "China",
+      "basis": "Inverter and balance-of-system production screening geographies based on the DOE solar-PV supply-chain assessment; not a supplier list",
+      "social_topics": [
+        "electrical safety",
+        "working hours",
+        "supplier transparency"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-pv_inverter-DEU",
+      "material_key": "pv_inverter",
+      "material_name": "Inverter and electrical balance-of-system",
+      "country_code": "DEU",
+      "country_name": "Germany",
+      "basis": "Inverter and balance-of-system production screening geographies based on the DOE solar-PV supply-chain assessment; not a supplier list",
+      "social_topics": [
+        "electrical safety",
+        "working hours",
+        "supplier transparency"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-pv_inverter-USA",
+      "material_key": "pv_inverter",
+      "material_name": "Inverter and electrical balance-of-system",
+      "country_code": "USA",
+      "country_name": "United States",
+      "basis": "Inverter and balance-of-system production screening geographies based on the DOE solar-PV supply-chain assessment; not a supplier list",
+      "social_topics": [
+        "electrical safety",
+        "working hours",
+        "supplier transparency"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-pv_inverter-IND",
+      "material_key": "pv_inverter",
+      "material_name": "Inverter and electrical balance-of-system",
+      "country_code": "IND",
+      "country_name": "India",
+      "basis": "Inverter and balance-of-system production screening geographies based on the DOE solar-PV supply-chain assessment; not a supplier list",
+      "social_topics": [
+        "electrical safety",
+        "working hours",
+        "supplier transparency"
+      ],
+      "confidence": "M",
+      "source_version_id": "doe-solar-pv-v1"
+    },
+    {
+      "id": "origin-cadmium-CHN",
+      "material_key": "cadmium",
+      "material_name": "Cadmium feedstock",
+      "country_code": "CHN",
+      "country_name": "China",
+      "basis": "Major refined cadmium geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "toxic exposure",
+        "smelter safety",
+        "community health"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-cadmium-KOR",
+      "material_key": "cadmium",
+      "material_name": "Cadmium feedstock",
+      "country_code": "KOR",
+      "country_name": "South Korea",
+      "basis": "Major refined cadmium geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "toxic exposure",
+        "smelter safety",
+        "community health"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-cadmium-JPN",
+      "material_key": "cadmium",
+      "material_name": "Cadmium feedstock",
+      "country_code": "JPN",
+      "country_name": "Japan",
+      "basis": "Major refined cadmium geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "toxic exposure",
+        "smelter safety",
+        "community health"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-cadmium-CAN",
+      "material_key": "cadmium",
+      "material_name": "Cadmium feedstock",
+      "country_code": "CAN",
+      "country_name": "Canada",
+      "basis": "Major refined cadmium geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "toxic exposure",
+        "smelter safety",
+        "community health"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-tellurium-CHN",
+      "material_key": "tellurium",
+      "material_name": "Tellurium feedstock",
+      "country_code": "CHN",
+      "country_name": "China",
+      "basis": "Major tellurium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "refinery safety",
+        "toxic exposure",
+        "supply concentration"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-tellurium-JPN",
+      "material_key": "tellurium",
+      "material_name": "Tellurium feedstock",
+      "country_code": "JPN",
+      "country_name": "Japan",
+      "basis": "Major tellurium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "refinery safety",
+        "toxic exposure",
+        "supply concentration"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-tellurium-RUS",
+      "material_key": "tellurium",
+      "material_name": "Tellurium feedstock",
+      "country_code": "RUS",
+      "country_name": "Russian Federation",
+      "basis": "Major tellurium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "refinery safety",
+        "toxic exposure",
+        "supply concentration"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-tellurium-CAN",
+      "material_key": "tellurium",
+      "material_name": "Tellurium feedstock",
+      "country_code": "CAN",
+      "country_name": "Canada",
+      "basis": "Major tellurium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "refinery safety",
+        "toxic exposure",
+        "supply concentration"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-indium-CHN",
+      "material_key": "indium",
+      "material_name": "Indium feedstock",
+      "country_code": "CHN",
+      "country_name": "China",
+      "basis": "Major indium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "refinery safety",
+        "worker exposure",
+        "supply concentration"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-indium-KOR",
+      "material_key": "indium",
+      "material_name": "Indium feedstock",
+      "country_code": "KOR",
+      "country_name": "South Korea",
+      "basis": "Major indium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "refinery safety",
+        "worker exposure",
+        "supply concentration"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-indium-JPN",
+      "material_key": "indium",
+      "material_name": "Indium feedstock",
+      "country_code": "JPN",
+      "country_name": "Japan",
+      "basis": "Major indium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "refinery safety",
+        "worker exposure",
+        "supply concentration"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-indium-CAN",
+      "material_key": "indium",
+      "material_name": "Indium feedstock",
+      "country_code": "CAN",
+      "country_name": "Canada",
+      "basis": "Major indium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "refinery safety",
+        "worker exposure",
+        "supply concentration"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-gallium-CHN",
+      "material_key": "gallium",
+      "material_name": "Gallium feedstock",
+      "country_code": "CHN",
+      "country_name": "China",
+      "basis": "Major primary gallium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "chemical exposure",
+        "supply concentration",
+        "working conditions"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-gallium-JPN",
+      "material_key": "gallium",
+      "material_name": "Gallium feedstock",
+      "country_code": "JPN",
+      "country_name": "Japan",
+      "basis": "Major primary gallium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "chemical exposure",
+        "supply concentration",
+        "working conditions"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-gallium-KOR",
+      "material_key": "gallium",
+      "material_name": "Gallium feedstock",
+      "country_code": "KOR",
+      "country_name": "South Korea",
+      "basis": "Major primary gallium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "chemical exposure",
+        "supply concentration",
+        "working conditions"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-gallium-RUS",
+      "material_key": "gallium",
+      "material_name": "Gallium feedstock",
+      "country_code": "RUS",
+      "country_name": "Russian Federation",
+      "basis": "Major primary gallium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "chemical exposure",
+        "supply concentration",
+        "working conditions"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-selenium-CHN",
+      "material_key": "selenium",
+      "material_name": "Selenium feedstock",
+      "country_code": "CHN",
+      "country_name": "China",
+      "basis": "Major selenium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "refinery safety",
+        "toxic exposure",
+        "supply concentration"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-selenium-JPN",
+      "material_key": "selenium",
+      "material_name": "Selenium feedstock",
+      "country_code": "JPN",
+      "country_name": "Japan",
+      "basis": "Major selenium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "refinery safety",
+        "toxic exposure",
+        "supply concentration"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-selenium-DEU",
+      "material_key": "selenium",
+      "material_name": "Selenium feedstock",
+      "country_code": "DEU",
+      "country_name": "Germany",
+      "basis": "Major selenium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "refinery safety",
+        "toxic exposure",
+        "supply concentration"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
+    },
+    {
+      "id": "origin-selenium-BEL",
+      "material_key": "selenium",
+      "material_name": "Selenium feedstock",
+      "country_code": "BEL",
+      "country_name": "Belgium",
+      "basis": "Major selenium production geographies identified in USGS Mineral Commodity Summaries 2026",
+      "social_topics": [
+        "refinery safety",
+        "toxic exposure",
+        "supply concentration"
+      ],
+      "confidence": "M",
+      "source_version_id": "usgs-mcs-v1"
     }
   ],
   "profiles": [
+    {
+      "id": "profile-solar_pv-crystalline_silicon-v1",
+      "sector_key": "solar_pv",
+      "variant": "crystalline_silicon",
+      "version": 1,
+      "product_patterns": [
+        "solar photovoltaic module",
+        "solar panel",
+        "photovoltaic panel",
+        "pv module",
+        "solar power"
+      ],
+      "naics_codes": [
+        "334413",
+        "221114"
+      ],
+      "hs_codes": [
+        "854143"
+      ],
+      "profile": {
+        "stages": [
+          {
+            "title": "Quartz extraction and metallurgical silicon",
+            "description": "Extraction and beneficiation of high-purity quartz followed by carbothermic conversion to metallurgical-grade silicon.",
+            "materials": [
+              "high_purity_quartz"
+            ],
+            "logistics": "Mine-to-smelter movement by road, rail and bulk ocean freight",
+            "topics": [
+              "mine safety",
+              "land rights",
+              "worker exposure"
+            ],
+            "actor": "Upstream suppliers"
+          },
+          {
+            "title": "Polysilicon purification",
+            "description": "Chemical purification of metallurgical silicon into solar-grade polysilicon.",
+            "materials": [
+              "polysilicon"
+            ],
+            "logistics": "Bulk silicon feedstock and controlled chemical logistics to polysilicon plants",
+            "topics": [
+              "forced-labour due diligence",
+              "chemical exposure",
+              "process safety"
+            ],
+            "actor": "Upstream suppliers"
+          },
+          {
+            "title": "Ingot growth and wafer slicing",
+            "description": "Melting solar-grade polysilicon, growing mono- or multicrystalline ingots and slicing them into wafers.",
+            "materials": [
+              "polysilicon"
+            ],
+            "logistics": "Polysilicon to ingot and wafer plants through concentrated regional manufacturing lanes",
+            "topics": [
+              "working hours",
+              "furnace safety",
+              "silica exposure"
+            ],
+            "actor": "Upstream suppliers"
+          },
+          {
+            "title": "Solar cell manufacturing",
+            "description": "Texturing, doping, passivation, metallisation and testing of crystalline-silicon wafers.",
+            "materials": [
+              "polysilicon",
+              "silver",
+              "copper"
+            ],
+            "logistics": "Protected wafer and cell shipments between specialist manufacturing clusters",
+            "topics": [
+              "chemical exposure",
+              "working hours",
+              "freedom of association"
+            ],
+            "actor": "Upstream suppliers"
+          },
+          {
+            "title": "PV module assembly",
+            "description": "Stringing and laminating cells with solar glass, encapsulant and backsheet, then fitting aluminium frames, junction boxes and copper interconnects.",
+            "materials": [
+              "solar_glass",
+              "solar_aluminium",
+              "silver",
+              "copper",
+              "pv_polymers"
+            ],
+            "logistics": "Inbound cells and module materials followed by containerised finished-module logistics",
+            "topics": [
+              "temporary labour",
+              "ergonomics",
+              "working hours"
+            ],
+            "actor": "Foreground module facility"
+          },
+          {
+            "title": "Inverter and balance-of-system production",
+            "description": "Manufacture of inverters, cabling, mounting or tracking structures and electrical protection equipment.",
+            "materials": [
+              "pv_inverter",
+              "copper",
+              "solar_aluminium"
+            ],
+            "logistics": "Electrical equipment and structural systems move to project sites by ocean, rail and road",
+            "topics": [
+              "electrical safety",
+              "supplier working hours",
+              "responsible minerals"
+            ],
+            "actor": "Upstream suppliers"
+          },
+          {
+            "title": "Installation and commissioning",
+            "description": "Civil works, mounting, module installation, cabling, grid interconnection, testing and handover.",
+            "materials": [],
+            "logistics": "Sequenced project deliveries and contractor mobilisation to the confirmed site",
+            "topics": [
+              "construction safety",
+              "migrant labour",
+              "subcontractor oversight"
+            ],
+            "actor": "Project-site contractors"
+          },
+          {
+            "title": "Operations and maintenance",
+            "description": "Inspection, cleaning, vegetation management, electrical maintenance and component replacement during operation.",
+            "materials": [],
+            "logistics": "Local service travel and replacement-part logistics",
+            "topics": [
+              "electrical safety",
+              "heat stress",
+              "contractor conditions"
+            ],
+            "actor": "Project operator and service contractors"
+          },
+          {
+            "title": "Decommissioning and panel recycling",
+            "description": "Collection, transport, dismantling and recovery of glass, aluminium, copper, silicon and silver from retired modules.",
+            "materials": [
+              "solar_glass",
+              "solar_aluminium",
+              "copper",
+              "silver"
+            ],
+            "logistics": "Reverse logistics to authorised reuse and recycling facilities",
+            "topics": [
+              "informal recycling",
+              "glass handling",
+              "electrical safety"
+            ],
+            "actor": "End-of-life operators"
+          }
+        ]
+      },
+      "source_ids": [
+        "unep-2020-v1",
+        "oecd-rbc-2018-v1",
+        "naics-2022-v1",
+        "iea-solar-pv-v1",
+        "doe-solar-pv-v1",
+        "irena-pv-eol-v1",
+        "usgs-mcs-v1",
+        "us-dol-goods-v1"
+      ],
+      "checksum": "4bd8e5475cbfa537eb078e79b66814fe68b803b0b3d3d845c68e0e345fe83f82"
+    },
+    {
+      "id": "profile-solar_pv-cadmium_telluride-v1",
+      "sector_key": "solar_pv",
+      "variant": "cadmium_telluride",
+      "version": 1,
+      "product_patterns": [
+        "cadmium telluride solar panel",
+        "cdte solar panel",
+        "thin film solar panel",
+        "solar panel",
+        "photovoltaic panel"
+      ],
+      "naics_codes": [
+        "334413",
+        "221114"
+      ],
+      "hs_codes": [
+        "854143"
+      ],
+      "profile": {
+        "stages": [
+          {
+            "title": "Cadmium and tellurium recovery",
+            "description": "Recovery and refining of cadmium and tellurium, principally as by-products of base-metal processing.",
+            "materials": [
+              "cadmium",
+              "tellurium"
+            ],
+            "logistics": "Refinery-to-semiconductor-material plants through controlled bulk and container lanes",
+            "topics": [
+              "toxic exposure",
+              "smelter safety",
+              "community health"
+            ],
+            "actor": "Upstream suppliers"
+          },
+          {
+            "title": "Semiconductor feedstock purification",
+            "description": "Purification and compounding of cadmium and tellurium into semiconductor-grade material.",
+            "materials": [
+              "cadmium",
+              "tellurium"
+            ],
+            "logistics": "Controlled chemical logistics to thin-film deposition plants",
+            "topics": [
+              "chemical exposure",
+              "process safety",
+              "supply concentration"
+            ],
+            "actor": "Upstream suppliers"
+          },
+          {
+            "title": "Thin-film cell deposition",
+            "description": "Deposition of cadmium-telluride semiconductor layers directly onto prepared solar glass, followed by patterning and treatment.",
+            "materials": [
+              "cadmium",
+              "tellurium",
+              "solar_glass"
+            ],
+            "logistics": "Glass and semiconductor inputs delivered to integrated thin-film manufacturing lines",
+            "topics": [
+              "toxic-material controls",
+              "working hours",
+              "industrial hygiene"
+            ],
+            "actor": "Upstream suppliers"
+          },
+          {
+            "title": "CdTe module assembly",
+            "description": "Lamination, edge sealing, electrical connection, framing where specified, testing and finished-module release.",
+            "materials": [
+              "solar_glass",
+              "solar_aluminium",
+              "copper",
+              "pv_polymers"
+            ],
+            "logistics": "Containerised modules move from manufacturing plants to regional project hubs",
+            "topics": [
+              "temporary labour",
+              "ergonomics",
+              "chemical exposure"
+            ],
+            "actor": "Foreground module facility"
+          },
+          {
+            "title": "Inverter and balance-of-system production",
+            "description": "Manufacture of inverters, cabling, mounting systems and grid-connection equipment.",
+            "materials": [
+              "pv_inverter",
+              "copper",
+              "solar_aluminium"
+            ],
+            "logistics": "Electrical and structural equipment moves to project sites by ocean, rail and road",
+            "topics": [
+              "electrical safety",
+              "supplier working hours",
+              "responsible minerals"
+            ],
+            "actor": "Upstream suppliers"
+          },
+          {
+            "title": "Installation and commissioning",
+            "description": "Civil works, mounting, module installation, cabling, grid interconnection, testing and handover.",
+            "materials": [],
+            "logistics": "Sequenced project deliveries and contractor mobilisation to the confirmed site",
+            "topics": [
+              "construction safety",
+              "migrant labour",
+              "subcontractor oversight"
+            ],
+            "actor": "Project-site contractors"
+          },
+          {
+            "title": "Operations and maintenance",
+            "description": "Inspection, cleaning, electrical maintenance and component replacement during operation.",
+            "materials": [],
+            "logistics": "Local service travel and replacement-part logistics",
+            "topics": [
+              "electrical safety",
+              "heat stress",
+              "contractor conditions"
+            ],
+            "actor": "Project operator and service contractors"
+          },
+          {
+            "title": "Decommissioning and closed-loop recycling",
+            "description": "Collection and controlled recycling designed to recover semiconductor material, glass, aluminium and copper.",
+            "materials": [
+              "cadmium",
+              "tellurium",
+              "solar_glass",
+              "solar_aluminium",
+              "copper"
+            ],
+            "logistics": "Regulated reverse logistics to authorised CdTe recycling facilities",
+            "topics": [
+              "hazardous-material handling",
+              "worker exposure",
+              "recycler oversight"
+            ],
+            "actor": "End-of-life operators"
+          }
+        ]
+      },
+      "source_ids": [
+        "unep-2020-v1",
+        "oecd-rbc-2018-v1",
+        "naics-2022-v1",
+        "doe-solar-pv-v1",
+        "iea-solar-pv-v1",
+        "irena-pv-eol-v1",
+        "usgs-mcs-v1"
+      ],
+      "checksum": "ac3980c3e7c69d76c45136616ef5d2b0643064daeea6ffb80a1d6899a8890180"
+    },
+    {
+      "id": "profile-solar_pv-cigs-v1",
+      "sector_key": "solar_pv",
+      "variant": "cigs",
+      "version": 1,
+      "product_patterns": [
+        "cigs solar panel",
+        "copper indium gallium selenide solar panel",
+        "thin film solar panel",
+        "solar panel",
+        "photovoltaic panel"
+      ],
+      "naics_codes": [
+        "334413",
+        "221114"
+      ],
+      "hs_codes": [
+        "854143"
+      ],
+      "profile": {
+        "stages": [
+          {
+            "title": "CIGS mineral and by-product recovery",
+            "description": "Extraction or by-product recovery and refining of copper, indium, gallium and selenium.",
+            "materials": [
+              "copper",
+              "indium",
+              "gallium",
+              "selenium"
+            ],
+            "logistics": "Mine and refinery products move to specialist semiconductor-material processors",
+            "topics": [
+              "mine and refinery safety",
+              "chemical exposure",
+              "supply concentration"
+            ],
+            "actor": "Upstream suppliers"
+          },
+          {
+            "title": "Semiconductor feedstock preparation",
+            "description": "Purification and formulation of copper-indium-gallium-selenide deposition feedstocks.",
+            "materials": [
+              "copper",
+              "indium",
+              "gallium",
+              "selenium"
+            ],
+            "logistics": "Controlled chemical and specialty-material logistics to thin-film plants",
+            "topics": [
+              "chemical exposure",
+              "process safety",
+              "working hours"
+            ],
+            "actor": "Upstream suppliers"
+          },
+          {
+            "title": "CIGS thin-film deposition",
+            "description": "Deposition, patterning and treatment of CIGS absorber and contact layers on glass or flexible substrates.",
+            "materials": [
+              "copper",
+              "indium",
+              "gallium",
+              "selenium",
+              "solar_glass"
+            ],
+            "logistics": "Specialty materials and substrates move into integrated deposition facilities",
+            "topics": [
+              "industrial hygiene",
+              "working hours",
+              "supplier transparency"
+            ],
+            "actor": "Upstream suppliers"
+          },
+          {
+            "title": "CIGS module assembly",
+            "description": "Encapsulation, lamination, electrical connection, framing, testing and finished-module release.",
+            "materials": [
+              "solar_glass",
+              "solar_aluminium",
+              "copper",
+              "pv_polymers"
+            ],
+            "logistics": "Containerised modules move from manufacturing plants to project hubs",
+            "topics": [
+              "temporary labour",
+              "ergonomics",
+              "chemical exposure"
+            ],
+            "actor": "Foreground module facility"
+          },
+          {
+            "title": "Inverter and balance-of-system production",
+            "description": "Manufacture of inverters, cabling, mounting systems and grid-connection equipment.",
+            "materials": [
+              "pv_inverter",
+              "copper",
+              "solar_aluminium"
+            ],
+            "logistics": "Electrical and structural equipment moves to project sites by ocean, rail and road",
+            "topics": [
+              "electrical safety",
+              "supplier working hours",
+              "responsible minerals"
+            ],
+            "actor": "Upstream suppliers"
+          },
+          {
+            "title": "Installation and commissioning",
+            "description": "Civil works, mounting, module installation, cabling, grid interconnection, testing and handover.",
+            "materials": [],
+            "logistics": "Sequenced project deliveries and contractor mobilisation to the confirmed site",
+            "topics": [
+              "construction safety",
+              "migrant labour",
+              "subcontractor oversight"
+            ],
+            "actor": "Project-site contractors"
+          },
+          {
+            "title": "Operations and maintenance",
+            "description": "Inspection, cleaning, electrical maintenance and component replacement during operation.",
+            "materials": [],
+            "logistics": "Local service travel and replacement-part logistics",
+            "topics": [
+              "electrical safety",
+              "heat stress",
+              "contractor conditions"
+            ],
+            "actor": "Project operator and service contractors"
+          },
+          {
+            "title": "Decommissioning and panel recycling",
+            "description": "Collection and controlled processing to recover glass, aluminium, copper and semiconductor-bearing fractions.",
+            "materials": [
+              "solar_glass",
+              "solar_aluminium",
+              "copper",
+              "indium",
+              "gallium",
+              "selenium"
+            ],
+            "logistics": "Reverse logistics to authorised module recycling facilities",
+            "topics": [
+              "worker exposure",
+              "informal recycling",
+              "material traceability"
+            ],
+            "actor": "End-of-life operators"
+          }
+        ]
+      },
+      "source_ids": [
+        "unep-2020-v1",
+        "oecd-rbc-2018-v1",
+        "naics-2022-v1",
+        "doe-solar-pv-v1",
+        "iea-solar-pv-v1",
+        "irena-pv-eol-v1",
+        "usgs-mcs-v1"
+      ],
+      "checksum": "63aede44365be4290ec27fb65e16ee9cf72f1da8c0934f5004d7d84123eb9465"
+    },
     {
       "id": "profile-automotive-ev-v1",
       "sector_key": "automotive",
@@ -10251,6 +11525,6 @@
       "checksum": "407b58e57b809e4f41fad4f906c14269c9835041378a2f1e55303e6c77709c9a"
     }
   ],
-  "checksum": "27aa50e193d2b4f6c19e454ffbee0f121dbde6883c55670033267703158c855e",
-  "id": "warehouse-2026-10-09-27aa50e193"
+  "checksum": "a07720e913b351a1b88142320baeb5db7b91cc4850da65c85f6fac11bb51b070",
+  "id": "warehouse-2026-10-10-a07720e913"
 }

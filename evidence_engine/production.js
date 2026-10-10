@@ -6,13 +6,37 @@ const {loadEvidenceBundle,regionKey}=require("./warehouse");
 const COUNTRY=Object.freeze({
   "United States":["USA","842"],Germany:["DEU","276"],India:["IND","356"],Brazil:["BRA","076"],China:["CHN","156"],Mexico:["MEX","484"],Canada:["CAN","124"],Japan:["JPN","392"],"South Korea":["KOR","410"],France:["FRA","250"],Italy:["ITA","380"],"United Kingdom":["GBR","826"],Australia:["AUS","036"],Chile:["CHL","152"],Indonesia:["IDN","360"],Malaysia:["MYS","458"],Vietnam:["VNM","704"],Thailand:["THA","764"],Taiwan:["TWN","490"],Singapore:["SGP","702"],Bangladesh:["BGD","050"],Pakistan:["PAK","586"],Turkey:["TUR","792"],Peru:["PER","604"],Colombia:["COL","170"],Ethiopia:["ETH","231"],Ghana:["GHA","288"],"DR Congo":["COD","180"],"South Africa":["ZAF","710"],Botswana:["BWA","072"],Angola:["AGO","024"],Belgium:["BEL","056"],Switzerland:["CHE","756"],Netherlands:["NLD","528"],Spain:["ESP","724"],Poland:["POL","616"],Philippines:["PHL","608"],Cambodia:["KHM","116"],Argentina:["ARG","032"],Ireland:["IRL","372"]
 });
-const SECTOR_LABELS=Object.freeze({automotive:"Automotive / Vehicles",electronics:"Electronics / Consumer Hardware",ev_battery:"Battery Manufacturing",diamond:"Diamond Processing",textile:"Textile and Apparel",pharma:"Pharmaceuticals",food:"Food and Agriculture",metals:"Metals and Refining",data_center:"Data Centers"});
+const SECTOR_LABELS=Object.freeze({solar_pv:"Solar Photovoltaics",automotive:"Automotive / Vehicles",electronics:"Electronics / Consumer Hardware",ev_battery:"Battery Manufacturing",diamond:"Diamond Processing",textile:"Textile and Apparel",pharma:"Pharmaceuticals",food:"Food and Agriculture",metals:"Metals and Refining",data_center:"Data Centers"});
 const PROFILES=Object.freeze(Object.fromEntries(Object.keys(SECTOR_LABELS).map(key=>[key,{sector_key:key,label:SECTOR_LABELS[key]}])));
+const PRODUCT_SECTOR_RULES=Object.freeze([
+  ["solar_pv",/\b(?:solar\s+(?:pv|photovoltaic|panel|module|power)|photovoltaic\s+(?:panel|module|plant|factory|manufactur(?:e|ing))|pv\s+(?:panel|module|manufactur(?:e|ing)))\b/i],
+  ["data_center",/\b(?:data\s+cent(?:er|re)|server\s+farm|cloud\s+campus|hyperscale)\b/i],
+  ["ev_battery",/\b(?:ev\s+batter(?:y|ies)|lithium(?:-ion)?\s+batter(?:y|ies)|battery\s+(?:cell|pack|gigafactory)|energy\s+storage)\b/i],
+  ["diamond",/\b(?:diamond|gemstone|jewell?ery)\b/i],
+  ["automotive",/\b(?:car|automobile|automotive|vehicle|truck|motorcycle)\b/i],
+  ["textile",/\b(?:textile|apparel|garment|clothing|cotton|fabric|footwear)\b/i],
+  ["pharma",/\b(?:pharma(?:ceutical)?|medicine|drug|vaccine|biotech|active pharmaceutical ingredient)\b/i],
+  ["food",/\b(?:coffee|cocoa|plantation|agriculture|food processing|dairy|seafood)\b/i],
+  ["metals",/\b(?:gold refinery|metal refinery|smelter|smelting|steel mill|copper refinery|aluminium refinery)\b/i],
+  ["electronics",/\b(?:gaming console|computer|laptop|smartphone|phone|consumer electronics|printed circuit board|pcb|semiconductor device)\b/i]
+]);
+const SOLAR_FORBIDDEN_CORE_INPUTS=Object.freeze(["gold","tin","tantalum","cobalt","lithium","rare earth"]);
 const WEIGHTS=Object.freeze({workers:.2,local_communities:.15,society:.2,value_chain_actors:.25,children:.1,consumers:.1});
 const cap=(n,min=0,max=100)=>Math.min(max,Math.max(min,n));
 const round=(n,p=1)=>Math.round(n*10**p)/10**p;
 const hash=value=>crypto.createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const title=value=>String(value||"").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+
+function resolveProductSector(spec){
+  const text=`${spec.product||""} ${spec.prompt||""}`;return PRODUCT_SECTOR_RULES.find(([,pattern])=>pattern.test(text))?.[0]||null;
+}
+
+function normaliseSector(spec){
+  const productSector=resolveProductSector(spec),declared=spec.answers?.industry||spec.sectorKey||"generic";
+  if(productSector){if(declared!==productSector)spec.resolver_correction={from:declared,to:productSector,basis:"Explicit product ontology match"};spec.sectorKey=productSector;}
+  else spec.sectorKey=declared;
+  spec.sectorLabel=SECTOR_LABELS[spec.sectorKey]||spec.sectorLabel||"General Manufacturing";return spec;
+}
 
 function questions(spec){
   const output=[];
@@ -20,13 +44,20 @@ function questions(spec){
   if(spec.country==="United States"&&String(spec.region||"").toLowerCase()==="new york")output.push({id:"location_interpretation",text:"Does New York mean the state generally or New York City?",options:[{value:"state",label:"New York State"},{value:"city",label:"New York City"}]});
   output.push({id:"site_status",text:"What is the facility status?",options:[{value:"proposed",label:"Proposed"},{value:"construction",label:"Under construction"},{value:"operating",label:"Operating"}]});
   output.push({id:"system_boundary",text:"Which life-cycle boundary should this report use?",options:[{value:"cradle_to_grave",label:"Cradle to grave"},{value:"cradle_to_gate",label:"Cradle to gate"},{value:"gate_to_gate",label:"Site operations only"}]});
-  output.push({id:"operating_scope",text:"How much manufacturing happens at the site?",options:[{value:"assembly_only",label:"Assembly only"},{value:"mixed",label:"Mixed make and buy"},{value:"vertically_integrated",label:"Vertically integrated"}]});
-  const sector=spec.answers?.industry||spec.sectorKey;if(sector==="automotive")output.push({id:"vehicle_variant",text:"Which vehicle type is being manufactured?",options:[{value:"ev",label:"Battery electric"},{value:"ice",label:"Combustion engine"},{value:"hybrid",label:"Hybrid"}]});
+  const sector=spec.sectorKey;
+  if(sector==="solar_pv"){
+    output.push({id:"operating_scope",text:"Which solar-PV activity occurs at the stated location?",options:[{value:"module_assembly",label:"PV module assembly"},{value:"vertically_integrated",label:"Integrated PV manufacturing"},{value:"installation_operations",label:"Installation and operations"}]});
+    output.push({id:"pv_technology",text:"Which photovoltaic module technology is in scope?",options:[{value:"crystalline_silicon",label:"Crystalline silicon"},{value:"cadmium_telluride",label:"Cadmium telluride (CdTe)"},{value:"cigs",label:"CIGS thin film"}]});
+  }else{
+    output.push({id:"operating_scope",text:"How much manufacturing happens at the site?",options:[{value:"assembly_only",label:"Assembly only"},{value:"mixed",label:"Mixed make and buy"},{value:"vertically_integrated",label:"Vertically integrated"}]});
+    if(sector==="automotive")output.push({id:"vehicle_variant",text:"Which vehicle type is being manufactured?",options:[{value:"ev",label:"Battery electric"},{value:"ice",label:"Combustion engine"},{value:"hybrid",label:"Hybrid"}]});
+  }
   return output.map(item=>({...item,required:true}));
 }
 
 function canonicalProduct(spec,profile){
   const text=`${spec.product||""} ${spec.prompt||""}`.toLowerCase();const patterns=[...(profile?.product_patterns||[])].sort((a,b)=>b.length-a.length);const matched=patterns.find(pattern=>new RegExp(`\\b${pattern.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/\\ /g,"\\s+")}\\b`,"i").test(text));
+  if(spec.sectorKey==="solar_pv")return {crystalline_silicon:"crystalline-silicon solar photovoltaic module",cadmium_telluride:"cadmium-telluride solar photovoltaic module",cigs:"CIGS solar photovoltaic module"}[spec.answers?.pv_technology]||"solar photovoltaic module";
   if(matched){if(spec.sectorKey==="automotive")return "car";if(spec.sectorKey==="diamond")return "diamond";if(spec.sectorKey==="ev_battery")return "lithium-ion battery";if(spec.sectorKey==="data_center")return "data center";return matched;}
   const cleaned=String(spec.product||"").replace(/\b(?:year|years|annual|annually|operation|operations|facility|factory|plant|manufacturing|production)\b/gi," ").replace(/\s+/g," ").trim();
   return cleaned.length>=3?cleaned:{automotive:"vehicle",electronics:"electronic product",ev_battery:"battery",diamond:"diamond",textile:"textile product",pharma:"pharmaceutical product",food:"agricultural product",metals:"refined metal",data_center:"data center"}[spec.sectorKey];
@@ -66,13 +97,30 @@ function score(indicators,originRecords=[],origins=[]){
 
 function supplyChain(spec,profile,origins,references){
   const originsByMaterial=new Map();for(const origin of origins){const rows=originsByMaterial.get(origin.material_key)||[];rows.push(origin);originsByMaterial.set(origin.material_key,rows);}
-  return profile.profile.stages.map((stage,index)=>{const matched=stage.materials.flatMap(material=>originsByMaterial.get(material)||[]);const countries=[...new Set(matched.map(item=>item.country_name))];const inputs=stage.materials.map(material=>matched.find(item=>item.material_key===material)?.material_name||title(material.replaceAll("_"," ")));const foreground=/foreground/i.test(stage.actor||"")||(/assembly|facility|fill-finish|cut-make-trim|roasting|smelting|installation/i.test(stage.title)&&index>=Math.floor(profile.profile.stages.length/2));
+  const isForeground=(stage,index)=>{
+    if(spec.sectorKey==="solar_pv"){
+      const scope=spec.answers?.operating_scope,titleText=stage.title.toLowerCase();
+      if(scope==="module_assembly")return /module assembly/.test(titleText);
+      if(scope==="installation_operations")return /installation|operations and maintenance/.test(titleText);
+      if(scope==="vertically_integrated")return /polysilicon|ingot|wafer|cell|deposition|feedstock|module assembly/.test(titleText);
+      return false;
+    }
+    return /foreground/i.test(stage.actor||"")||(/assembly|facility|fill-finish|cut-make-trim|roasting|smelting|installation/i.test(stage.title)&&index>=Math.floor(profile.profile.stages.length/2));
+  };
+  return profile.profile.stages.map((stage,index)=>{const matched=stage.materials.flatMap(material=>originsByMaterial.get(material)||[]);const countries=[...new Set(matched.map(item=>item.country_name))];const inputs=stage.materials.map(material=>matched.find(item=>item.material_key===material)?.material_name||title(material.replaceAll("_"," ")));const foreground=isForeground(stage,index);
     return {id:`stage-${index+1}`,title:stage.title,description:stage.description,inputs,countries:foreground?[spec.locationLabel]:countries,country_basis:foreground?"User-confirmed host geography":countries.length?"Versioned material-origin benchmark; not a supplier list":stage.logistics,evidence:[...new Set([...matched.map(item=>item.source_version_id),...profile.source_ids.slice(0,3)])].filter(id=>references.has(id)),screening_topics:stage.topics,logistics:stage.logistics,actor:stage.actor,confidence:foreground?"H":countries.length?"M":"L"};});
 }
 
 function validate(report){
   const errors=[],warnings=[];const evidenceIds=new Set(report.indicators.map(item=>item.id));const refIds=new Set(report.references.map(item=>item.id));
   if(!report.spec.product||/\byear\s+(?:car|operation)\b/i.test(report.spec.product))errors.push({code:"invalid_product",product:report.spec.product});
+  const resolvedSector=resolveProductSector(report.spec);if(resolvedSector&&resolvedSector!==report.spec.sectorKey)errors.push({code:"product_sector_mismatch",resolved:resolvedSector,reported:report.spec.sectorKey});
+  if(report.spec.sectorKey==="solar_pv"){
+    const stages=report.supply_chain.stages||[],stageText=stages.map(stage=>stage.title).join(" | ").toLowerCase(),inputText=stages.flatMap(stage=>stage.inputs||[]).join(" | ").toLowerCase();
+    const leaked=SOLAR_FORBIDDEN_CORE_INPUTS.filter(material=>inputText.includes(material));if(leaked.length)errors.push({code:"solar_material_profile_leak",materials:leaked});
+    const technology=report.spec.answers?.pv_technology;if(!["crystalline_silicon","cadmium_telluride","cigs"].includes(technology))errors.push({code:"unresolved_pv_technology"});
+    if(technology==="crystalline_silicon")for(const required of ["quartz","polysilicon","wafer","cell","module assembly","inverter","installation","operations","recycling"])if(!stageText.includes(required))errors.push({code:"incomplete_solar_process",stage:required});
+  }
   if(!report.spec.locationLabel||!report.spec.countryCode)errors.push({code:"unresolved_geography"});
   if(!report.warehouse?.snapshot_id||!report.warehouse?.checksum)errors.push({code:"missing_warehouse_snapshot"});
   if(!report.supply_chain.stages.length||report.supply_chain.stages.some(stage=>!stage.description||!stage.logistics||!stage.screening_topics.length||!stage.evidence.length))errors.push({code:"incomplete_supply_chain"});
@@ -95,16 +143,16 @@ function recommendations(report){
 }
 
 async function generate(input,options={}){
-  const spec={...(input.spec||{}),answers:{...(input.answers||{}),...(input.spec?.answers||{})}};const missing=questions(spec).filter(item=>!spec.answers[item.id]);if(missing.length)return {status:"needs_clarification",questions:missing};
-  if(spec.answers.industry){spec.sectorKey=spec.answers.industry;spec.sectorLabel=SECTOR_LABELS[spec.sectorKey];}const code=COUNTRY[spec.country];if(!code)return {status:"blocked",message:`The warehouse has no verified country mapping for ${spec.country}. No report was saved.`};spec.countryCode=code[0];
+  const spec=normaliseSector({...(input.spec||{}),answers:{...(input.answers||{}),...(input.spec?.answers||{})}});const missing=questions(spec).filter(item=>!spec.answers[item.id]);if(missing.length)return {status:"needs_clarification",questions:missing};
+  const code=COUNTRY[spec.country];if(!code)return {status:"blocked",message:`The warehouse has no verified country mapping for ${spec.country}. No report was saved.`};spec.countryCode=code[0];
   if(spec.answers.location_interpretation==="city")spec.region="New York City";spec.locationLabel=spec.region?`${spec.region}, ${spec.country}`:spec.country;
   const bundle=await loadEvidenceBundle(spec,{...options,requireSupabase:options.requireSupabase??false});if(!bundle?.profile)return {status:"blocked",message:`No versioned ${spec.sectorLabel||spec.sectorKey} process profile is available. No report was saved.`};spec.product=canonicalProduct(spec,bundle.profile);
   const references=sourceMap(bundle),hostRows=bestRecords(bundle.records||[],spec),indicators=hostRows.filter(row=>row.indicator_id!=="child_forced_labour_goods_flag").map(row=>indicator(row,references));const scores=score(indicators,bundle.origin_country_records||[],bundle.material_origins||[]);const chain=supplyChain(spec,bundle.profile,bundle.material_origins||[],references);
   const signals=(bundle.origin_country_records||[]).filter(item=>item.indicator_id==="child_forced_labour_goods_flag"&&(bundle.material_origins||[]).some(origin=>origin.material_key===item.dimensions?.material&&origin.country_code===item.country_code)).map(item=>({good:title(item.dimensions.material.replaceAll("_"," ")),country:item.geography_name,issue:`${item.dimensions.issue}; benchmark origin only, supplier linkage unverified.`,evidence_id:item.source_version_id}));
   const sourcingMap=new Map();for(const origin of bundle.material_origins||[]){const item=sourcingMap.get(origin.country_name)||{country:origin.country_name,country_code:origin.country_code,materials:[],basis:origin.basis,source_version_id:origin.source_version_id};item.materials.push(origin.material_name);sourcingMap.set(origin.country_name,item);}
-  const report={version:3,generated_at:new Date().toISOString(),spec,warehouse:{mode:bundle.warehouse_mode,snapshot_id:bundle.snapshot.id,generated_at:bundle.snapshot.generated_at,checksum:bundle.snapshot.checksum,warning:bundle.warehouse_warning||null},indicators,sourcing:[...sourcingMap.values()].map(item=>({...item,materials:[...new Set(item.materials)]})),supply_chain:{stages:chain},scores,signals,gaps:[],assumptions:[{type:"USER_INPUT",field:"product",value:spec.product},{type:"USER_INPUT",field:"location",value:spec.locationLabel},{type:"USER_INPUT",field:"scale",value:spec.qty},...Object.entries(spec.answers).map(([field,value])=>({type:"USER_CONFIRMED",field,value})),{type:"BENCHMARK_BOUNDARY",field:"material_origins",value:"Versioned production-origin benchmarks are logistics screening lanes, not the facility supplier list."},{type:"BENCHMARK_BOUNDARY",field:"upstream_weighting",value:"Origin-country context is equally weighted until spend, mass-flow or worker-hour data are supplied."}],references:[...references.values()]};
+  const report={version:3,generated_at:new Date().toISOString(),spec,warehouse:{mode:bundle.warehouse_mode,snapshot_id:bundle.snapshot.id,generated_at:bundle.snapshot.generated_at,checksum:bundle.snapshot.checksum,warning:bundle.warehouse_warning||null},indicators,sourcing:[...sourcingMap.values()].map(item=>({...item,materials:[...new Set(item.materials)]})),supply_chain:{stages:chain},scores,signals,gaps:[],assumptions:[{type:"USER_INPUT",field:"product",value:spec.product},{type:"USER_INPUT",field:"location",value:spec.locationLabel},{type:"USER_INPUT",field:"scale",value:spec.qty},...Object.entries(spec.answers).map(([field,value])=>({type:"USER_CONFIRMED",field,value})),...(spec.resolver_correction?[{type:"SYSTEM_RESOLUTION",field:"industry",value:`${spec.resolver_correction.to}; corrected from ${spec.resolver_correction.from} using the explicit product ontology` }]:[]),{type:"BENCHMARK_BOUNDARY",field:"material_origins",value:"Versioned production-origin benchmarks are logistics screening lanes, not the facility supplier list."},{type:"BENCHMARK_BOUNDARY",field:"upstream_weighting",value:"Origin-country context is equally weighted until spend, mass-flow or worker-hour data are supplied."}],references:[...references.values()]};
   report.recommendations=recommendations(report);report.validation=validate(report);report.quality={evidence_records:indicators.length,declared_gaps:report.validation.errors.length,scored_pillars:scores.coverage.scored_pillars,evidence_coverage_percent:scores.coverage.percent,exportable:report.validation.exportable,statement:report.validation.exportable?`Validated warehouse-backed screening report (${bundle.snapshot.id}).`:"Report generation blocked because the evidence contract was not met."};
   if(!report.validation.valid)return {status:"blocked",message:"The evidence contract was not met. No report was saved.",validation:report.validation};return {status:"complete",evidence_v2:report};
 }
 
-module.exports={COUNTRY,PROFILES,SECTOR_LABELS,generate,questions,score,validate};
+module.exports={COUNTRY,PROFILES,SECTOR_LABELS,generate,questions,resolveProductSector,score,validate};

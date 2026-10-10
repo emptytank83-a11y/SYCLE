@@ -33,7 +33,10 @@ async function main(){
   await upsert("sycle_industry_profiles",snapshot.profiles.map(item=>({...item,snapshot_id:snapshot.id})));
   const bundle=await request("rpc/sycle_get_evidence_bundle",{method:"POST",body:{p_country_code:"USA",p_geography_keys:["US-36","USA","GLOBAL"],p_sector_key:"automotive",p_variant:"ice"}});
   if(bundle?.snapshot?.id!==snapshot.id||!bundle?.profile||bundle.records.length<5||bundle.material_origins.length<5)throw new Error("Warehouse verification bundle is incomplete");
-  console.log(JSON.stringify({project:projectRef,snapshot:snapshot.id,records:snapshot.records.length,origins:snapshot.material_origins.length,profiles:snapshot.profiles.length,verified_bundle:{records:bundle.records.length,origins:bundle.material_origins.length,profile:bundle.profile.id}},null,2));
+  const solar=await request("rpc/sycle_get_evidence_bundle",{method:"POST",body:{p_country_code:"IND",p_geography_keys:["IND","GLOBAL"],p_sector_key:"solar_pv",p_variant:"crystalline_silicon"}});
+  const solarMaterials=new Set((solar?.material_origins||[]).map(item=>item.material_key));const forbidden=["gold","tin","tantalum","cobalt","lithium","rare_earths"].filter(item=>solarMaterials.has(item));
+  if(solar?.snapshot?.id!==snapshot.id||solar?.profile?.sector_key!=="solar_pv"||!solarMaterials.has("high_purity_quartz")||!solarMaterials.has("polysilicon")||forbidden.length)throw new Error(`Solar warehouse verification failed; forbidden materials: ${forbidden.join(", ")||"none"}`);
+  console.log(JSON.stringify({project:projectRef,snapshot:snapshot.id,records:snapshot.records.length,origins:snapshot.material_origins.length,profiles:snapshot.profiles.length,verified_bundle:{records:bundle.records.length,origins:bundle.material_origins.length,profile:bundle.profile.id},verified_solar_bundle:{profile:solar.profile.id,origins:solar.material_origins.length,has_quartz:solarMaterials.has("high_purity_quartz"),has_polysilicon:solarMaterials.has("polysilicon"),forbidden_materials:forbidden}},null,2));
 }
 
 main().catch(error=>{console.error(error);process.exitCode=1;});
