@@ -19,8 +19,9 @@ static UI. A backend or approved browser-bundle hook is required to enable it.
 
 ## Global discovery (added)
 
-`discovery/` now has a server-side model client (Anthropic Messages API) used for fact extraction and publisher
-judgement, so the Phase 9 note about having no LLM client applies only to the narrator. The browser never sees keys.
-Still required from a person: a search API key, a model key, applying migration 008, and review of the queue in
+Discovery runs with no paid keys (open-data connectors, open document indexes, rule-based extraction). Optional search
+and model keys only extend reach. Still required from a person: applying migration 008, and review of
 `sycle_review_queue` and of hosts in `sycle_source_registry` with `review_status = 'pending_review'`.
+Known limits: connectors give national (and broad-sector) figures, not site-level data; the open web beyond the
+built-in indexes needs a search key; the latest ILO/WHO year can be several years old and is graded accordingly.
 Scoring thresholds in `discovery/score.js` are a methodology choice and remain pending expert review.

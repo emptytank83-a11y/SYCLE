@@ -51,7 +51,7 @@ const factRow=({questionKey,question,level,fact,trust,document,now,status,ttlDay
   value:fact.value,value_text:fact.value_text,unit:fact.unit,evidence_quote:fact.quote,locator:fact.locator,
   source_url:document.url,source_title:document.title||null,publisher:trust.publisher||trust.host,source_class:trust.class,
   trust_score:trust.score,trust_reason:trust.reason,page_checksum:document.checksum,retrieved_at:now,expires_at:addDays(now,ttlDays),
-  status,metadata:{year_verified:fact.year_verified,scope:fact.scope,needs_review:Boolean(trust.needs_review),corroboration_required:Boolean(trust.corroborate)}
+  status,metadata:{year_verified:fact.year_verified,scope:fact.scope,method:fact.method||"model",needs_review:Boolean(trust.needs_review),corroboration_required:Boolean(trust.corroborate)}
 });
 
 const missRow=({questionKey,question,level,now,ttlDays,note})=>({

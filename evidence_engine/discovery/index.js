@@ -7,7 +7,9 @@
 const {stableId}=require("../warehouse/client");
 const {LEVELS,benchmarkQueriesFor,buildQuestions,effectiveLevel,levelsFor,queriesFor}=require("./questions");
 const {classifySource,sourceTypeFor}=require("./trust");
+const crypto=require("node:crypto");
 const {extractFacts}=require("./extract");
+const {extractLocal}=require("./extract-local");
 const {addDays,factRow,missRow}=require("./library");
 const {gradeFor,referenceScore,unitKey}=require("./score");
 
@@ -55,9 +57,21 @@ function pickPrimary(rows,targetYear){
 }
 
 async function searchLevel(question,level,ctx){
-  const {search,llm,fetcher,library,budget,options,now}=ctx;
+  const {search,llm,fetcher,library,budget,options,now,connectors}=ctx;
   const build=question.kind==="benchmark"?benchmarkQueriesFor:queriesFor;
   const judge=llm?async(url,context)=>budget.take("judgements")?llm.judge(url,context):null:null;
+
+  // Official open-data APIs first: exact published values for almost every country, no account needed.
+  async function direct(){
+    const found=await (connectors?connectors.answer(question,level).catch(()=>[]):[]);
+    const rows=[];
+    for(const item of found){
+      item.fact.method="open_api";
+      rows.push(factRow({questionKey:questionKey(question,level),question,level:effectiveLevel(level,item.fact.scope),fact:item.fact,trust:item.trust,document:item.document,now,status:"verified",ttlDays:options.factTtlDays}));
+      await library.noteHost({host:item.trust.host,class:item.trust.class,trust_score:item.trust.score,reason:item.trust.reason,assigned_by:"connector",last_seen:now,used:true});
+    }
+    return rows;
+  }
 
   async function run(queries){
     const candidates=new Map();
@@ -68,7 +82,7 @@ async function searchLevel(question,level,ctx){
         if(!result?.url||candidates.has(result.url))continue;
         const trust=await classifySource(result.url,{title:result.title,snippet:result.snippet},{judge,registry:library});
         if(trust.source==="judge")await library.noteHost({host:trust.host,class:trust.class,trust_score:trust.score,reason:trust.reason,assigned_by:"judge",review_status:trust.needs_review?"pending_review":"auto",last_seen:now,used:false});
-        if(trust.usable)candidates.set(result.url,{url:result.url,title:result.title,trust});
+        if(trust.usable)candidates.set(result.url,{url:result.url,title:result.title,trust,text:result.text||null});
       }
     }
     const ranked=[...candidates.values()].sort((a,b)=>b.trust.score-a.trust.score).slice(0,options.docsPerLevel);
@@ -77,10 +91,12 @@ async function searchLevel(question,level,ctx){
       if(strongHosts.size>=2)break;
       if(rows.length&&candidate.trust.score<90)continue;
       if(!budget.take("fetches"))break;
-      const document=await fetcher.fetchDocument(candidate.url);
+      const document=candidate.text
+        ?{ok:true,url:candidate.url,text:candidate.text,checksum:crypto.createHash("sha256").update(candidate.text).digest("hex"),retrieved_at:now}
+        :await fetcher.fetchDocument(candidate.url);
       if(!document.ok)continue;
       document.title=candidate.title;
-      const {accepted}=await extractFacts({question,document,llm});
+      const {accepted}=llm?await extractFacts({question,document,llm}):extractLocal({question,document,trust:candidate.trust});
       if(!accepted.length)continue;
       for(const fact of accepted){
         rows.push(factRow({questionKey:questionKey(question,level),question,level:effectiveLevel(level,fact.scope),fact,trust:candidate.trust,document,now,status:"verified",ttlDays:candidate.trust.class==="news"?options.newsTtlDays:options.factTtlDays}));
@@ -91,6 +107,9 @@ async function searchLevel(question,level,ctx){
     return rows;
   }
 
+  const viaApi=await direct();
+  if(viaApi.length)return markConflicts(viaApi);
+  if(!search)return [];
   const queries=build(question,level);
   let rows=await run(queries);
   if(!rows.length&&llm?.translate&&level.id!=="international"&&budget.take("judgements")){
@@ -108,7 +127,7 @@ async function answerQuestion(question,ctx){
     const hits=stored.filter(row=>row.status==="verified"||row.status==="conflict");
     if(hits.length)return {question,level,rows:hits,cached:true,tried,...pickPrimary(hits,question.year)};
     if(stored.some(row=>row.status==="miss")){tried.push({level:level.id,result:"cached_miss"});continue;}
-    if(!ctx.search||!ctx.llm){tried.push({level:level.id,result:"web_unavailable"});continue;}
+    if(!ctx.search&&!ctx.connectors){tried.push({level:level.id,result:"web_unavailable"});continue;}
     const rows=await searchLevel(question,level,ctx);
     if(rows.length){await library.save(rows);return {question,level,rows,cached:false,tried,...pickPrimary(rows,question.year)};}
     await library.save([missRow({questionKey:key,question,level,now,ttlDays:options.missTtlDays})]);
@@ -134,7 +153,8 @@ function toOutputs(answers,now){
       const isPrimary=row===primary,sourceId=sourceFor(row),rowLevel=LEVELS.find(item=>item.id===row.ladder_level)||level,grade=gradeFor({level:rowLevel,trust:row.trust_score,year:row.observation_year});
       const proxyNote=rowLevel.proxy?`Proxy at ${rowLevel.label} level. `:"";
       const id=`${question.indicator_id}${question.kind==="benchmark"?":benchmark":""}`;
-      const base={id:stableId("m",`${row.id}`),source_id:sourceId,evidence_quote:row.evidence_quote,locator:row.locator,confidence:confidenceFor(grade)};
+      // Sentence matching can misread context, so rule-extracted web facts never reach high confidence.
+      const base={id:stableId("m",`${row.id}`),source_id:sourceId,evidence_quote:row.evidence_quote,locator:row.locator,confidence:row.metadata?.method==="rule"&&confidenceFor(grade)==="H"?"M":confidenceFor(grade)};
       if(row.metadata?.needs_review||row.trust_score<60)review.push({kind:"low_trust_source",reason:row.trust_reason,url:row.source_url,indicator_id:question.indicator_id});
       if(Number.isFinite(row.value)){
         measurements.push({...base,indicator_id:isPrimary?id:`${id}:alt`,indicator_name:question.kind==="benchmark"?`${question.indicator.name} benchmark`:question.indicator.name,value:row.value,value_text:row.value_text,unit:row.unit||question.indicator.unit,geography:row.geography,geography_level:row.geography_level,year:row.observation_year,interpretation:`${proxyNote}${row.trust_reason}. Found for: ${question.text}`.slice(0,500),
@@ -148,7 +168,8 @@ function toOutputs(answers,now){
   for(const [key,entry] of pairs){
     if(!key.endsWith(":indicator"))continue;
     const bench=pairs.get(key.replace(/:indicator$/,":benchmark")),{measurement,question}=entry;
-    const result=bench?referenceScore({value:measurement.value,benchmark:bench.measurement.value,direction:question.indicator.direction,unit:measurement.unit,benchmarkUnit:bench.measurement.unit}):{score:null,reason:"No verified benchmark was found"};
+    const sameSeries=bench&&bench.measurement.source_id===measurement.source_id&&bench.measurement.value===measurement.value&&bench.measurement.year===measurement.year;
+    const result=sameSeries?{score:null,reason:"The benchmark is the same series as the value; not compared"}:bench?referenceScore({value:measurement.value,benchmark:bench.measurement.value,direction:question.indicator.direction,unit:measurement.unit,benchmarkUnit:bench.measurement.unit}):{score:null,reason:"No verified benchmark was found"};
     scores.push({indicator_id:question.indicator_id,stakeholder:question.stakeholder,subcategory:question.subcategory,stage_ids:question.stage_ids,value:measurement.value,unit:measurement.unit,benchmark_value:bench?.measurement.value??null,benchmark_unit:bench?.measurement.unit??null,quality_grade:entry.grade,proxy:entry.level.proxy,level:entry.level.id,measurement_id:measurement.id,benchmark_measurement_id:bench?.measurement.id??null,...result});
   }
   return {sources:[...sources.values()],measurements,claims,scores,gaps,review};
@@ -157,7 +178,7 @@ function toOutputs(answers,now){
 async function researchEvidence({intake,stages},deps={},options={}){
   const opts={...DEFAULTS,...options},now=(deps.now||new Date()).toISOString?.()||new Date().toISOString();
   const library=deps.library;
-  const ctx={search:deps.search,llm:deps.llm,fetcher:deps.fetcher,library,budget:createBudget(opts),options:opts,now};
+  const ctx={search:deps.search,llm:deps.llm,fetcher:deps.fetcher,connectors:deps.connectors,library,budget:createBudget(opts),options:opts,now};
   const questions=buildQuestions({intake,stages},{maxQuestions:opts.maxQuestions});
   // Indicator questions first so the most important evidence is found before the budget runs out.
   const ordered=[...questions.filter(q=>q.kind==="indicator"),...questions.filter(q=>q.kind==="benchmark")];
@@ -168,7 +189,7 @@ async function researchEvidence({intake,stages},deps={},options={}){
     return answer;
   });
   const outputs=toOutputs(answers,now);
-  return {...outputs,stats:{configured:Boolean(ctx.search&&ctx.llm),questions:ordered.length,answered:answers.filter(a=>a.primary).length,from_library:answers.filter(a=>a.cached).length,gaps:outputs.gaps.length,...ctx.budget.used},answers:answers.map(a=>({id:a.question.id,level:a.level?.id||null,cached:a.cached,tried:a.tried}))};
+  return {...outputs,stats:{configured:Boolean(ctx.search||ctx.connectors),model_assisted:Boolean(ctx.llm),questions:ordered.length,answered:answers.filter(a=>a.primary).length,from_library:answers.filter(a=>a.cached).length,gaps:outputs.gaps.length,...ctx.budget.used},answers:answers.map(a=>({id:a.question.id,level:a.level?.id||null,cached:a.cached,tried:a.tried}))};
 }
 
 module.exports={DEFAULTS,addDays,answerQuestion,markConflicts,pickPrimary,questionKey,researchEvidence,toOutputs};

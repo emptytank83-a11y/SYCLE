@@ -22,6 +22,7 @@ const TOPIC_RULES=Object.freeze([
   [/gender|diversity|equal opportun|discrimination/i,["workers","equal_opportunities"]],
   [/job security|closure|redundanc/i,["workers","job_security"]],
   [/safety|injur|exposure|ergonomic|heat|dust|chemical|machinery|fire/i,["workers","health_and_safety"]],
+  [/land|tenure|indigenous|displacement|resettlement/i,["local_communities","land_and_resource_rights"]],
   [/land|indigenous|community|water|noise|traffic|displacement|heritage/i,["local_communities","safe_living_conditions"]],
   [/local employment/i,["local_communities","local_employment"]],
   [/supplier|traceability|chain of custody|chain-of-custody|smallholder|fair competition/i,["value_chain_actors","responsible_sourcing"]],
@@ -112,6 +113,7 @@ function buildReferenceFlows(spec,stages,observations){
 function benchmarkFor(observation,observations=[]){
   if(observation.context?.discovery_verified&&observation.context.kind==="indicator"&&observation.context.direction){
     const bench=observations.find(item=>item.indicator_id===`${observation.indicator_id}:benchmark`&&Number.isFinite(item.value));
+    if(bench&&bench.source_id===observation.source_id&&bench.value===observation.value&&bench.year===observation.year)return null;
     const result=bench&&referenceScore({value:observation.value,benchmark:bench.value,direction:observation.context.direction,unit:observation.unit,benchmarkUnit:bench.unit});
     if(result&&result.score!==null)return {type:"discovered_reference",label:`${bench.geography} ${bench.name}: ${bench.value} ${bench.unit}${bench.year?` (${bench.year})`:""}`,value:bench.value,unit:bench.unit,source_id:bench.source_id,evidence_id:bench.id,score:()=>result.score,formula:`${result.formula}; ${result.thresholds}`};
   }

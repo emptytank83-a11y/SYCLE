@@ -11,6 +11,8 @@ const {researchEvidence}=require("../discovery");
 const {createFetcher}=require("../discovery/fetcher");
 const {createLibrary}=require("../discovery/library");
 const {createLlm,createSearch}=require("../discovery/providers");
+const {createConnectors}=require("../discovery/connectors");
+const {createOpenSearch}=require("../discovery/open-search");
 
 const hash=value=>crypto.createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
@@ -73,14 +75,30 @@ function overlayIntake(plan,spec,answers){
   intake.boundary=answers?.system_boundary||spec.answers?.system_boundary||intake.boundary;
 }
 
-// The library works without paid keys (it just serves saved facts); the web needs both a search and a model key.
+// Runs with no paid keys: open-data connectors and open indexes are built in, saved facts are reused, and a
+// search or model key (if set) only adds reach. Rule-based extraction replaces the model when none is configured.
 function discoveryDeps(options,client){
   if(options.discovery===false)return null;
   if(options.discoveryDeps)return options.discoveryDeps;
   const env=options.env||process.env,fetchImpl=options.fetchImpl||fetch;
-  const search=createSearch({env,fetchImpl}),llm=createLlm({env,fetchImpl});
-  if(!client&&!(search&&llm))return null;
-  return {search,llm,fetcher:createFetcher({fetchImpl}),library:createLibrary(client)};
+  const search=createSearch({env,fetchImpl})||createOpenSearch({fetchImpl}),llm=createLlm({env,fetchImpl});
+  return {search,llm,connectors:createConnectors({fetchImpl}),fetcher:createFetcher({fetchImpl}),library:createLibrary(client)};
+}
+
+// Shared by every report path: research the stated place for each stage topic, then verify and version the sources
+// with the same ingestion step used for the lifecycle evidence. Never throws; a failure becomes a recorded error.
+async function discoverEvidence({plan,intake,stages,client,options={},progress=async()=>{}}){
+  const deps=discoveryDeps(options,client);if(!deps)return null;
+  await progress("retrieving_evidence",60,"Researching indicators and benchmarks for the stated location");
+  try{
+    const discovery=await researchEvidence({intake,stages},{...deps,onProgress:({done,total})=>progress("retrieving_evidence",60+Math.round(8*done/total),`Researched ${done} of ${total} indicator questions`)},{...options.discoveryOptions});
+    let extra=null;
+    if(discovery.measurements.length||discovery.claims.length){
+      const base=plan||{intake:{product:intake.product,industry:intake.industry||intake.product,country:intake.country},lifecycle:{stages:[]}};
+      extra=await verifyAndPersistPlan({...base,sources:discovery.sources,claims:discovery.claims,measurements:discovery.measurements},{client,fetchImpl:options.fetchImpl||fetch});
+    }
+    return {discovery,extra};
+  }catch(error){return {discovery:{error:error.message,measurements:[],claims:[],sources:[],scores:[],gaps:[],review:[]},extra:null};}
 }
 
 async function researchProduct(spec,answers,bundle,options={}){
@@ -100,17 +118,9 @@ async function researchProduct(spec,answers,bundle,options={}){
   }
   await progress("retrieving_evidence",56,cached?"Loading the saved evidence snapshot":"Retrieving, checking, and versioning source evidence");
   let acquired=cached?await loadCachedEvidence(client,plan):null;if(!acquired||plan.lifecycle.stages.some(stage=>!stage.claim_ids.some(id=>acquired.claims.some(claim=>claim.agent_claim_id===id&&claim.retrieval_verified))))acquired=await verifyAndPersistPlan(plan,{client,fetchImpl:options.fetchImpl||fetch})
-  let discovery=null;const deps=discoveryDeps(options,client);
-  if(deps){
-    await progress("retrieving_evidence",60,"Researching indicators and benchmarks for the stated location");
-    try{
-      discovery=await researchEvidence({intake:plan.intake,stages:plan.lifecycle.stages},{...deps,onProgress:({done,total})=>progress("retrieving_evidence",60+Math.round(8*done/total),`Researched ${done} of ${total} indicator questions`)},{...options.discoveryOptions});
-      if(discovery.measurements.length||discovery.claims.length){
-        const extra=await verifyAndPersistPlan({...plan,sources:discovery.sources,claims:discovery.claims,measurements:discovery.measurements},{client,fetchImpl:options.fetchImpl||fetch});
-        acquired={...acquired,datasets:[...(acquired.datasets||[]),...extra.datasets],versions:[...(acquired.versions||[]),...extra.versions],references:[...acquired.references,...extra.references],claims:[...acquired.claims,...extra.claims],measurements:[...acquired.measurements,...extra.measurements]};
-      }
-    }catch(error){discovery={error:error.message,measurements:[],claims:[],sources:[],scores:[],gaps:[],review:[]};}
-  }
+  const found=await discoverEvidence({plan,intake:plan.intake,stages:plan.lifecycle.stages,client,options,progress});
+  const discovery=found?.discovery||null,extra=found?.extra;
+  if(extra)acquired={...acquired,datasets:[...(acquired.datasets||[]),...extra.datasets],versions:[...(acquired.versions||[]),...extra.versions],references:[...acquired.references,...extra.references],claims:[...acquired.claims,...extra.claims],measurements:[...acquired.measurements,...extra.measurements]};
   const validation=validatePlanStructure(plan,acquired);
   const verifiedClaims=acquired.claims.filter(item=>item.retrieval_verified&&item.dataset_version_id),verifiedMeasurements=acquired.measurements.filter(item=>item.retrieval_verified&&item.dataset_version_id);
   const evidence={...acquired,claims:verifiedClaims,measurements:verifiedMeasurements};const claimByAgentId=new Map(verifiedClaims.map(item=>[item.agent_claim_id,item]));
@@ -126,4 +136,4 @@ async function researchProduct(spec,answers,bundle,options={}){
   return {status:"complete",plan,evidence,validation,product_identity:{source:"dynamic_research",requested_product:spec.product,resolved_product:plan.intake.product,compatible:true,intake_product:intakeProduct,lifecycle_product:lifecycleProduct,identity:plan.product_identity||null},stages,recommendations,references:evidence.references,research_snapshot:researchSnapshot,lifecycle_record:lifecycleRecord,discovery:discovery&&{error:discovery.error||null,stats:discovery.stats||null,scores:discovery.scores,gaps:discovery.gaps,review:discovery.review}};
 }
 
-module.exports={loadCachedEvidence,overlayIntake,persistLifecycle,researchProduct,validatePlanStructure};
+module.exports={discoverEvidence,loadCachedEvidence,overlayIntake,persistLifecycle,researchProduct,validatePlanStructure};

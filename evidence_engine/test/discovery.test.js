@@ -157,3 +157,82 @@ test("the time budget stops new web work",async()=>{
   await researchEvidence({intake:intakeFor("Nowhere","NWH",null),stages},{...world,library:createMemoryLibrary()},{maxMs:-1});
   assert.equal(world.calls.search,0);
 });
+
+// ---- keyless operation: open-data connectors + rule-based extraction, no search key, no model ----
+const {createConnectors,parseCsv,sectionOf}=require("../discovery/connectors");
+const {extractLocal}=require("../discovery/extract-local");
+const {INDICATORS,LEVELS}=require("../discovery/questions");
+
+const iloCsv=`\uFEFF"ref_area","source","indicator","classif1","time","obs_value","obs_status","note_classif","note_indicator","note_source"
+"BRA","FA:1","INJ_FATL_ECO_RT","ECO_SECTOR_TOTAL","2011",7.433,,,"",
+"BRA","FA:1","INJ_FATL_ECO_RT","ECO_AGGREGATE_MAN","2011",8.451,,,"",
+"BRA","FA:1","INJ_FATL_ECO_RT","ECO_AGGREGATE_MAN","2009",9.9,,,"",
+`;
+const wb=(country,value,year=2022)=>JSON.stringify([{page:1},[{indicator:{id:"X",value:"Unemployment, total (% of total labor force) (modeled ILO estimate)"},country:{value:country},date:String(year),value}]]);
+const fakeApis=async url=>{
+  const u=String(url),ok=body=>new Response(body,{status:200});
+  if(u.includes("rplumber.ilo.org"))return ok(iloCsv);
+  if(u.includes("/country/BRA/"))return ok(wb("Brazil",9.231));
+  if(u.includes("/country/WLD/"))return ok(wb("World",5.2346279));
+  return new Response("",{status:404});
+};
+const brazil={country:"Brazil",country_code:"BRA",label:"Brazil"};
+const level=id=>LEVELS.find(item=>item.id===id);
+
+test("CSV parsing handles BOMs and quotes; ISIC maps to broad sectors",()=>{
+  assert.equal(parseCsv(iloCsv).length,3);assert.equal(parseCsv(iloCsv)[1].obs_value,"8.451");
+  assert.equal(sectionOf(["1072"]),"MAN");assert.equal(sectionOf(["0111"]),"AGR");assert.equal(sectionOf(["3511"]),"UTI");assert.equal(sectionOf([]),null);
+});
+
+test("open-data connectors return exact published values for any country code, and sector series when the product's sector is known",async()=>{
+  const connectors=createConnectors({fetchImpl:fakeApis});
+  const injury=INDICATORS["workers.health_and_safety"];
+  const q=(kind,extra={})=>({kind,indicator_id:injury.id,indicator:injury,place:brazil,isic:["1072"],year:2022,...extra});
+  const sector=await connectors.answer(q("indicator"),level("sector_country"));
+  assert.equal(sector[0].fact.value,8.451);assert.equal(sector[0].fact.year,2011,"latest year at or before the target");assert.equal(sector[0].fact.scope,"sector");
+  const total=await connectors.answer(q("benchmark"),level("country"));
+  assert.equal(total[0].fact.value,7.433);
+  assert.equal(sector[0].trust.class,"intergovernmental");assert.match(sector[0].document.text,/Brazil \(sector MAN\), 2011: 8.451 per 100,000 workers/);
+  const unemployment=INDICATORS["workers.job_security"];
+  const world=await connectors.answer({kind:"benchmark",indicator_id:unemployment.id,indicator:unemployment,place:brazil,isic:[],year:2022},level("international"));
+  assert.equal(world[0].fact.value,5.235,"long decimals are rounded for display");
+  assert.deepEqual(await connectors.answer({kind:"indicator",indicator_id:"no_such_indicator",indicator:unemployment,place:brazil,isic:[]},level("country")),[]);
+  assert.deepEqual(await connectors.answer({kind:"indicator",indicator_id:injury.id,indicator:injury,place:{country:"X",country_code:null,label:"X"},isic:[]},level("country")),[]);
+});
+
+test("rule-based extraction accepts a precise sentence and rejects look-alikes",()=>{
+  const question={kind:"indicator",indicator:INDICATORS["workers.health_and_safety"],place:{country:"Vietnam",label:"Vietnam"}};
+  const trusted={score:96};
+  const page="Occupational safety report. In Vietnam the fatal occupational injury rate reached 4.2 per 100,000 workers in 2021. Elsewhere, Germany reported 1.1 per 100,000 workers. Total sales were 55 in 2021.";
+  const {accepted}=extractLocal({question,document:{text:page},trust:trusted});
+  assert.equal(accepted.length,1);assert.equal(accepted[0].value,4.2);assert.equal(accepted[0].year,2021);assert.equal(accepted[0].method,"rule");
+  assert.deepEqual(extractLocal({question:{...question,place:{country:"Peru",label:"Peru"}},document:{text:page},trust:trusted}).accepted,[],"a page that never names the place gives nothing");
+  assert.deepEqual(extractLocal({question,document:{text:page},trust:{score:50}}).accepted,[],"low-trust sources are not read by rules");
+  const wage={...question,indicator:INDICATORS["workers.fair_salary"]};
+  assert.deepEqual(extractLocal({question:wage,document:{text:"Vietnam minimum wage is set by region and revised yearly, up to 13 in some cases."},trust:trusted}).accepted,[],"units rules cannot match reliably are skipped");
+});
+
+test("with no keys at all the engine answers from open data, and the second user needs no calls",async()=>{
+  let calls=0;const counting=async url=>{calls++;return fakeApis(url);};
+  const library=createMemoryLibrary();
+  const deps={connectors:createConnectors({fetchImpl:counting}),library,search:null,llm:null,fetcher:{fetchDocument:async()=>({ok:false})},now:new Date("2026-10-12T00:00:00Z")};
+  const intake={...intakeFor("Brazil","BRA","Sao Paulo"),classifications:{isic:["1072"]}};
+  const first=await researchEvidence({intake,stages},deps,{maxQuestions:4});
+  const injury=first.measurements.find(m=>m.indicator_id==="occupational_fatal_injury_rate");
+  assert.equal(injury.value,8.451);assert.equal(injury.context.ladder_level,"sector_country");assert.equal(first.stats.model_assisted,false);
+  const score=first.scores.find(s=>s.indicator_id==="occupational_fatal_injury_rate");
+  assert.equal(score.benchmark_value,7.433);assert.equal(score.score,-1);
+  const callsAfterFirst=calls;
+  const second=await researchEvidence({intake,stages},deps,{maxQuestions:4});
+  assert.equal(calls,callsAfterFirst,"saved facts are reused without calling any API");
+  assert.ok(second.stats.from_library>=2);
+});
+
+test("a benchmark that is the same series as the value is not used to score it",async()=>{
+  const connectors=createConnectors({fetchImpl:fakeApis});
+  const library=createMemoryLibrary();
+  const intake=intakeFor("Brazil","BRA","Sao Paulo");           // no ISIC: the value falls back to the all-sector total
+  const result=await researchEvidence({intake,stages},{connectors,library,fetcher:{fetchDocument:async()=>({ok:false})}},{maxQuestions:2});
+  const score=result.scores.find(s=>s.indicator_id==="occupational_fatal_injury_rate");
+  assert.equal(score.score,null);assert.match(score.reason,/same series/);
+});

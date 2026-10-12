@@ -22,12 +22,15 @@ For any product in any country, `evidence_engine/discovery/` finds its own sourc
 5. A fallback ladder (exact, sector in country, country, international) means a proxy is labelled and graded rather than leaving the report blank. Conflicting sources are both kept and sent to `sycle_review_queue`.
 6. Every verified fact, and every failed search, is saved so the next report reuses it. `robots.txt` is obeyed.
 
-It needs a search key and a model key, set on the server only:
+It needs **no paid keys**. Built in:
 
-- `BRAVE_API_KEY`, `TAVILY_API_KEY` or `SERPER_API_KEY` (or `SYCLE_SEARCH_PROVIDER` + `SYCLE_SEARCH_API_KEY`)
-- `ANTHROPIC_API_KEY` (optional `SYCLE_LLM_MODEL`)
+- `discovery/connectors.js`: open-data connectors for the ILO (ILOSTAT), World Bank, WHO and the UN SDG database. One code path covers almost every country, returns exact published values, and supplies benchmarks (for example sector vs all-sector injury rates, or the world average).
+- `discovery/open-search.js`: keyless document search over OpenAlex and the World Bank documents API.
+- `discovery/extract-local.js`: rule-based fact extraction for documents (precision over recall; never above medium confidence).
 
-Without keys the engine still serves facts already in the library. Apply migration `008_discovered_facts.sql`. Per-report spend is capped by `discoveryOptions` (`maxSearches`, `maxFetches`, `maxMs`).
+Optional upgrades, server-side only, that add reach but are not required: a web search key (`BRAVE_API_KEY`, `TAVILY_API_KEY` or `SERPER_API_KEY`) and a model key (`ANTHROPIC_API_KEY`, optional `SYCLE_LLM_MODEL`) for reading arbitrary web pages and translating queries.
+
+Apply migration `008_discovered_facts.sql` so facts persist between users; without a database they are kept for the life of the process only. Per-report spend is capped by `discoveryOptions` (`maxSearches`, `maxFetches`, `maxMs`).
 
 ## Local development
 

@@ -80,19 +80,20 @@ function benchmarkQueriesFor(question,level){
 // Every indicator question gets a twin benchmark question (kind "benchmark") so scores have a stated reference point.
 function buildQuestions({intake,stages=[]},{maxQuestions=24}={}){
   const place=placeOf(intake),year=targetYear(intake.timeframe),product=intake.product,sector=intake.industry||product;
+  const isic=intake.classifications?.isic||[];
   const byKey=new Map();
   const ordered=[...stages].sort((a,b)=>Number(b.foreground)-Number(a.foreground));
   for(const stage of ordered)for(const topic of stage.social_risks||stage.screening_topics||[]){
     const identity=topicIdentity(topic),key=`${identity.stakeholder}.${identity.subcategory}`,indicator=INDICATORS[key]||INDICATORS[FALLBACK_KEY];
     const existing=byKey.get(indicator.id);
     if(existing){if(!existing.stage_ids.includes(stage.id))existing.stage_ids.push(stage.id);continue;}
-    byKey.set(indicator.id,{indicator_id:indicator.id,indicator,stakeholder:identity.stakeholder,subcategory:identity.subcategory,stage_ids:[stage.id],topics:[topic],place,product,sector,year});
+    byKey.set(indicator.id,{indicator_id:indicator.id,indicator,stakeholder:identity.stakeholder,subcategory:identity.subcategory,stage_ids:[stage.id],topics:[topic],place,product,sector,isic,year});
   }
   // Cover stakeholders no stage mentioned so the report is never silent on a whole pillar.
   for(const [key,indicator] of Object.entries(INDICATORS)){
     const [stakeholder,subcategory]=key.split(".");
     if([...byKey.values()].some(item=>item.stakeholder===stakeholder))continue;
-    byKey.set(indicator.id,{indicator_id:indicator.id,indicator,stakeholder,subcategory,stage_ids:[],topics:[subcategory.replaceAll("_"," ")],place,product,sector,year});
+    byKey.set(indicator.id,{indicator_id:indicator.id,indicator,stakeholder,subcategory,stage_ids:[],topics:[subcategory.replaceAll("_"," ")],place,product,sector,isic,year});
   }
   const questions=[];
   for(const base of [...byKey.values()].slice(0,maxQuestions)){

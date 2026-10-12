@@ -1,7 +1,7 @@
 "use strict";
 
 const AUTHORITATIVE_HOSTS=Object.freeze([
-  "un.org","ilo.org","worldbank.org","oecd.org","who.int","unep.org","undp.org","fao.org","iea.org","irena.org",
+  "un.org","ilo.org","ghoapi.azureedge.net","worldbank.org","oecd.org","who.int","unep.org","undp.org","fao.org","iea.org","irena.org",
   "dol.gov","bls.gov","census.gov","osha.gov","energy.gov","usgs.gov","epa.gov","nist.gov","europa.eu","ec.europa.eu",
   "transparency.org","globalrightsindex.org","walkfree.org","kimberleyprocess.com","doi.org","wikidata.org","wikipedia.org","wikimedia.org","openalex.org","crossref.org"
 ]);
