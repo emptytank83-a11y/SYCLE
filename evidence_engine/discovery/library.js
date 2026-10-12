@@ -42,7 +42,18 @@ function createSupabaseLibrary(client){
   };
 }
 
-function createLibrary(client){return client?createSupabaseLibrary(client):createMemoryLibrary();}
+// If the database or its tables are unavailable (for example migration 008 is not applied yet), keep working from
+// memory for this process instead of failing the report. `degraded` tells operators why facts are not persisting.
+function createResilientLibrary(client){
+  const remote=createSupabaseLibrary(client),local=createMemoryLibrary(),state={degraded:null};
+  const guard=name=>async(...args)=>{
+    if(!state.degraded)try{return await remote[name](...args);}catch(error){state.degraded=error.message.slice(0,200);}
+    return local[name](...args);
+  };
+  return {kind:"supabase",state,lookup:guard("lookup"),save:guard("save"),getHost:guard("getHost"),noteHost:guard("noteHost"),queueReview:guard("queueReview")};
+}
+
+function createLibrary(client){return client?createResilientLibrary(client):createMemoryLibrary();}
 
 const factRow=({questionKey,question,level,fact,trust,document,now,status,ttlDays})=>({
   id:stableId("fact",`${questionKey}:${document.url}:${fact.quote}`),
@@ -61,4 +72,4 @@ const missRow=({questionKey,question,level,now,ttlDays,note})=>({
   trust_score:0,trust_reason:note||"No verified source found at this level",page_checksum:"",retrieved_at:now,expires_at:addDays(now,ttlDays),status:"miss",metadata:{}
 });
 
-module.exports={DAY,addDays,createLibrary,createMemoryLibrary,createSupabaseLibrary,factRow,missRow};
+module.exports={DAY,addDays,createLibrary,createResilientLibrary,createMemoryLibrary,createSupabaseLibrary,factRow,missRow};

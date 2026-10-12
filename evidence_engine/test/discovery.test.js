@@ -236,3 +236,14 @@ test("a benchmark that is the same series as the value is not used to score it",
   const score=result.scores.find(s=>s.indicator_id==="occupational_fatal_injury_rate");
   assert.equal(score.score,null);assert.match(score.reason,/same series/);
 });
+
+test("a missing database table degrades to memory instead of failing the report",async()=>{
+  const {createResilientLibrary}=require("../discovery/library");
+  const client={request:async()=>{throw new Error('relation "sycle_discovered_facts" does not exist');},upsert:async()=>{throw new Error("no table");}};
+  const library=createResilientLibrary(client);
+  const world=fakeWorld({});
+  const result=await researchEvidence({intake:intakeFor("Nowhere","NWH",null),stages},{...world,library},{maxQuestions:2});
+  assert.equal(result.stats.questions,4);assert.match(library.state.degraded,/does not exist/);
+  await library.save([{id:"x",question_key:"k",status:"verified",expires_at:"2999-01-01T00:00:00Z"}]);
+  assert.equal((await library.lookup("k","2026-01-01T00:00:00Z")).length,1,"later saves still work from memory");
+});
