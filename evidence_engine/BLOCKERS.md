@@ -16,3 +16,11 @@ that file would require a new browser bundle and an existing-file script hook.
 To obey the additive/no-UI rule, Phase 10 provides the adapter and verifies it
 against the legacy renderer in isolation, but does not register it in the live
 static UI. A backend or approved browser-bundle hook is required to enable it.
+
+## Global discovery (added)
+
+`discovery/` now has a server-side model client (Anthropic Messages API) used for fact extraction and publisher
+judgement, so the Phase 9 note about having no LLM client applies only to the narrator. The browser never sees keys.
+Still required from a person: a search API key, a model key, applying migration 008, and review of the queue in
+`sycle_review_queue` and of hosts in `sycle_source_registry` with `review_status = 'pending_review'`.
+Scoring thresholds in `discovery/score.js` are a methodology choice and remain pending expert review.

@@ -34,7 +34,8 @@ const claim=z.object({
   publication_year:z.number().int().min(1900).max(2100).nullable(),
   confidence:z.enum(["H","M","L"]),
   stakeholder:z.enum(["workers","local_communities","society","value_chain_actors","children","consumers"]).nullable(),
-  risk_level:z.enum(["low","moderate","high","critical"]).nullable()
+  risk_level:z.enum(["low","moderate","high","critical"]).nullable(),
+  context:z.record(z.string(),z.unknown()).optional()
 });
 
 const stage=z.object({
@@ -78,8 +79,8 @@ const researchPlanSchema=z.object({
     preferred_source_types:z.array(z.string()).min(1),
     search_query:z.string().min(8)
   })).min(3),
-  sources:z.array(source).min(1).max(20),
-  claims:z.array(claim).min(3).max(60),
+  sources:z.array(source).min(1).max(80),
+  claims:z.array(claim).min(3).max(120),
   measurements:z.array(z.object({
     id:z.string().min(2),
     indicator_id:z.string().min(3),
@@ -94,7 +95,8 @@ const researchPlanSchema=z.object({
     evidence_quote:z.string().min(6).max(240),
     locator:z.string().min(2),
     interpretation:z.string().min(8),
-    confidence:z.enum(["H","M","L"])
+    confidence:z.enum(["H","M","L"]),
+    context:z.record(z.string(),z.unknown()).optional()
   })).default([]),
   recommendations:z.array(z.object({
     title:z.string().min(3),

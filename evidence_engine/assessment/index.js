@@ -1,5 +1,7 @@
 "use strict";
 
+const {referenceScore}=require("../discovery/score");
+
 const crypto=require("node:crypto");
 
 const STAKEHOLDERS=Object.freeze({
@@ -63,7 +65,7 @@ function typedEvidence(indicators=[],claims=[],references=[],spec={}){
   const observations=indicators.map((item,index)=>{
     const source=item.source||{},publicationYear=item.observation_year||Number(item.source?.edition)||null;
     const grade=qualityGrade({source,geography_level:item.geo_level_used,claim_type:"measurement",quote_verified:item.quote_verified!==false,retrieval_verified:true,publication_year:publicationYear},spec);
-    return {id:item.id||`observation-${index+1}`,kind:"measurement",indicator_id:item.indicator_id,name:item.name,value:item.value,value_text:item.value_text||null,unit:item.unit,year:publicationYear,geography:item.geography,geography_level:item.geo_level_used,stage_id:null,stakeholder:indicatorStakeholder(item.indicator_id),subcategory:indicatorSubcategory(item.indicator_id),source_id:source.id||null,source_url:source.url||null,locator:item.locator||"Dataset observation",evidence_quote:item.evidence_quote||item.interpretation||`${item.name}: ${item.value} ${item.unit}`,quality_grade:grade,applicability:applicability(grade,item.geo_level_used,"measurement"),confidence:item.confidence,interpretation:item.interpretation||null};
+    return {id:item.id||`observation-${index+1}`,kind:"measurement",indicator_id:item.indicator_id,name:item.name,value:item.value,value_text:item.value_text||null,unit:item.unit,year:publicationYear,geography:item.geography,geography_level:item.geo_level_used,stage_id:null,stage_ids:item.context?.stage_ids||null,context:item.context||null,stakeholder:item.context?.stakeholder||indicatorStakeholder(item.indicator_id),subcategory:item.context?.subcategory||indicatorSubcategory(item.indicator_id),source_id:source.id||null,source_url:source.url||null,locator:item.locator||"Dataset observation",evidence_quote:item.evidence_quote||item.interpretation||`${item.name}: ${item.value} ${item.unit}`,quality_grade:grade,applicability:applicability(grade,item.geo_level_used,"measurement"),confidence:item.confidence,interpretation:item.interpretation||null};
   });
   observations.push(...claims.map((claim,index)=>{
     const source=referenceById.get(claim.source_ids?.[0])||{},grade=qualityGrade({source,geography_level:claim.geography?"country":"global",claim_type:claim.claim_type,quote_verified:claim.quote_verified,retrieval_verified:claim.retrieval_verified,publication_year:claim.publication_year},spec);
@@ -107,7 +109,12 @@ function buildReferenceFlows(spec,stages,observations){
   return {functional_unit:{quantity:Number.isFinite(quantity)?quantity:null,unit,product:spec.product,period:"annual",boundary:spec.answers?.system_boundary||"not confirmed",location:spec.locationLabel},flows};
 }
 
-function benchmarkFor(observation){
+function benchmarkFor(observation,observations=[]){
+  if(observation.context?.discovery_verified&&observation.context.kind==="indicator"&&observation.context.direction){
+    const bench=observations.find(item=>item.indicator_id===`${observation.indicator_id}:benchmark`&&Number.isFinite(item.value));
+    const result=bench&&referenceScore({value:observation.value,benchmark:bench.value,direction:observation.context.direction,unit:observation.unit,benchmarkUnit:bench.unit});
+    if(result&&result.score!==null)return {type:"discovered_reference",label:`${bench.geography} ${bench.name}: ${bench.value} ${bench.unit}${bench.year?` (${bench.year})`:""}`,value:bench.value,unit:bench.unit,source_id:bench.source_id,evidence_id:bench.id,score:()=>result.score,formula:`${result.formula}; ${result.thresholds}`};
+  }
   if(observation.indicator_id==="control_of_corruption")return {type:"scale_midpoint",label:"World Bank WGI neutral scale point",value:0,unit:"estimate",source_id:observation.source_id,score:value=>value>=1.5?2:value>=.5?1:value>=0?0:value>=-1?-1:-2};
   if(observation.indicator_id==="child_forced_labour_goods_flag")return {type:"due_diligence_expectation",label:"No product-country child/forced-labour signal",value:0,unit:"flag",source_id:observation.source_id,score:value=>Number(value)===0?0:-2};
   return null;
@@ -116,9 +123,9 @@ function benchmarkFor(observation){
 function buildMateriality(stages,observations,signals=[]){
   const rows=[];
   for(const stage of stages)for(const topic of stage.screening_topics||[]){
-    const identity=topicIdentity(topic),stageEvidence=observations.filter(item=>item.stage_id===stage.id||stage.evidence?.includes(item.id)||stage.evidence?.includes(item.source_id)||(stage.foreground&&["facility","site","locality","region","country"].includes(item.geography_level))).filter(item=>item.stakeholder===identity.stakeholder),riskClaim=stageEvidence.find(item=>item.risk_level&&RISK_SCORE[item.risk_level]!==undefined),numeric=stageEvidence.find(item=>benchmarkFor(item));let score=null,benchmark=null,rationale="";
-    if(riskClaim){score=RISK_SCORE[riskClaim.risk_level];benchmark={type:"evidence_risk_classification",label:"Evidence-linked qualitative risk classification",value:"low / moderate / high / critical",unit:"category",source_id:riskClaim.source_id};rationale=`${riskClaim.risk_level} evidence signal for ${topic}; this is a screening classification, not a facility finding.`;}
-    else if(numeric){const benchmarkRule=benchmarkFor(numeric);score=benchmarkRule.score(numeric.value);benchmark={...benchmarkRule};delete benchmark.score;rationale=`${numeric.name} is ${numeric.value} ${numeric.unit}, compared with ${benchmark.label}. Applicability: ${numeric.applicability}.`;}
+    const identity=topicIdentity(topic),stageEvidence=observations.filter(item=>item.stage_id===stage.id||stage.evidence?.includes(item.id)||stage.evidence?.includes(item.source_id)||(stage.foreground&&!item.context?.discovery_verified&&["facility","site","locality","region","country"].includes(item.geography_level))||(item.context?.discovery_verified&&item.stage_ids?.includes(stage.id)&&item.subcategory===identity.subcategory)).filter(item=>item.stakeholder===identity.stakeholder),riskClaim=stageEvidence.find(item=>item.risk_level&&RISK_SCORE[item.risk_level]!==undefined),numeric=stageEvidence.find(item=>benchmarkFor(item,observations));let score=null,benchmark=null,rationale="";
+    if(riskClaim&&!numeric?.context?.discovery_verified){score=RISK_SCORE[riskClaim.risk_level];benchmark={type:"evidence_risk_classification",label:"Evidence-linked qualitative risk classification",value:"low / moderate / high / critical",unit:"category",source_id:riskClaim.source_id};rationale=`${riskClaim.risk_level} evidence signal for ${topic}; this is a screening classification, not a facility finding.`;}
+    else if(numeric){const benchmarkRule=benchmarkFor(numeric,observations);score=benchmarkRule.score(numeric.value);benchmark={...benchmarkRule};delete benchmark.score;delete benchmark.evidence_id;rationale=`${numeric.name} is ${numeric.value} ${numeric.unit}, compared with ${benchmark.label}. Applicability: ${numeric.applicability}.`;}
     const intersect=signals.find(signal=>(stage.inputs||[]).some(input=>normalise(input)===normalise(signal.good))&&(stage.countries||[]).some(country=>normalise(country)===normalise(signal.country)));
     if(intersect&&identity.stakeholder==="children"){score=-2;benchmark={type:"due_diligence_expectation",label:"No product-country child/forced-labour signal",value:0,unit:"flag",source_id:intersect.evidence_id};rationale=`Stored product-country labour signal intersects ${intersect.good} / ${intersect.country}; supplier linkage remains unverified.`;}
     const evidenceIds=[...new Set(stageEvidence.map(item=>item.id).concat(intersect?[intersect.evidence_id]:[]))],grade=stageEvidence.length?stageEvidence.map(item=>item.quality_grade).sort().at(-1):"D";
@@ -126,6 +133,11 @@ function buildMateriality(stages,observations,signals=[]){
   }
   const governance=observations.find(item=>item.indicator_id==="control_of_corruption");
   if(governance){const benchmarkRule=benchmarkFor(governance),score=benchmarkRule.score(governance.value),benchmark={...benchmarkRule};delete benchmark.score;rows.push({id:`materiality-${hash(["host-context","corruption"]).slice(0,14)}`,stage_id:null,stage:"Host-country context",topic:"governance and corruption context",stakeholder:"society",subcategory:"corruption",screening_decision:"included",decision_reason:"Host-country governance affects permitting, enforcement and due-diligence design.",status:"assessed",score,benchmark,rationale:`${governance.name} is ${governance.value}, compared with the published WGI neutral scale point. This is country context, not operator performance.`,quality_grade:governance.quality_grade,evidence_ids:[governance.id],review_status:"proposed"});}
+  for(const item of observations.filter(o=>o.context?.discovery_verified&&o.context.kind==="indicator"&&!(o.stage_ids||[]).length)){
+    const rule=benchmarkFor(item,observations);if(!rule)continue;
+    const benchmark={...rule};delete benchmark.score;delete benchmark.evidence_id;
+    rows.push({id:`materiality-${hash(["host-context",item.indicator_id]).slice(0,14)}`,stage_id:null,stage:"Host-country context",topic:item.name,stakeholder:item.stakeholder,subcategory:item.subcategory,screening_decision:"included",decision_reason:"Host-country indicator found for a stakeholder pillar that no stage topic covered.",status:"assessed",score:rule.score(item.value),benchmark,rationale:`${item.name} is ${item.value} ${item.unit}, compared with ${benchmark.label}. This is country context, not operator performance.`,quality_grade:item.quality_grade,evidence_ids:[item.id,rule.evidence_id].filter(Boolean),review_status:"proposed"});
+  }
   const female=observations.find(item=>item.indicator_id==="female_labor_participation"),male=observations.find(item=>item.indicator_id==="male_labor_participation");
   if(female&&male){const gap=Math.abs(Number(male.value)-Number(female.value)),score=gap<=5?1:gap<=10?0:gap<=20?-1:-2;rows.push({id:`materiality-${hash(["host-context","participation-parity"]).slice(0,14)}`,stage_id:null,stage:"Host labour-market context",topic:"gender participation parity",stakeholder:"workers",subcategory:"equal_opportunities",screening_decision:"included",decision_reason:"External labour-market participation affects recruitment access and workforce-diversity planning.",status:"assessed",score,benchmark:{type:"analytical_parity_reference",label:"Female and male labour-force participation gap: 0 percentage points",value:0,unit:"percentage-point gap",source_id:null},rationale:`The published participation gap is ${Math.round(gap*10)/10} percentage points. This is national context, not a facility pay-equity or representation result.`,quality_grade:[female.quality_grade,male.quality_grade].sort().at(-1),evidence_ids:[female.id,male.id],review_status:"proposed"});}
   return rows;

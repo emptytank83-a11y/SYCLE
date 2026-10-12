@@ -46,7 +46,7 @@ test("unresolved geography returns an intake question instead of reaching valida
   assert.equal(second.status,"complete");assert.equal(second.evidence_v2.spec.countryCode,"USA");assert.match(second.evidence_v2.spec.locationLabel,/Springfield, Illinois/);
 });
 
-test("universal research builds an evidence-linked lifecycle for a product outside cached profiles",async()=>{
+async function kenyaPaperReport(extra={}){
   const socialRisks=[
     ["c1","Paper mill workers face occupational safety risks.","workers","high"],
     ["c2","Forestry sourcing can affect local land access.","local_communities","moderate"],
@@ -64,11 +64,34 @@ test("universal research builds an evidence-linked lifecycle for a product outsi
   ],claims,measurements:[],recommendations:[0,1,2].map(index=>({title:`Action ${index+1}`,action:`Implement verified control ${index+1} for the paper supply chain.`,rationale:`Addresses evidence-backed issue ${index+1} in this assessment.`,priority:index?"near_term":"immediate",claim_ids:[`c${index+1}`]}))};
   const fetchImpl=async()=>new Response(`<html>${socialRisks.map((_,index)=>`Verified evidence phrase ${index+1}`).join(". ")}</html>`,{status:200,headers:{"content-type":"text/html"}});
   const spec={product:"corrugated paper box",sectorKey:"generic",sectorLabel:"General Manufacturing",country:"Kenya",region:"Nairobi",qty:100000,prompt:"Build an S-LCA for a corrugated paper box factory producing 100,000 boxes per year in Nairobi, Kenya",answers:{...commonAnswers,site_status:"operating",system_boundary:"cradle_to_grave",operating_scope:"mixed"}};
-  const result=await generate({spec},{researchPlan,fetchImpl,warehouseClient:null});assert.equal(result.status,"complete");
+  const result=await generate({spec},{researchPlan,fetchImpl,warehouseClient:null,...extra});assert.equal(result.status,"complete");
   const report=result.evidence_v2;assert.equal(report.version,5);assert.equal(report.spec.product,"corrugated paper box");assert.equal(report.spec.countryCode,"KEN");assert.equal(report.warehouse.mode,"dynamic_research");assert.equal(report.supply_chain.stages.length,5);assert.equal(report.claims.length,6);assert.equal(report.validation.valid,true);assert.equal(report.scores.coverage.scored_pillars,6);assert.match(report.supply_chain.stages.map(item=>item.title).join(" | "),/Corrugating and converting/);
   assert.equal(report.assessment.method.aggregation,"No overall score is published; stage-topic scores remain separate.");
   assert.ok(report.assessment.research_matrix.length>=report.supply_chain.stages.length);
   assert.ok(report.assessment.materiality.every(item=>item.status==="gap"?item.score===null:Boolean(item.benchmark&&item.evidence_ids.length)));
+  return result;
+}
+
+test("universal research builds an evidence-linked lifecycle for a product outside cached profiles",async()=>{await kenyaPaperReport();});
+
+test("web discovery adds verified, benchmarked indicators for the stated place and scores them",async()=>{
+  const {createMemoryLibrary}=require("../discovery/library");
+  const pages={
+    "https://www.knbs.go.ke/safety":{text:"Economic Survey bulletin: the fatal occupational injury rate was 6.8 per 100,000 workers in Kenya in 2025.",tags:["kenya","rate per 100,000"],fact:{value:6.8,unit:"per 100,000 workers",year:2025,quote:"the fatal occupational injury rate was 6.8 per 100,000 workers in Kenya"}},
+    "https://ilostat.ilo.org/kenya-all":{text:"ILOSTAT table: the all-industry average fatal occupational injury rate was 4.0 per 100,000 workers in 2025.",tags:["kenya","all-industry"],fact:{value:4.0,unit:"per 100,000 workers",year:2025,quote:"the all-industry average fatal occupational injury rate was 4.0 per 100,000 workers"}}
+  };
+  const search=async query=>Object.entries(pages).filter(([,page])=>page.tags.every(tag=>query.toLowerCase().includes(tag))).map(([url])=>({title:"Statistics",url,snippet:""}));
+  const fetcher={fetchDocument:async url=>pages[url]?{ok:true,url,text:pages[url].text,checksum:`sum-${url}`}:{ok:false,url,error:"http_404"}};
+  const llm={json:async({user})=>{const url=/Page URL: (\S+)/.exec(user)?.[1];const fact=pages[url]?.fact;return {facts:fact?[{value_text:null,geography:"Kenya",scope:"country",locator:"table 1",...fact}]:[]};},translate:async queries=>queries,judge:async()=>null};
+  const result=await kenyaPaperReport({discoveryDeps:{search,llm,fetcher,library:createMemoryLibrary()},discoveryOptions:{maxQuestions:4}});
+  const report=result.evidence_v2;
+  assert.ok(report.discovery&&!report.discovery.error,"discovery summary is attached to the report");
+  const injury=report.indicators.find(item=>item.indicator_id==="occupational_fatal_injury_rate");
+  assert.ok(injury,"the discovered indicator reaches the report");assert.equal(injury.value,6.8);assert.equal(injury.context.proxy,true);
+  assert.equal(report.validation.valid,true);
+  const scored=report.assessment.materiality.find(item=>item.status==="assessed"&&item.benchmark?.type==="discovered_reference");
+  assert.ok(scored,"a stage topic is scored against the discovered benchmark");assert.equal(scored.score,-1);assert.match(scored.benchmark.label,/4 per 100,000 workers/);
+  assert.ok(scored.evidence_ids.length>=2,"both the value and its benchmark are cited");
 });
 
 test("Supabase warehouse lookup keeps the country-code argument before AI geography resolution",async()=>{

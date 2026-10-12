@@ -7,6 +7,10 @@ const {createWarehouseClient}=require("../warehouse/client");
 const {verifyAndPersistPlan}=require("../warehouse/dataset-ingestion");
 const {lifecycleCompatibility,productCompatibility}=require("../product-identity");
 const {stableId}=require("../warehouse/client");
+const {researchEvidence}=require("../discovery");
+const {createFetcher}=require("../discovery/fetcher");
+const {createLibrary}=require("../discovery/library");
+const {createLlm,createSearch}=require("../discovery/providers");
 
 const hash=value=>crypto.createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
@@ -58,6 +62,27 @@ async function persistLifecycle(client,plan,researchSnapshot){
   const materials=[...new Set(plan.lifecycle.stages.flatMap(stage=>[...stage.inputs,...stage.outputs]))].map(name=>({id:stableId("material",name.toLowerCase()),normalized_name:name.toLowerCase().replace(/[^a-z0-9]+/g," ").trim(),display_name:name,metadata:{source:"lifecycle extraction"}}));await client.upsert("sycle_materials",materials);await client.upsert("sycle_lifecycle_materials",materials.map(material=>({id:stableId("lifecycle-material",`${profileId}:${material.id}`),lifecycle_profile_id:profileId,material_id:material.id})));return {identity_id:identityId,profile_id:profileId,version,reused:false};
 }
 
+// A saved lifecycle is keyed by product only, so the current user's place, scale and period must replace the saved ones.
+function overlayIntake(plan,spec,answers){
+  const intake=plan.intake;
+  if(spec.country)intake.country=spec.country;
+  if(/^[A-Z]{3}$/.test(spec.countryCode||""))intake.country_code=spec.countryCode;
+  intake.region=spec.region||null;intake.locality=spec.locality||null;
+  if(Number.isFinite(Number(spec.qty))&&Number(spec.qty)>0){intake.scale_value=Number(spec.qty);intake.scale_unit=spec.scaleUnit||intake.scale_unit;}
+  intake.timeframe=spec.timeframe||answers?.assessment_period||null;
+  intake.boundary=answers?.system_boundary||spec.answers?.system_boundary||intake.boundary;
+}
+
+// The library works without paid keys (it just serves saved facts); the web needs both a search and a model key.
+function discoveryDeps(options,client){
+  if(options.discovery===false)return null;
+  if(options.discoveryDeps)return options.discoveryDeps;
+  const env=options.env||process.env,fetchImpl=options.fetchImpl||fetch;
+  const search=createSearch({env,fetchImpl}),llm=createLlm({env,fetchImpl});
+  if(!client&&!(search&&llm))return null;
+  return {search,llm,fetcher:createFetcher({fetchImpl}),library:createLibrary(client)};
+}
+
 async function researchProduct(spec,answers,bundle,options={}){
   const client=options.warehouseClient===undefined?createWarehouseClient(options):options.warehouseClient;
   const progress=async(status,percent,message)=>{if(options.onProgress)await options.onProgress({status,progress:percent,message});};
@@ -68,12 +93,25 @@ async function researchProduct(spec,answers,bundle,options={}){
   const discovered=options.researchPlan?{status:"complete",plan:require("./schemas").researchPlanSchema.parse(options.researchPlan),discovery:{mode:"fixture"}}:cached?{status:"complete",plan:require("./schemas").researchPlanSchema.parse(cached.research_plan),discovery:{mode:"central_lifecycle_cache",profile_id:cached.id}}:await discoverResearchPlan(spec,answers,{...options,warehouseSummary});
   if(discovered.status==="needs_clarification")return discovered;const plan=discovered.plan;
   if(plan.clarification_questions.length)return {status:"needs_clarification",questions:plan.clarification_questions.map(item=>({...item,required:true}))};
+  if(cached)overlayIntake(plan,spec,answers);
   const intakeProduct=productCompatibility(spec.product,plan.intake.product),lifecycleProduct=lifecycleCompatibility(plan.intake.product,plan.lifecycle.stages);
   if(!intakeProduct.compatible||!lifecycleProduct.compatible){
     const error=new Error("Product-specific research returned a lifecycle that does not match the requested product");error.code="product_research_mismatch";error.details={requested_product:spec.product,resolved_product:plan.intake.product,intake_product:intakeProduct,lifecycle_product:lifecycleProduct};throw error;
   }
   await progress("retrieving_evidence",56,cached?"Loading the saved evidence snapshot":"Retrieving, checking, and versioning source evidence");
-  let acquired=cached?await loadCachedEvidence(client,plan):null;if(!acquired||plan.lifecycle.stages.some(stage=>!stage.claim_ids.some(id=>acquired.claims.some(claim=>claim.agent_claim_id===id&&claim.retrieval_verified))))acquired=await verifyAndPersistPlan(plan,{client,fetchImpl:options.fetchImpl||fetch});const validation=validatePlanStructure(plan,acquired);
+  let acquired=cached?await loadCachedEvidence(client,plan):null;if(!acquired||plan.lifecycle.stages.some(stage=>!stage.claim_ids.some(id=>acquired.claims.some(claim=>claim.agent_claim_id===id&&claim.retrieval_verified))))acquired=await verifyAndPersistPlan(plan,{client,fetchImpl:options.fetchImpl||fetch})
+  let discovery=null;const deps=discoveryDeps(options,client);
+  if(deps){
+    await progress("retrieving_evidence",60,"Researching indicators and benchmarks for the stated location");
+    try{
+      discovery=await researchEvidence({intake:plan.intake,stages:plan.lifecycle.stages},{...deps,onProgress:({done,total})=>progress("retrieving_evidence",60+Math.round(8*done/total),`Researched ${done} of ${total} indicator questions`)},{...options.discoveryOptions});
+      if(discovery.measurements.length||discovery.claims.length){
+        const extra=await verifyAndPersistPlan({...plan,sources:discovery.sources,claims:discovery.claims,measurements:discovery.measurements},{client,fetchImpl:options.fetchImpl||fetch});
+        acquired={...acquired,datasets:[...(acquired.datasets||[]),...extra.datasets],versions:[...(acquired.versions||[]),...extra.versions],references:[...acquired.references,...extra.references],claims:[...acquired.claims,...extra.claims],measurements:[...acquired.measurements,...extra.measurements]};
+      }
+    }catch(error){discovery={error:error.message,measurements:[],claims:[],sources:[],scores:[],gaps:[],review:[]};}
+  }
+  const validation=validatePlanStructure(plan,acquired);
   const verifiedClaims=acquired.claims.filter(item=>item.retrieval_verified&&item.dataset_version_id),verifiedMeasurements=acquired.measurements.filter(item=>item.retrieval_verified&&item.dataset_version_id);
   const evidence={...acquired,claims:verifiedClaims,measurements:verifiedMeasurements};const claimByAgentId=new Map(verifiedClaims.map(item=>[item.agent_claim_id,item]));
   const stages=plan.lifecycle.stages.map((stage,index)=>({
@@ -85,7 +123,7 @@ async function researchProduct(spec,answers,bundle,options={}){
   }));
   const recommendations=plan.recommendations.map(item=>({...item,claim_ids:item.claim_ids.map(id=>claimByAgentId.get(id)?.id).filter(Boolean)})).filter(item=>item.claim_ids.length);
   const researchSnapshot={id:`research-${hash({plan,evidence:evidence.versions.map(item=>item.content_checksum) }).slice(0,18)}`,checksum:hash({plan,evidence:evidence.versions.map(item=>item.content_checksum)}),generated_at:new Date().toISOString(),mode:cached?"central_lifecycle_cache":"dynamic_research",discovery:discovered.discovery,warehouse_summary:warehouseSummary};const lifecycleRecord=cached?{profile_id:cached.id,version:cached.version,reused:true}:await persistLifecycle(client,plan,researchSnapshot);
-  return {status:"complete",plan,evidence,validation,product_identity:{source:"dynamic_research",requested_product:spec.product,resolved_product:plan.intake.product,compatible:true,intake_product:intakeProduct,lifecycle_product:lifecycleProduct,identity:plan.product_identity||null},stages,recommendations,references:evidence.references,research_snapshot:researchSnapshot,lifecycle_record:lifecycleRecord};
+  return {status:"complete",plan,evidence,validation,product_identity:{source:"dynamic_research",requested_product:spec.product,resolved_product:plan.intake.product,compatible:true,intake_product:intakeProduct,lifecycle_product:lifecycleProduct,identity:plan.product_identity||null},stages,recommendations,references:evidence.references,research_snapshot:researchSnapshot,lifecycle_record:lifecycleRecord,discovery:discovery&&{error:discovery.error||null,stats:discovery.stats||null,scores:discovery.scores,gaps:discovery.gaps,review:discovery.review}};
 }
 
-module.exports={loadCachedEvidence,persistLifecycle,researchProduct,validatePlanStructure};
+module.exports={loadCachedEvidence,overlayIntake,persistLifecycle,researchProduct,validatePlanStructure};

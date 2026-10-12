@@ -11,6 +11,24 @@ SYCLE is an AI-assisted Social Life Cycle Assessment platform that turns a produ
 - `supabase/migrations/`: private report storage, evidence-library, lifecycle-job, and review schemas.
 - `scripts/`: local development and static build scripts.
 
+## Global evidence discovery
+
+For any product in any country, `evidence_engine/discovery/` finds its own sources instead of using fixed per-country lists:
+
+1. Each stage x stakeholder topic becomes a precise question (indicator, place, year, benchmark), with a twin question for its benchmark.
+2. For each question it checks the saved fact library first (`sycle_discovered_facts`), then searches the web and reads pages and PDFs.
+3. Publishers are trust-scored by rule (government, intergovernmental, standards, academic, ...), with a model judgement for unknown publishers that is capped and queued for review. A starter list of global sources (ILOSTAT, World Bank, OECD, WHO, ...) is the safety net.
+4. Facts are accepted only when ordinary code confirms the quote is on the fetched page and the number is in the quote.
+5. A fallback ladder (exact, sector in country, country, international) means a proxy is labelled and graded rather than leaving the report blank. Conflicting sources are both kept and sent to `sycle_review_queue`.
+6. Every verified fact, and every failed search, is saved so the next report reuses it. `robots.txt` is obeyed.
+
+It needs a search key and a model key, set on the server only:
+
+- `BRAVE_API_KEY`, `TAVILY_API_KEY` or `SERPER_API_KEY` (or `SYCLE_SEARCH_PROVIDER` + `SYCLE_SEARCH_API_KEY`)
+- `ANTHROPIC_API_KEY` (optional `SYCLE_LLM_MODEL`)
+
+Without keys the engine still serves facts already in the library. Apply migration `008_discovered_facts.sql`. Per-report spend is capped by `discoveryOptions` (`maxSearches`, `maxFetches`, `maxMs`).
+
 ## Local development
 
 ```powershell
