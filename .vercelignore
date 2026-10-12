@@ -1,4 +1,6 @@
 work/
+.git/
+node_modules/
 supabase/.temp/
 .codex-pitch-build/
 Sycle_VC_Pitch_Deck_Khosla_Style/

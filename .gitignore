@@ -1,0 +1,29 @@
+# Dependencies and local build state
+node_modules/
+.vercel/
+work/
+.codex-pitch-build/
+__pycache__/
+*.py[cod]
+
+# Local credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Supabase CLI state
+supabase/.temp/
+
+# Local screenshots and presentation artifacts
+sycle-*.png
+*.pptx
+*.pptx.inspect.ndjson
+Sycle_VC_Pitch_Deck_Khosla_Style/
+
+# Operating-system and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

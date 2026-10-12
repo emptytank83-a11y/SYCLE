@@ -2,5 +2,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": "public",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "crons": [{"path": "/api/warehouse-maintenance", "schedule": "0 3 * * *"}]
 }
