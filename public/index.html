@@ -1506,7 +1506,7 @@ function normalizeReports(){
   rr.sectorKey=recoveredSector||"generic";
   rr.sectorLabel=r.sectorLabel||evidenceSpec.sectorLabel||(SECTORS[rr.sectorKey]||SECTORS.generic).label;
   rr.desc=r.desc||evidenceSpec.prompt||rr.title||"S-LCA assessment";
-  rr.supplyChain=rr.supplyChain&&rr.supplyChain.stages?rr.supplyChain:generateSupplyChain(rr);
+  rr.supplyChain=rr.supplyChain?.stages&&rr.supplyChain?.summary?rr.supplyChain:generateSupplyChain(rr);
   rr.stats=rr.stats||{};
   rr.stats.stages=rr.supplyChain.summary.totalStages;
   rr.stats.countries=rr.supplyChain.summary.sourcingCountries;
