@@ -1495,13 +1495,14 @@ function load(){
 function normalizeReports(){
  reports=reports.map(r=>{
   const evidenceSpec=r.evidence_v2?.spec||{};
-  const recoveredProduct=r.product||evidenceSpec.product||r.title||"saved assessment";
+  const usable=value=>value!==undefined&&value!==null&&!/^(undefined|null|nan)?$/i.test(String(value).trim());
+  const recoveredProduct=(usable(r.product)&&r.product)||(usable(evidenceSpec.product)&&evidenceSpec.product)||(usable(r.title)&&r.title)||"saved assessment";
   const recoveredSector=SECTORS[r.sectorKey]?r.sectorKey:(SECTORS[evidenceSpec.sectorKey]?evidenceSpec.sectorKey:findSector(recoveredProduct));
   const rr=Object.assign({region:"",qty:null},r);
   rr.product=recoveredProduct;
-  rr.title=r.title||titleCase(recoveredProduct)||"Saved Assessment";
-  rr.country=r.country||evidenceSpec.country||"Location not recorded";
-  rr.region=r.region||evidenceSpec.region||"";
+  rr.title=(usable(r.title)&&r.title)||titleCase(recoveredProduct)||"Saved Assessment";
+  rr.country=(usable(r.country)&&r.country)||(usable(evidenceSpec.country)&&evidenceSpec.country)||"Location not recorded";
+  rr.region=(usable(r.region)&&r.region)||(usable(evidenceSpec.region)&&evidenceSpec.region)||"";
   rr.sectorKey=recoveredSector||"generic";
   rr.sectorLabel=r.sectorLabel||evidenceSpec.sectorLabel||(SECTORS[rr.sectorKey]||SECTORS.generic).label;
   rr.desc=r.desc||evidenceSpec.prompt||rr.title||"S-LCA assessment";
