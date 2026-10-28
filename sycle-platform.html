@@ -984,7 +984,7 @@ function executiveSummaryHTML(R,S,c,loc,worstUp,sc){
  return variants[st.name].map(p=>`<p>${p}</p>`).join("")+`<p><strong>Overall Social Performance</strong> is screened at <strong>${sc.overall}/100 (${bandLabel(sc.overall)})</strong>. Confidence remains <strong>Low–Moderate</strong> until supplier-, facility- and worker-level data are verified.</p>`;
 }
 function structuredModel(R){
- const S=SECTORS[R.sectorKey];
+ const S=SECTORS[R.sectorKey]||SECTORS.generic;
  return {
   userInputs:{prompt:R.desc,scale:R.qty,location:R.region?`${R.region}, ${R.country}`:R.country},
   extractedProduct:R.product,geography:{country:R.country,region:R.region||""},industry:R.sectorLabel,
@@ -999,7 +999,7 @@ function structuredModel(R){
   riskScores:R.scores,
   stakeholderAnalysis:["Workers","Suppliers / value-chain actors","Local communities","Consumers","Society","Government / regulators"],
   workerAnalysis:{...S.worker,exposures:S.exposures,estimatedWorkforce:R.workforce},
-  communityAnalysis:{hostCountry:R.country,communitySeverity:S.communitySev,countryNote:COUNTRIES[R.country].note},
+  communityAnalysis:{hostCountry:R.country,communitySeverity:S.communitySev,countryNote:(COUNTRIES[R.country]||{note:"Location-specific conditions require verification."}).note},
   humanRights:{salientRisks:S.hotspots.map(h=>h[0]),highestRiskJurisdictions:[...R.sourcing].sort((a,b)=>meanRisk(b)-meanRisk(a)).slice(0,4)},
   sdgs:S.sdgs,recommendations:["Responsible-sourcing due diligence","Supplier Code of Conduct","Tier-1 audits","Living-wage and pay-equity review","Primary-data S-LCA"],
   references:DATASETS.map(d=>({name:d[0],url:d[3]})),
@@ -1127,7 +1127,7 @@ function reportHTMLV2(R){
 function reportHTML(R){
   if(R.evidence_v2?.version>=5&&R.evidence_v2.assessment)return reportHTMLV5(R);
   if(R.evidence_v2?.version>=2&&R.evidence_v2.spec&&R.evidence_v2.quality)return reportHTMLV2(R);
- const S=SECTORS[R.sectorKey];const c=R.country;const CN=COUNTRIES[c];
+ const S=SECTORS[R.sectorKey]||SECTORS.generic;const c=R.country;const CN=COUNTRIES[c]||{r:[2,2,2,2,2,2],note:"Location-specific conditions require verification."};
  const loc=R.region?`${R.region}, ${c}`:c;
  const sc=R.scores;
  const worstUp=[...R.sourcing].sort((a,b)=>meanRisk(b)-meanRisk(a))[0];
@@ -1206,7 +1206,7 @@ function reportHTML(R){
  <section><div class="sec-h"><span class="sec-n">06</span><h2>Assumptions Made</h2></div>
    <p class="lede">Every material inference, made explicit. Facility-specific facts were not provided and must be validated before any figure is relied upon.</p>
    <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Assumption</th><th>Provenance / Confidence</th></tr></thead><tbody>
-   <tr><td>A1</td><td>Site performs ${SECTORS[R.sectorKey].process[0].toLowerCase().includes("inbound")?"assembly, test &amp; packaging":"production &amp; finishing"}; not vertically integrated to raw material.</td><td>${provA} ${conf("M")}</td></tr>
+   <tr><td>A1</td><td>Site performs ${S.process[0].toLowerCase().includes("inbound")?"assembly, test &amp; packaging":"production &amp; finishing"}; not vertically integrated to raw material.</td><td>${provA} ${conf("M")}</td></tr>
    <tr><td>A2</td><td>Direct workforce ≈ ${R.workforce}.</td><td>${provA} ${conf("L")}</td></tr>
    <tr><td>A3</td><td>Bill of materials resembles a conventional ${S.label.toLowerCase()} product.</td><td>${provB} ${conf("M")}</td></tr>
    <tr><td>A4</td><td>Components sourced from incumbent suppliers in ${R.sourcing.slice(0,4).join(", ")} and comparable regions.</td><td>${provB} ${conf("M")}</td></tr>
@@ -1793,7 +1793,8 @@ function handleReportFollowup(text,R){
  appendBotMessage(`<p>I’m using the active report <strong>${esc(R.title)}</strong> as context. Ask for a section, assumption, source, comparison, or an input change and I’ll answer from the structured report model.</p><div class="mini-actions"><button class="btn primary" data-act="open" data-arg="${R.id}">📄 Open Report</button></div>`);
 }
 function executiveSummaryText(R){
- return `Executive Summary\n\n${R.title}\nLocation: ${R.region?R.region+", ":""}${R.country}\nSector: ${R.sectorLabel}\nProduct: ${R.product}\nOverall Social Score: ${R.scores.overall}/100 (${bandLabel(R.scores.overall)})\n\nThis screening-level Social Life Cycle Assessment evaluates likely social risks from the user-provided project description and public country/sector benchmarks. Principal hotspots: ${SECTORS[R.sectorKey].hotspots.slice(0,3).map(h=>h[0]).join(", ")}.\n\nReliance: screening only; validate with supplier, worker and facility primary data before external claims.`;
+ const sector=SECTORS[R.sectorKey]||SECTORS.generic;
+ return `Executive Summary\n\n${R.title}\nLocation: ${R.region?R.region+", ":""}${R.country}\nSector: ${R.sectorLabel}\nProduct: ${R.product}\nOverall Social Score: ${R.scores.overall}/100 (${bandLabel(R.scores.overall)})\n\nThis screening-level Social Life Cycle Assessment evaluates likely social risks from the user-provided project description and public country/sector benchmarks. Principal hotspots: ${sector.hotspots.slice(0,3).map(h=>h[0]).join(", ")}.\n\nReliance: screening only; validate with supplier, worker and facility primary data before external claims.`;
 }
 function exportSection(R,label,text){
  download(text,`sycle-${R.title.replace(/\s+/g,"-").toLowerCase()}-${label.replace(/\s+/g,"-").toLowerCase()}.txt`,"text/plain");
@@ -1802,7 +1803,7 @@ function exportSection(R,label,text){
 /* reports grid */
 function renderReports(){
  const g=document.getElementById("reportsGrid");
- g.innerHTML=reports.map(R=>{const S=SECTORS[R.sectorKey];
+ g.innerHTML=reports.map(R=>{const S=SECTORS[R.sectorKey]||SECTORS.generic;
   return `<div class="report-card">
    <div class="rc-top" data-act="open" data-arg="${R.id}">
      <div class="rc-ic" style="background:${S.emColor}">${R.em||S.em}</div>
@@ -1824,7 +1825,7 @@ function renderReports(){
 function renderRecent(){
  const el=document.getElementById("recentList");
  const curId=currentReport&&currentReport.id;
- el.innerHTML=reports.slice(0,5).map(R=>{const S=SECTORS[R.sectorKey];
+ el.innerHTML=reports.slice(0,5).map(R=>{const S=SECTORS[R.sectorKey]||SECTORS.generic;
   return `<div class="r-item${R.id===curId?" active":""}" data-act="open" data-arg="${R.id}"><div class="r-ic" style="background:${S.emColor}">${R.em||S.em}</div>
   <div class="r-meta"><b>${esc(R.title)}</b><span>${esc(R.country)} · ${R.date}</span></div></div>`;}).join("");
 }
@@ -1860,7 +1861,7 @@ function askCurrentReport(){
 }
 function reportAnswerHTML(text,R){
  if(R.evidence_v2)return evidenceAnswerHTML(text,R);
- const t=text.toLowerCase(),S=SECTORS[R.sectorKey],sc=R.scores;
+ const t=text.toLowerCase(),S=SECTORS[R.sectorKey]||SECTORS.generic,sc=R.scores;
  if(/\b(recommend|improve|mitigat|increase.*score|help)\b/.test(t)){
   const lowest=lowestPillar(sc);
   return `<p>Here are practical recommendations for <strong>${esc(R.title)}</strong>, prioritised by highest leverage and the weakest score area: <strong>${esc(lowest)}</strong>.</p>
@@ -2001,7 +2002,7 @@ function renderCompare(){
 }
 function compareSummary(R,label){
  return `<div class="compare-card"><div style="font-size:11px;color:var(--mut);text-transform:uppercase;font-weight:700">${label}</div>
-  <h3 style="margin:4px 0">${esc(R.title)}</h3><div style="color:var(--mut);font-size:12.5px">${esc(R.region?R.region+", "+R.country:R.country)} · ${SECTORS[R.sectorKey].label}</div>
+  <h3 style="margin:4px 0">${esc(R.title)}</h3><div style="color:var(--mut);font-size:12.5px">${esc(R.region?R.region+", "+R.country:R.country)} · ${(SECTORS[R.sectorKey]||SECTORS.generic).label}</div>
   <div class="compare-score" style="color:${scoreColor(R.scores.overall)};margin-top:12px">${R.scores.overall}<span style="font-size:14px;color:var(--mut)">/100</span></div></div>`;
 }
 function applyCompare(){
@@ -2028,7 +2029,7 @@ function comparisonReason(key,A,B){
   const describe=R=>{const trace=R.evidence_v2.scores.trace.pillars.find(row=>row.pillar===pillar);if(!trace)return "not scored";const names=trace.evidence_ids.map(id=>R.evidence_v2.indicators.find(item=>item.id===id)).filter(Boolean).map(item=>`${item.name} (${item.geography})`);return names.join(", ")||"no evidence";};
   return `The baseline score is supported by ${describe(A)}; the comparison score is supported by ${describe(B)}. Both reports retain the source edition and checksum.`;
  }
- const ar=countryRiskData(A),br=countryRiskData(B),as=SECTORS[A.sectorKey],bs=SECTORS[B.sectorKey],sa=sourcingStats(A),sb=sourcingStats(B);
+ const ar=countryRiskData(A),br=countryRiskData(B),as=SECTORS[A.sectorKey]||SECTORS.generic,bs=SECTORS[B.sectorKey]||SECTORS.generic,sa=sourcingStats(A),sb=sourcingStats(B);
  const band=n=>BANDS[Math.max(0,Math.min(4,Math.round(n)))].l.toLowerCase();
  if(key==="worker")return `Host-country labour risk is ${band(ar[0])} versus ${band(br[0])}; worker-protection risk is ${band(ar[4])} versus ${band(br[4])}; sector OH&S exposure is ${band(as.worker.osh)} versus ${band(bs.worker.osh)}.`;
  if(key==="humanRights")return `The difference reflects upstream sourcing exposure: average country risk is ${sa.average.toFixed(1)} versus ${sb.average.toFixed(1)}, with ${sa.high.length} versus ${sb.high.length} higher-risk sourcing countries and sector material severity of ${as.mineralSev} versus ${bs.mineralSev}.`;
@@ -2235,7 +2236,7 @@ function submitCurrentForReview(){
 }
 function duplicateReport(id){const R=reportById(id);if(!R)return;const copy=JSON.parse(JSON.stringify(R));copy.id="r"+Date.now();copy.demo=false;copy.title=R.title+" (copy)";copy.date=new Date().toLocaleDateString("en-US",{month:"short",year:"numeric"});reports.unshift(copy);save();renderRecent();renderReports();toast("Duplicated → "+copy.title);}
 function deleteReport(id){const R=reportById(id);if(R&&R.demo){toast("The demo report is retained and cannot be deleted.");return;}reports=reports.filter(r=>r.id!==id);save();renderRecent();renderReports();toast("Report deleted.");}
-function shareReport(R){if(!R)return;const txt=`${R.title} — S-LCA screening\nLocation: ${R.region?R.region+", ":""}${R.country}\nSector: ${SECTORS[R.sectorKey].label}\nOverall Social Score: ${R.scores.overall}/100 (${bandLabel(R.scores.overall)})`;copy(txt);toast("Report summary copied to clipboard.");}
+function shareReport(R){if(!R)return;const txt=`${R.title} — S-LCA screening\nLocation: ${R.region?R.region+", ":""}${R.country}\nSector: ${(SECTORS[R.sectorKey]||SECTORS.generic).label}\nOverall Social Score: ${R.scores.overall}/100 (${bandLabel(R.scores.overall)})`;copy(txt);toast("Report summary copied to clipboard.");}
 function exportPDF(R){
  if(!R){toast("Open or select a report first.");return;}
  if(!reportExportable(R)){toast("This report is not ready to export.");return;}
@@ -2247,7 +2248,7 @@ function exportPDF(R){
  w.document.open();w.document.write(html);w.document.close();
  toast("PDF export opened — choose Save as PDF in the print dialog.");
 }
-function exportCSV(R){if(!R){toast("Open a report first.");return;}if(!reportExportable(R)){toast("This report is not ready to export.");return;}if(R.evidence_v2)return exportEvidenceCSV(R);const S=SECTORS[R.sectorKey];
+function exportCSV(R){if(!R){toast("Open a report first.");return;}if(!reportExportable(R)){toast("This report is not ready to export.");return;}if(R.evidence_v2)return exportEvidenceCSV(R);const S=SECTORS[R.sectorKey]||SECTORS.generic;
  let rows=[["SYCLE Screening S-LCA",R.title],["Location",(R.region?R.region+", ":"")+R.country],["Sector",S.label.replace(/&amp;/g,"&")],["Overall Social Score",R.scores.overall+"/100 ("+bandLabel(R.scores.overall)+")"],[],["Pillar","Score"],["Worker Welfare",R.scores.worker],["Human Rights",R.scores.humanRights],["Community Impact",R.scores.community],["Supply-Chain Responsibility",R.scores.supplyChain],["Governance",R.scores.governance],["Consumer Impact",R.scores.consumer],[],["Hotspot","Where","Severity(0-4)","Likelihood(0-4)"]];
  S.hotspots.forEach(h=>rows.push([h[0].replace(/&amp;/g,"&"),h[1].replace(/&amp;/g,"&").replace(/<[^>]+>/g,""),h[2],h[3]]));
  rows.push([],["Country","Labour","HumanRights","Corruption","Political","WorkerProtection","EnvJustice"]);
