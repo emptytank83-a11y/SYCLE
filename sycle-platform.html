@@ -1507,11 +1507,11 @@ function normalizeReports(){
   rr.sectorLabel=r.sectorLabel||evidenceSpec.sectorLabel||(SECTORS[rr.sectorKey]||SECTORS.generic).label;
   rr.desc=r.desc||evidenceSpec.prompt||rr.title||"S-LCA assessment";
   rr.supplyChain=rr.supplyChain?.stages&&rr.supplyChain?.summary?rr.supplyChain:generateSupplyChain(rr);
-  rr.stats=rr.stats||{};
+  if(!rr.stats||typeof rr.stats!=="object")rr.stats={};
   rr.stats.stages=rr.supplyChain.summary.totalStages;
   rr.stats.countries=rr.supplyChain.summary.sourcingCountries;
   rr.style=rr.style||chooseReportStyle(rr.desc,rr.id||rr.title);
-  if(!rr.model)rr.model=structuredModel(rr);
+  if(!rr.model||typeof rr.model!=="object")rr.model=structuredModel(rr);
   else rr.model.supplyChain=rr.supplyChain;
   return rr;
  });
