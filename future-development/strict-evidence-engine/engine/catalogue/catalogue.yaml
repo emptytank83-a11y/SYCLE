@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "framework": {"name":"UNEP Guidelines for Social Life Cycle Assessment of Products and Organizations 2020","url":"https://www.lifecycleinitiative.org/library/guidelines-for-social-life-cycle-assessment-of-products-and-organisations-2020/"},
+  "expert_review": "pending",
+  "fallback": {"order":["site","county","state","country"],"confidence_downgrade_per_step":1},
+  "stakeholders": [
+    {"id":"workers","subcategories":[
+      {"id":"health_and_safety","indicators":[{"id":"worker_injury_rate","unit":"cases_per_100_fte","direction":"lower_is_better","candidate_sources":[{"source_id":"bls_soii","geo_level":"state","rank":1},{"source_id":"osha_enforcement","geo_level":"site","rank":2}]}]},
+      {"id":"freedom_of_association","indicators":[{"id":"union_membership_rate","unit":"percent","direction":"contextual","candidate_sources":[{"source_id":"bls_cps_union","geo_level":"state","rank":1},{"source_id":"ituc_gri","geo_level":"country","rank":2}]}]}
+    ]},
+    {"id":"local_communities","subcategories":[{"id":"local_employment","indicators":[{"id":"local_unemployment_rate","unit":"percent","direction":"lower_is_better","candidate_sources":[{"source_id":"census_acs","geo_level":"county","rank":1},{"source_id":"world_bank_wgi","geo_level":"country","rank":2}]}]}]},
+    {"id":"society","subcategories":[{"id":"corruption","indicators":[{"id":"corruption_perception_score","unit":"index","direction":"higher_is_better","candidate_sources":[{"source_id":"transparency_cpi","geo_level":"country","rank":1},{"source_id":"world_bank_wgi","geo_level":"country","rank":2}]}]}]},
+    {"id":"consumers","subcategories":[{"id":"health_and_safety","indicators":[{"id":"consumer_safety_evidence","unit":"categorical","direction":"higher_is_better","candidate_sources":[]}]}]},
+    {"id":"value_chain_actors","subcategories":[{"id":"supplier_relationships","indicators":[{"id":"sourcing_concentration","unit":"percent","direction":"lower_is_better","candidate_sources":[{"source_id":"un_comtrade","geo_level":"country","rank":1},{"source_id":"usitc_dataweb","geo_level":"country","rank":2}]}]}]},
+    {"id":"children","subcategories":[{"id":"child_labour","indicators":[{"id":"child_forced_labour_goods_flag","unit":"boolean","direction":"lower_is_better","candidate_sources":[{"source_id":"us_dol_goods","geo_level":"country","rank":1},{"source_id":"walk_free_gsi","geo_level":"country","rank":2}]}]}]}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "expert_review": "pending",
+  "products": [{
+    "id":"passenger_car",
+    "names":["passenger car","car","automobile"],
+    "source_url":"https://www.census.gov/naics/",
+    "verified":false,
+    "variants": {
+      "ice":{"naics":["336110"],"hs":["8703"],"key_minerals":["steel inputs","aluminium","copper","platinum-group metals"],"source_url":"https://hts.usitc.gov/","verified":false,"expert_review":"pending"},
+      "ev":{"naics":["336110"],"hs":["8703","850760"],"key_minerals":["lithium","nickel","cobalt","graphite","copper","aluminium"],"source_url":"https://pubs.usgs.gov/periodicals/mcs2026/mcs2026.pdf","verified":false,"expert_review":"pending"}
+    }
+  }]
+}

@@ -520,7 +520,7 @@ const HEAT=["🟢","🟢","🟡","🟠","🔴"]; // band(0..4) -> dot (Low..Crit
 
 // Country screening risk bands: [labour, humanRights, corruption, politicalStability, workerProtection, envJustice] 0=VeryLow..4=VeryHigh
 const COUNTRIES={
- "United States":{r:[1,1,1,1,2,2],note:"Strong rule of law and low corruption; Texas runs no state OSHA plan and permits workers'-comp opt-out, and unionisation is low under right-to-work."},
+ "United States":{r:[1,1,1,1,2,2],note:"Strong rule of law and comparatively low corruption. Labour protections, enforcement arrangements, union coverage and workers' compensation rules vary by state and must be checked for the stated facility location."},
  "Germany":{r:[0,0,0,0,1,1],note:"Strong labour protection, co-determination, and the LkSG supply-chain due-diligence law."},
  "United Kingdom":{r:[1,0,1,1,1,1],note:"Modern Slavery Act reporting duty; strong institutions."},
  "France":{r:[1,0,1,1,1,1],note:"Duty-of-vigilance law; robust worker protection."},
@@ -893,7 +893,12 @@ SUPPLY_CHAIN_KB.diamond=[
  ["dist","Jewellery / Industrial Distribution","Secure storage, sale to jewellery manufacturers, industrial users, wholesalers or retail channels.",["Certified diamonds","Secure transport","Retail documentation"],["United States","India","United Arab Emirates","China","Belgium"],["Security contractor labour","Responsible marketing","Product provenance claims"],2,["ilo","oecd","industry"],76]
 ];
 function generateSupplyChain(R){
- const base=SUPPLY_CHAIN_KB[R.sectorKey]||SUPPLY_CHAIN_KB.generic;
+ const product=String(R.product||"").toLowerCase();
+ let profileKey=R.sectorKey;
+ // Commodity-specific profiles must never be reused for a different product.
+ if(profileKey==="food"&&!/\bcoffee\b/.test(product))profileKey="generic";
+ if(profileKey==="metals"&&!/\bgold\b|\bprecious metal\b/.test(product))profileKey="generic";
+ const base=SUPPLY_CHAIN_KB[profileKey]||SUPPLY_CHAIN_KB.generic;
  const stages=base.map((s,i)=>{
   const countries=Array.from(new Set([...s[4],...(i===Math.floor(base.length/2)?[R.country]:[])]));
   const evidence=s[7].flatMap(k=>REF[k]||[]).map(i=>DATASETS[i]).filter(Boolean);
@@ -929,6 +934,8 @@ function buildReport(desc,opts){
  report.stats.stages=report.supplyChain.summary.totalStages;
  report.stats.countries=report.supplyChain.summary.sourcingCountries;
  report.model=structuredModel(report);
+ report.generationMode="screening";
+ report.methodVersion="screening-v1-restored";
  return report;
 }
 function titleCase(s){return s.replace(/\b\w/g,c=>c.toUpperCase());}
@@ -1548,8 +1555,8 @@ function showDashboardFor(R){
   <div class="bubble you"><div class="bh"><b>You</b><span class="time">${nowTime()}</span></div>
    <div>${esc(R.desc)}</div></div>
   <div class="bubble"><div class="bh"><div class="who"><span class="bot">🌿</span><b>SYCLE</b></div><span class="time">${nowTime()}</span></div>
-   <p style="margin:2px 0 4px">Your validated screening Social Life Cycle Assessment has been generated successfully.</p>
-   <p style="margin:6px 0 0;color:var(--ink-soft)">${R.evidence_v2?`${R.evidence_v2.quality.evidence_records} evidence records retrieved; ${R.evidence_v2.quality.scored_pillars} of 6 pillars scored; ${R.evidence_v2.quality.declared_gaps} retrieval gaps declared.`:"Legacy report - regenerate before relying on or exporting it."}</p>
+   <p style="margin:2px 0 4px">Your screening Social Life Cycle Assessment has been generated successfully.</p>
+   <p style="margin:6px 0 0;color:var(--ink-soft)">${R.evidence_v2?`${R.evidence_v2.quality.evidence_records} evidence records retrieved.`:"The report combines your project facts with clearly labelled sector and country screening benchmarks."}</p>
    <div class="cta-row">
      <button class="btn primary" data-act="open" data-arg="${R.id}">📄 Open Report</button>
    </div>
@@ -1660,7 +1667,17 @@ async function submitEvidenceQuestions(){
  const draft=pendingEvidenceDraft;pendingEvidenceDraft=null;await runEvidenceGeneration(draft.desc,draft.spec,answers,draft.replaceId);
 }
 async function finalizeGeneratedReport(desc,overrides={},replaceId=null){
- const spec=evidenceSpec(desc,overrides);await runEvidenceGeneration(desc,spec,{},replaceId);
+ const existing=replaceId?reportById(replaceId):null;
+ const options={...overrides};
+ if(replaceId)options.id=replaceId;
+ if(existing){options.style=existing.style;options.title=overrides.product?titleCase(overrides.product):existing.title;}
+ const report=buildReport(desc,options);
+ report.demo=false;
+ report.chat=existing?.chat||[];
+ report.date=new Date().toLocaleDateString("en-US",{month:"short",year:"numeric"});
+ if(replaceId)reports=reports.map(item=>item.id===replaceId?report:item);else reports.unshift(report);
+ save();pendingReportDraft=null;pendingEvidenceDraft=null;renderRecent();showDashboardFor(report);
+ toast(`Report generated - ${report.title}`);
 }
 async function continuePendingReportDraft(desc){
  pendingReportDraft.parts.push(desc);
@@ -1793,7 +1810,7 @@ function renderReports(){
      <div class="rc-date">Report</div>
    </div>
    <div class="rc-tags">${R.demo?'<span class="tagpill demo">DEMO — retained</span>':''}<span class="tagpill">${S.label}</span><span class="tagpill">${esc(R.country)}</span></div>
-   <div><span class="report-status-tag ${R.evidence_v2?"":"legacy"}">${R.evidence_v2?"VALIDATED V2":"LEGACY - REGENERATE"}</span></div>
+   <div><span class="report-status-tag ${R.evidence_v2?"":"legacy"}">${R.evidence_v2?"EVIDENCE ASSESSMENT":"SCREENING REPORT"}</span></div>
    <div class="rc-actions">
      <button data-act="open" data-arg="${R.id}">Open</button>
      <button data-act="ask-open" data-arg="${R.id}">Ask</button>
@@ -1816,7 +1833,7 @@ function renderRecent(){
 function openReport(id){
  const R=reportById(id);if(!R)return;
  currentReport=R;
- document.getElementById("reportBody").innerHTML=(R.evidence_v2?"":'<div class="legacy-warning"><strong>Legacy report:</strong> this assessment came from the retired template generator. It is view-only; PDF, CSV and sharing are blocked until it is regenerated through the evidence workflow.</div>')+reportHTML(R);
+ document.getElementById("reportBody").innerHTML=reportHTML(R);
  renderReportChat(R);
  go("report");
 }
@@ -2122,13 +2139,13 @@ function renderBenchmarks(){
 }
 /* data sources */
 function renderDatasources(){
- document.getElementById("datasourcesBody").innerHTML=`<div class="panel"><h3>SYCLE central evidence library</h3>
-  <p style="color:var(--ink-soft)">Every report searches the versioned SYCLE warehouse first. When evidence is missing, the backend discovers authoritative sources, retrieves the underlying material, records claim-level locators and adds complete legally reusable datasets to SYCLE's central Supabase library. Nothing is downloaded to the user's computer.</p>
+ document.getElementById("datasourcesBody").innerHTML=`<div class="panel"><h3>SYCLE screening source library</h3>
+  <p style="color:var(--ink-soft)">Screening reports use the public source registry below together with clearly labelled sector and country benchmarks. These references establish the basis for screening assumptions; they are not represented as facility-level proof or named-supplier evidence.</p>
   <div class="sc-summary"><div class="sc-stat"><b>1</b><span>Central warehouse</span></div><div class="sc-stat"><b>Raw + normalized</b><span>Storage model</span></div><div class="sc-stat"><b>Versioned</b><span>Dataset history</span></div><div class="sc-stat"><b>Claim-level</b><span>Report provenance</span></div><div class="sc-stat"><b>Daily</b><span>Ingestion queue</span></div></div>
  </div><div class="panel"><h3>Authoritative source registry</h3>
   <div class="tbl-wrap"><table class="report"><thead><tr><th>Dataset</th><th>Provides</th><th>Publisher / cadence</th><th>Link</th></tr></thead>
   <tbody>${DATASETS.map(d=>`<tr><td><strong>${d[0]}</strong></td><td>${d[1]}</td><td>${d[2]}</td><td><a href="${d[3]}" target="_blank" rel="noopener">Open source</a></td></tr>`).join("")}</tbody></table></div>
-  <p style="font-size:12px;color:var(--mut);margin-top:10px">These are established sources already available to the evidence planner. A source is not automatically treated as proof: every report must retrieve a matching dataset row or document passage, record its geography and year, and pass citation validation.</p></div>`;
+  <p style="font-size:12px;color:var(--mut);margin-top:10px">These sources support screening-level interpretation. Facility claims still require primary records, and users should verify source editions before external reliance.</p></div>`;
 }
 /* settings */
 function renderSettings(){
@@ -2179,10 +2196,11 @@ const val=id=>document.getElementById(id).value.trim();
 function toggleTheme(){const cur=document.documentElement.getAttribute("data-theme");const next=cur==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",next);settings.dark=next==="dark";saveSettings();}
 
 /* actions */
-function reportExportable(R){return !!(R&&R.evidence_v2&&R.evidence_v2.validation?.valid&&R.evidence_v2.quality?.exportable);}
+function reportExportable(R){return !!(R&&R.model&&R.supplyChain&&R.scores);}
 function shareValidatedReport(R){
  if(!R)return;
- if(!reportExportable(R)){toast("Blocked: regenerate this report through the validated evidence workflow.");return;}
+ if(!R.evidence_v2){shareReport(R);return;}
+ if(!reportExportable(R)){toast("This report is not ready to share.");return;}
  const V=R.evidence_v2,A=V.assessment,txt=A?`${R.title} - SYCLE screening S-LCA\nLocation: ${V.spec.locationLabel}\nProduct: ${V.spec.product}\nMethod: UNEP Reference Scale (-2 to +2)\nAssessed stage-topics: ${A.coverage.assessed_topics}\nVisible gaps: ${A.coverage.gap_topics}\nReview status: ${A.review.status}`:`${R.title} - validated S-LCA screening\nLocation: ${V.spec.locationLabel}`;
  copy(txt);toast("Report summary copied.");
 }
@@ -2205,7 +2223,7 @@ function exportEvidenceCSV(R){
 }
 function exportWord(R){
  if(!R){toast("Open or select a report first.");return;}
- if(!reportExportable(R)){toast("Word export blocked: regenerate through the evidence workflow.");return;}
+ if(!reportExportable(R)){toast("This report is not ready to export.");return;}
  const css=document.querySelector("style").textContent,html=`<!doctype html><html><head><meta charset="utf-8"><title>${esc(R.title)} - SYCLE</title><style>${css}body{background:#fff}.report{max-width:none;margin:0}.no-print{display:none}</style></head><body><div class="report">${reportHTML(R)}</div></body></html>`;
  download(html,`sycle-${R.title.replace(/\s+/g,"-").toLowerCase()}.doc`,"application/msword");toast("Word-compatible report exported.");
 }
@@ -2220,7 +2238,7 @@ function deleteReport(id){const R=reportById(id);if(R&&R.demo){toast("The demo r
 function shareReport(R){if(!R)return;const txt=`${R.title} — S-LCA screening\nLocation: ${R.region?R.region+", ":""}${R.country}\nSector: ${SECTORS[R.sectorKey].label}\nOverall Social Score: ${R.scores.overall}/100 (${bandLabel(R.scores.overall)})`;copy(txt);toast("Report summary copied to clipboard.");}
 function exportPDF(R){
  if(!R){toast("Open or select a report first.");return;}
- if(!reportExportable(R)){toast("PDF blocked: report is legacy, invalid, or below the evidence threshold.");return;}
+ if(!reportExportable(R)){toast("This report is not ready to export.");return;}
  const css=document.querySelector("style").textContent;
  const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(R.title)} — SYCLE PDF</title><style>${css}
   body{background:#fff!important}.print-banner{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e9f0;margin:0 0 20px;padding:0 0 12px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}.print-banner b{font-size:15px}.print-banner span{color:#64748b;font-size:12px}.report{max-width:940px;margin:0 auto}.no-print,.side,.topbar,.rback,#toast,.modal{display:none!important}@page{margin:14mm}</style></head><body><div class="print-banner"><b>SYCLE PDF Export</b><span>Use the print dialog destination: Save as PDF</span></div><div class="report">${reportHTML(R)}</div><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),350));<\/script></body></html>`;
@@ -2229,7 +2247,7 @@ function exportPDF(R){
  w.document.open();w.document.write(html);w.document.close();
  toast("PDF export opened — choose Save as PDF in the print dialog.");
 }
-function exportCSV(R){if(!R){toast("Open a report first.");return;}if(!reportExportable(R)){toast("CSV blocked: regenerate through the validated evidence workflow.");return;}if(R.evidence_v2)return exportEvidenceCSV(R);const S=SECTORS[R.sectorKey];
+function exportCSV(R){if(!R){toast("Open a report first.");return;}if(!reportExportable(R)){toast("This report is not ready to export.");return;}if(R.evidence_v2)return exportEvidenceCSV(R);const S=SECTORS[R.sectorKey];
  let rows=[["SYCLE Screening S-LCA",R.title],["Location",(R.region?R.region+", ":"")+R.country],["Sector",S.label.replace(/&amp;/g,"&")],["Overall Social Score",R.scores.overall+"/100 ("+bandLabel(R.scores.overall)+")"],[],["Pillar","Score"],["Worker Welfare",R.scores.worker],["Human Rights",R.scores.humanRights],["Community Impact",R.scores.community],["Supply-Chain Responsibility",R.scores.supplyChain],["Governance",R.scores.governance],["Consumer Impact",R.scores.consumer],[],["Hotspot","Where","Severity(0-4)","Likelihood(0-4)"]];
  S.hotspots.forEach(h=>rows.push([h[0].replace(/&amp;/g,"&"),h[1].replace(/&amp;/g,"&").replace(/<[^>]+>/g,""),h[2],h[3]]));
  rows.push([],["Country","Labour","HumanRights","Corruption","Political","WorkerProtection","EnvJustice"]);
