@@ -1494,7 +1494,17 @@ function load(){
 }
 function normalizeReports(){
  reports=reports.map(r=>{
- const rr=Object.assign({region:"",qty:null,desc:r.title||"S-LCA assessment"},r);
+  const evidenceSpec=r.evidence_v2?.spec||{};
+  const recoveredProduct=r.product||evidenceSpec.product||r.title||"saved assessment";
+  const recoveredSector=SECTORS[r.sectorKey]?r.sectorKey:(SECTORS[evidenceSpec.sectorKey]?evidenceSpec.sectorKey:findSector(recoveredProduct));
+  const rr=Object.assign({region:"",qty:null},r);
+  rr.product=recoveredProduct;
+  rr.title=r.title||titleCase(recoveredProduct)||"Saved Assessment";
+  rr.country=r.country||evidenceSpec.country||"Location not recorded";
+  rr.region=r.region||evidenceSpec.region||"";
+  rr.sectorKey=recoveredSector||"generic";
+  rr.sectorLabel=r.sectorLabel||evidenceSpec.sectorLabel||(SECTORS[rr.sectorKey]||SECTORS.generic).label;
+  rr.desc=r.desc||evidenceSpec.prompt||rr.title||"S-LCA assessment";
   rr.supplyChain=rr.supplyChain&&rr.supplyChain.stages?rr.supplyChain:generateSupplyChain(rr);
   rr.stats=rr.stats||{};
   rr.stats.stages=rr.supplyChain.summary.totalStages;
