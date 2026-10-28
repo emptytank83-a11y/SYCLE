@@ -939,6 +939,7 @@ function buildReport(desc,opts){
  return report;
 }
 function titleCase(s){return s.replace(/\b\w/g,c=>c.toUpperCase());}
+function safeDisplay(value,fallback){return value!==undefined&&value!==null&&!/^(undefined|null|nan)?$/i.test(String(value).trim())?String(value):fallback;}
 const REPORT_STYLES=[
  {name:"board concise",voice:"concise board briefing",open:"This screening S-LCA frames the principal social-risk questions for",link:"The value chain review indicates that"},
  {name:"consulting diligence",voice:"consulting due-diligence memo",open:"This assessment has been prepared as a screening diligence view of",link:"The analysis points to"},
@@ -1489,7 +1490,7 @@ function load(){
  if(!reports.length)seed();
  reports=reports.filter((r,i)=>!r.demo||i===reports.findIndex(x=>x.demo));
  if(!reports.some(r=>r.demo))reports.unshift(demoReport());
- normalizeReports();
+ try{normalizeReports();}catch(error){reports=reports.filter(Boolean);}
  applySettings();
 }
 function normalizeReports(){
@@ -1818,10 +1819,10 @@ function renderReports(){
   return `<div class="report-card">
    <div class="rc-top" data-act="open" data-arg="${R.id}">
      <div class="rc-ic" style="background:${S.emColor}">${R.em||S.em}</div>
-     <div style="min-width:0"><h4>${esc(R.title)}</h4><div class="rc-sub">${esc(R.region?R.region+", "+R.country:R.country)} · ${R.date}</div></div>
+     <div style="min-width:0"><h4>${esc(safeDisplay(R.title,R.evidence_v2?.spec?.product||"Saved Assessment"))}</h4><div class="rc-sub">${esc(safeDisplay(R.region?R.region+", "+R.country:R.country,R.evidence_v2?.spec?.locationLabel||"Location not recorded"))} · ${safeDisplay(R.date,"Saved")}</div></div>
      <div class="rc-date">Report</div>
    </div>
-   <div class="rc-tags">${R.demo?'<span class="tagpill demo">DEMO — retained</span>':''}<span class="tagpill">${S.label}</span><span class="tagpill">${esc(R.country)}</span></div>
+   <div class="rc-tags">${R.demo?'<span class="tagpill demo">DEMO — retained</span>':''}<span class="tagpill">${S.label}</span><span class="tagpill">${esc(safeDisplay(R.country,R.evidence_v2?.spec?.country||"Location not recorded"))}</span></div>
    <div><span class="report-status-tag ${R.evidence_v2?"":"legacy"}">${R.evidence_v2?"EVIDENCE ASSESSMENT":"SCREENING REPORT"}</span></div>
    <div class="rc-actions">
      <button data-act="open" data-arg="${R.id}">Open</button>
@@ -1838,7 +1839,7 @@ function renderRecent(){
  const curId=currentReport&&currentReport.id;
  el.innerHTML=reports.slice(0,5).map(R=>{const S=SECTORS[R.sectorKey]||SECTORS.generic;
   return `<div class="r-item${R.id===curId?" active":""}" data-act="open" data-arg="${R.id}"><div class="r-ic" style="background:${S.emColor}">${R.em||S.em}</div>
-  <div class="r-meta"><b>${esc(R.title)}</b><span>${esc(R.country)} · ${R.date}</span></div></div>`;}).join("");
+  <div class="r-meta"><b>${esc(safeDisplay(R.title,R.evidence_v2?.spec?.product||"Saved Assessment"))}</b><span>${esc(safeDisplay(R.country,R.evidence_v2?.spec?.country||"Location not recorded"))} · ${safeDisplay(R.date,"Saved")}</span></div></div>`;}).join("");
 }
 
 /* open report detail */
