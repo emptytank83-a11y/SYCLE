@@ -2325,10 +2325,11 @@ async function init(){
  });
  try{const stored=JSON.parse(localStorage.getItem(USER_KEY));currentUser=stored?.user||null;currentSession=stored?.session||null;}catch(e){currentUser=null;currentSession=null;}
  if(currentUser&&currentUser.email&&currentSession?.access_token){
-  setStorageNamespace(currentUser.email);
-  document.getElementById("authScreen").style.display="none";
-  document.getElementById("appShell").classList.remove("locked");
-  load();await loadRemoteReports();go("dashboard");renderWorkspaceIntro();
+ setStorageNamespace(currentUser.email);
+ document.getElementById("authScreen").style.display="none";
+ document.getElementById("appShell").classList.remove("locked");
+  load();go("dashboard");renderWorkspaceIntro();
+  loadRemoteReports().catch(()=>{});
  }else{
   document.getElementById("authScreen").style.display="grid";
   document.getElementById("appShell").classList.add("locked");
